@@ -1,5 +1,4 @@
 # Cookie Security
----
 
 This section describes the attributes and methods that help improve cookie security.
 
