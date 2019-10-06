@@ -9,7 +9,7 @@ This section describes the attributes and methods that help improve cookie secur
 Cookies marked with the `Secure` attribute are only sent over encrypted HTTPS connections. The `Secure` attribute only
  protects the **confidentiality** of a cookie against MiTM attackers – there is no integrity protection.
 
-![mitm-attack](/img/defence/web/cookie-security/mitm-attack.png)
+![mitm-attack](/Defence/Web/Cookie%20Security/img/mitm-attack.png)
 
 - Mallory can’t read `Secure` cookies,
 - Mallory can still **write/change** `Secure` cookies.
@@ -26,11 +26,11 @@ The `Path` attribute limits the scope of a cookie to a specific path on the serv
 
 **Cookie scope vs Same-Origin Policy**
 
-![cooke-scope](/img/defence/web/cookie-security/scope-sop-cookie.png)
+![cooke-scope](/Defence/Web/Cookie%20Security/img/scope-sop-cookie.png)
 
 **Isolation two different applications on shared host**
 
-![isolation-apps](/img/defence/web/cookie-security/isolation-sop-cookie.png)
+![isolation-apps](/Defence/Web/Cookie%20Security/img/isolation-sop-cookie.png)
 
 ## Domain attribute
 
@@ -50,7 +50,7 @@ The `Expires` attribute allows you to set the maximum cookie lifetime.
 
 [Document.cookie documentation](https://developer.mozilla.org/en-US/docs/Web/API/document/cookie)
 
-![cookie-survive](/img/defence/web/cookie-security/cookie-survive.png)
+![cookie-survive](/Defence/Web/Cookie%20Security/img/cookie-survive.png)
 
 ## SameSite
 
