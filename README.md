@@ -1,12 +1,5 @@
 # Attack
 
-## Awesome resources
-
-- [Awesome Hacking](https://github.com/Hack-with-Github/Awesome-Hacking) - A collection of awesome lists for hackers,
- pentesters & security researchers.
-- [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings) - A list of useful payloads and bypasses
- for Web Application Security.
-
 ## Linux
 
 - [uptux](https://github.com/initstring/uptux/blob/master/README.md) - Specialized privilege escalation checks for Linux
