@@ -96,7 +96,7 @@ GET /index.html?bar=1 HTTP/1.1
 
 The first line of the query has the following syntax:
 
-```http request
+```
 <METHOD>[SP]<LOCATION>[SP]HTTP/[M].[m][CR][LF]
 <METHOD>[SP]<http[s]://LOCATION>[SP]HTTP/[M].[m][CR][LF]
 ```
@@ -180,7 +180,7 @@ The format of the header fields is regulated by [RFC 7230 3.2](https://tools.iet
 
 So:
 
-```http request
+```
 HEADER:HEADER_VALUE[\r\n] => OK
 HEADER:[SPACE]HEADER_VALUE[\r\n] => OK
 HEADER:[SPACE]HEADER_VALUE[SPACE][\r\n] => OK
