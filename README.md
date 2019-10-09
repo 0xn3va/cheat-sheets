@@ -48,16 +48,6 @@
 - [JSONBee](https://github.com/zigoo0/JSONBee) - A ready to use JSONP endpoints to help bypass content security policy
  of different websites.
 
-## HTTP Desync
-
-- [HTTP Desync Attacks: Request Smuggling Reborn](https://portswigger.net/research/http-desync-attacks-request-smuggling-reborn)
-- [Write up of two HTTP Requests Smuggling](https://medium.com/@cc1h2e1/write-up-of-two-http-requests-smuggling-ff211656fe7d)
-- [HTTP Request Smuggling CL.TE](https://medium.com/@memn0ps/http-request-smuggling-cl-te-7c40e246021c)
-- [Password theft login.newrelic.com via Request Smuggling](https://hackerone.com/reports/498052)
-- [HAProxy HTTP request smuggling](https://nathandavison.com/blog/haproxy-http-request-smuggling)
-- [Security: HTTP Smuggling, Apache Traffic Server](https://regilero.github.io/english/security/2019/10/17/security_apache_traffic_server_http_smuggling/)
-- [HTTP Desync Attacks: what happened next](https://portswigger.net/research/http-desync-attacks-what-happened-next)
-
 ## WebSocket
 
 - [Testing for WebSockets security vulnerabilities](https://portswigger.net/web-security/websockets)
