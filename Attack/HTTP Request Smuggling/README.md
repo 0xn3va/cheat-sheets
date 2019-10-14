@@ -1,5 +1,19 @@
 # HTTP Request Smuggling
 
+## Summary
+
+- [Description](#description)
+    - [Double Content Length](#double-content-length)
+    - [NULL Character Injection](#null-character-injection)
+    - [Huge Header](#huge-header)
+    - [Chunked Encoding](#chunked-encoding)
+        - [Chunked Messages](#chunked-messages)
+        - [Header Fields](#header-fields)
+        - [CL.TE Vulnerabilities](#clte-vulnerabilities)
+        - [TE.CL Vulnerabilities](#tecl-vulnerabilities)
+        - [TE.TE Vulnerabilities](#tete-vulnerabilities)
+- [References](#references)
+
 ## Description
 
 Since HTTP/1.1 there's been widespread support for sending multiple HTTP requests over a single underlying TCP or SSL/TLS
