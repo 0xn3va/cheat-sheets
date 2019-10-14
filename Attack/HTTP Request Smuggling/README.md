@@ -298,6 +298,7 @@ Depending on whether it is the front-end or the back-end server that can be indu
 
 - [Finding HTTP request smuggling vulnerabilities](https://portswigger.net/web-security/request-smuggling/finding)
 - [Exploiting HTTP request smuggling vulnerabilities](https://portswigger.net/web-security/request-smuggling/exploiting)
+- [HTTP Request Smuggler - Burp Suite Extension](https://github.com/PortSwigger/http-request-smuggler)
 - [Regilero's smuggling researches](https://regilero.github.io/tag/Smuggling/)
 - [Write up of two HTTP Requests Smuggling](https://medium.com/@cc1h2e1/write-up-of-two-http-requests-smuggling-ff211656fe7d)
 - [HTTP Request Smuggling CL.TE](https://medium.com/@memn0ps/http-request-smuggling-cl-te-7c40e246021c)
