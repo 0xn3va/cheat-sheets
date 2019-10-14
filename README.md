@@ -38,6 +38,9 @@
  javascript code into a code that only consists of `/[a-z().]/` characters.
 - [Bypass XSS filters using JavaScript global variables](https://www.secjuice.com/bypass-xss-filters-using-javascript-global-variables/amp/?__twitter_impression=true)
 - [XSS'OR](http://xssor.io/#ende) - Hack with JavaScript.
+- [HackMD Stored XSS](https://5alt.me/2019/10/HackMD%20Stored%20XSS%20and%20HackMD%20Desktop%20RCE/)
+- [Bypass Uppercase filters like a PRO (XSS Advanced Methods)](https://medium.com/@Master_SEC/bypass-uppercase-filters-like-a-pro-xss-advanced-methods-daf7a82673ce)
+- [If HttpOnly You Could Still CSRF… Of CORS you can!](https://medium.com/@_graphx/if-httponly-you-could-still-csrf-of-cors-you-can-5d7ee2c7443)
 
 ## CORS misconfiguration
 
