@@ -1,5 +1,9 @@
 # Attack
 
+## Android
+
+- [Android Application Penetration Guide](https://nightowl131.github.io/AAPG/)
+
 ## Linux
 
 - [uptux](https://github.com/initstring/uptux/blob/master/README.md) - Specialized privilege escalation checks for Linux
@@ -23,37 +27,32 @@
  abilities develop their skills. All the missions are based on real vulnerabilities I've personally found while doing
  pentests, bug bounty hunting, and research.
 
-## SSTI
+## Cache Poisoning
 
-- [Tplmap](https://github.com/epinna/tplmap) - Tplmap assists the exploitation of Code Injection and Server-Side Template
- Injection vulnerabilities with a number of sandbox escape techniques to get access to the underlying operating system.
+- [Practical Web Cache Poisoning](https://portswigger.net/research/practical-web-cache-poisoning)
 
-## XSS
+## Javascript
 
-- [Clobbering the clobbered — Advanced DOM Clobbering](https://medium.com/@terjanq/dom-clobbering-techniques-8443547ebe94) -
- This is a write-up for an XSS Challenge that popped out on Twitter recently.
-- [One XSS cheatsheet to rule them all](https://portswigger.net/research/one-xss-cheatsheet-to-rule-them-all)
-- [XSS cheat sheet](https://portswigger.net/web-security/cross-site-scripting/cheat-sheet)
-- [JS-Alpha v3.0](https://github.com/terjanq/JS-Alpha) - Funny project to create an encoder/obfuscator that converts any
- javascript code into a code that only consists of `/[a-z().]/` characters.
-- [Bypass XSS filters using JavaScript global variables](https://www.secjuice.com/bypass-xss-filters-using-javascript-global-variables/amp/?__twitter_impression=true)
-- [XSS'OR](http://xssor.io/#ende) - Hack with JavaScript.
-- [HackMD Stored XSS](https://5alt.me/2019/10/HackMD%20Stored%20XSS%20and%20HackMD%20Desktop%20RCE/)
-- [Bypass Uppercase filters like a PRO (XSS Advanced Methods)](https://medium.com/@Master_SEC/bypass-uppercase-filters-like-a-pro-xss-advanced-methods-daf7a82673ce)
-- [If HttpOnly You Could Still CSRF… Of CORS you can!](https://medium.com/@_graphx/if-httponly-you-could-still-csrf-of-cors-you-can-5d7ee2c7443)
+- [Prototype Pollution in Kibana](https://slides.com/securitymb/prototype-pollution-in-kibana/#/)
 
 ## CORS misconfiguration
 
 - [Exploiting CORS misconfigurations for Bitcoins and bounties](https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties)
+- [If HttpOnly You Could Still CSRF… Of CORS you can!](https://medium.com/@_graphx/if-httponly-you-could-still-csrf-of-cors-you-can-5d7ee2c7443)
 
 ## CSP Bypass
 
 - [JSONBee](https://github.com/zigoo0/JSONBee) - A ready to use JSONP endpoints to help bypass content security policy
  of different websites.
+- [CSP bypass zeronights slides](https://2018.zeronights.ru/wp-content/uploads/materials/3%20ZN2018%20WV%20-%20CSP%20bypass.pdf)
 
 ## WebSocket
 
 - [Testing for WebSockets security vulnerabilities](https://portswigger.net/web-security/websockets)
+
+## Mass Assignment
+
+- [OWASP Mass Assignment Cheat Sheet](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Mass_Assignment_Cheat_Sheet.md)
 
 ## Deserialization
 
@@ -64,11 +63,14 @@
 
 - [MITM-cheatsheet](https://github.com/Sab0tag3d/MITM-cheatsheet) - All MITM attacks in one place.
 
-## k8s
+## k8s & docker
 
 - [kube-hunter](https://github.com/aquasecurity/kube-hunter) - Hunt for security weaknesses in Kubernetes clusters.
 - [Kubernetes Pod Escape Using Log Mounts](https://blog.aquasec.com/kubernetes-security-pod-escape-log-mounts)
-- [k8s-security](https://github.com/kabachook/k8s-security) - Kubernetes security notes and best practices.
+
+## JWT
+
+- [JWT (JSON Web Token) (in)security](https://research.securitum.com/jwt-json-web-token-security/)
 
 # Defence
 
@@ -76,4 +78,8 @@
 
 - [Julia's Drawings](https://drawings.jvns.ca) - Here are some drawings about programming.
 
+## k8s & docker
 
+- [k8s-security](https://github.com/kabachook/k8s-security) - Kubernetes security notes and best practices.
+- [KubiScan](https://github.com/cyberark/KubiScan) - A tool to scan Kubernetes cluster for risky permissions
+- [Securing Docker Containers](https://0x00sec.org/t/securing-docker-containers/16913) - A guide on how to secure docker.
