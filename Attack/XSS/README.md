@@ -20,7 +20,7 @@
         - [Bypass using JSFuck](#bypass-using-jsfuck)
         - [Bypass using a little known JS comment style](#bypass-using-a-little-known-js-comment-style)
     - [CSP](#csp)
-        - [Bypass using encode '/' by @SecurityMB](#bypass-using-encode--by-securitymbhttpstwittercomsecuritymbstatus1162690916722839552)
+        - [Bypass using encode '/' by @SecurityMB](#bypass-using-encode--by-securitymb)
 
 ## DOM Based XSS
 
@@ -39,11 +39,14 @@ DOM Clobbering allows defining certain variables in the window’s context. For 
  with the same name.
 
 References:
+
 - [Clobbering the clobbered — Advanced DOM Clobbering](https://medium.com/@terjanq/dom-clobbering-techniques-8443547ebe94)
 
 ## Bypass
 
 ### Filter
+
+---
 
 #### Bypass using JS-Alpha
 
@@ -110,7 +113,7 @@ self[Object.keys(self)[5]]("foo"); // alert("foo")
 
 ```
 
-##### References
+References:
 
 - [Bypass XSS filters using JavaScript global variables](https://www.secjuice.com/bypass-xss-filters-using-javascript-global-variables/amp/?__twitter_impression=true)
 
@@ -130,13 +133,15 @@ A little known JS comment style [SingleLineHTMLOpenComment](https://www.ecma-int
 -->valid_comment_style
 ```
 
-##### References
+References:
 
 - [HITCON CTF 2019 - Bounty Pl33z Task](https://github.com/orangetw/My-CTF-Web-Challenges#bounty-pl33z)
 - [HITCON CTF 2019 - Bounty Pl33z Writeup by balsn](https://balsn.tw/ctf_writeup/20191012-hitconctfquals/#bounty-pl33z)
 - [Challenge in Cure53 XSS wiki (the idea for the Bounty Pl33z)](https://github.com/cure53/XSSChallengeWiki/wiki/prompt.ml#level-8)
 
 ### CSP
+
+---
 
 #### Bypass using encode '/' by [@SecurityMB](https://twitter.com/SecurityMB/status/1162690916722839552)
 
