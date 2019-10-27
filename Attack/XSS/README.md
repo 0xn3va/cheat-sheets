@@ -1,9 +1,16 @@
 # XSS
 
+## Awesome Cheat Sheets
+
+- [PayloadsAllTheThings XSS Injection](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XSS%20Injection)
+- [PortSwigger XSS cheat sheet](https://portswigger.net/web-security/cross-site-scripting/cheat-sheet)
+
+## Awesome Tools
+
+- [XSS'OR - Hack with Javascript](http://xssor.io/#ende) - swisskey for payload editing
+
 ## Summary
 
-- [Awesome Cheat Sheets](#awesome-cheat-sheets)
-- [Awesome Tools](#awesome-tools)
 - [DOM Based XSS](#dom-based-xss)
     - [DOM Clobbering](#dom-clobbering)
 - [Bypass](#bypass)
@@ -14,15 +21,6 @@
         - [Bypass using a little known JS comment style](#bypass-using-a-little-known-js-comment-style)
     - [CSP](#csp)
         - [Bypass using encode '/' by @SecurityMB](#bypass-using-encode--by-securitymbhttpstwittercomsecuritymbstatus1162690916722839552)
-
-## Awesome Cheat Sheets
-
-- [PayloadsAllTheThings XSS Injection](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XSS%20Injection)
-- [PortSwigger XSS cheat sheet](https://portswigger.net/web-security/cross-site-scripting/cheat-sheet)
-
-## Awesome Tools
-
-- [XSS'OR - Hack with Javascript](http://xssor.io/#ende) - swisskey for payload editing
 
 ## DOM Based XSS
 
