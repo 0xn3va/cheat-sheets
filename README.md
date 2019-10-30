@@ -35,11 +35,6 @@
 
 - [Prototype Pollution in Kibana](https://slides.com/securitymb/prototype-pollution-in-kibana/#/)
 
-## CORS misconfiguration
-
-- [Exploiting CORS misconfigurations for Bitcoins and bounties](https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties)
-- [If HttpOnly You Could Still CSRF… Of CORS you can!](https://medium.com/@_graphx/if-httponly-you-could-still-csrf-of-cors-you-can-5d7ee2c7443)
-
 ## CSP Bypass
 
 - [CSP bypass zeronights slides](https://2018.zeronights.ru/wp-content/uploads/materials/3%20ZN2018%20WV%20-%20CSP%20bypass.pdf)
