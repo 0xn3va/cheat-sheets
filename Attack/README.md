@@ -9,5 +9,6 @@
 
 ## Summary
 
+- [CORS Misconfiguration](CORS%20Misconfiguration/README.md)
 - [HTTP Request Smuggling](HTTP%20Request%20Smuggling/README.md)
 - [XSS](XSS/README.md)
