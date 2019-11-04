@@ -3,6 +3,7 @@
 ## Android
 
 - [Android Application Penetration Guide](https://nightowl131.github.io/AAPG/)
+- [Simplify - Generic Android Deobfuscator](https://github.com/CalebFenton/simplify)
 
 ## Linux
 
@@ -27,13 +28,31 @@
  abilities develop their skills. All the missions are based on real vulnerabilities I've personally found while doing
  pentests, bug bounty hunting, and research.
 
-## Javascript
+## Takeover a Session
 
-- [Prototype Pollution in Kibana](https://slides.com/securitymb/prototype-pollution-in-kibana/#/)
+- [logout CSRF + cookie setting](https://twitter.com/0xw2w/status/1189842531456028672?s=12)
+
+## CSS Injection
+
+- [CSS Injection (+ Recursive Import)](http://szarny.hatenablog.com/entry/2019/10/17/CSS_Injection_(%2B_Recursive_Import)_%E3%81%AE%E5%8E%9F%E7%90%86%E3%81%A8%E6%94%BB%E6%92%83%E6%89%8B%E6%B3%95%E3%81%8A%E3%82%88%E3%81%B3%E3%81%9D%E3%81%AE%E5%AE%9F%E8%A3%85%E3%81%AB%E3%81%A4%E3%81%84)
+- [CSS Injection Primitives](https://x-c3ll.github.io//posts/CSS-Injection-Primitives/)
+
+## Prototype Pollution
+
+- [Exploiting prototype pollution - RCE in Kibana (CVE-2019-7609)](https://research.securitum.com/prototype-pollution-rce-kibana-cve-2019-7609/)
+- [Prototype Pollution in Kibana (Slides)](https://slides.com/securitymb/prototype-pollution-in-kibana/#/)
 
 ## CSP Bypass
 
 - [CSP bypass zeronights slides](https://2018.zeronights.ru/wp-content/uploads/materials/3%20ZN2018%20WV%20-%20CSP%20bypass.pdf)
+
+## Race Condition
+
+- [Race Condition in Web Applications ](https://lab.wallarm.com/race-condition-in-web-applications/amp/?__twitter_impression=true)
+
+## HTTP Smuggling
+
+- [HTTP smuggling via fake WebSocket connection](https://twitter.com/0ang3el/status/1190668258124423168?s=12)
 
 ## WebSocket
 
@@ -43,10 +62,18 @@
 
 - [OWASP Mass Assignment Cheat Sheet](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Mass_Assignment_Cheat_Sheet.md)
 
+## CPDoS
+
+- [CPDoS: Cache Poisoned Denial of Service](https://cpdos.org)
+
 ## Deserialization
 
 - [Java Deserialization Exploit](https://github.com/njfox/Java-Deserialization-Exploit) - A tool which weaponizes
  frohoff's original ysoserial code to gain a remote shell on vulnerable Linux machines.
+
+## Burp Plugins
+
+- [Femida - An automated blind-xss search plugin](https://github.com/wish-i-was/femida)
 
 ## MITM
 
