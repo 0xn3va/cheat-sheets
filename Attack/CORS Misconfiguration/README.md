@@ -4,28 +4,28 @@
 
 - [Cross-Origin Resource Sharing (CORS)](#cross-origin-resource-sharing-cors)
     - [Overview](#overview)
-    - [Simple requests](#simple-requests)
-    - [Preflighted requests](#preflighted-requests)
-    - [Requests with credentials](#requests-with-credentials)
-    - [The HTTP response headers](#the-http-response-headers)
+    - [Simple Requests](#simple-requests)
+    - [Preflighted Requests](#preflighted-requests)
+    - [Requests with Credentials](#requests-with-credentials)
+    - [The HTTP Response Headers](#the-http-response-headers)
         - [Access-Control-Allow-Origin](#access-control-allow-origin)
         - [Access-Control-Expose-Headers](#access-control-expose-headers)
         - [Access-Control-Max-Age](#access-control-max-age)
         - [Access-Control-Allow-Credentials](#access-control-allow-credentials)
         - [Access-Control-Allow-Methods](#access-control-allow-methods)
         - [Access-Control-Allow-Headers](#access-control-request-headers)
-    - [The HTTP request headers](#the-http-request-headers)
+    - [The HTTP Request Headers](#the-http-request-headers)
         - [Origin](#origin)
         - [Access-Control-Request-Method](#access-control-request-method)
         - [Access-Control-Request-Headers](#access-control-request-headers)
 - [CORS Misconfiguration]()
-    - [Generation the Access-Control-Allow-Origin header](#generation-the-access-control-allow-origin-header)
-    - [The null origin](#the-null-origin)
-    - [Breaking parsers](#breaking-parsers)
-    - [Abusing CORS without credentials](#abusing-cors-without-credentials)
+    - [Generation the Access-Control-Allow-Origin Header](#generation-the-access-control-allow-origin-header)
+    - [The null Origin](#the-null-origin)
+    - [Breaking Parsers](#breaking-parsers)
+    - [Abusing CORS without Credentials](#abusing-cors-without-credentials)
     - [Vary: Origin](#vary-origin)
-        - [Client-Side cache poisoning](#client-side-cache-poisoning)
-    - [Server-Side cache poisoning](#server-side-cache-poisoning)
+        - [Client-Side Cache Poisoning](#client-side-cache-poisoning)
+    - [Server-Side Cache Poisoning](#server-side-cache-poisoning)
 - [References](#references)
 
 ## Cross-Origin Resource Sharing (CORS)
@@ -48,7 +48,7 @@ Servers can also inform clients whether credentials should be sent with requests
 
 CORS failures result in errors, but specifics about the error are not available to JavaScript.
 
-### Simple requests
+### Simple Requests
 
 Simple requests don't trigger a CORS preflight. A simple request is one that meets **all** the following conditions:
 
@@ -74,12 +74,12 @@ Simple requests don't trigger a CORS preflight. A simple request is one that mee
  the [XMLHttpRequest.upload](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/upload) property).
 - No [ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) object is used in the request.
 
-### Preflighted requests
+### Preflighted Requests
 
 Preflighted requests first send an HTTP request by the OPTIONS method to the resource on the other domain, to determine
  if the actual request is safe to send. 
 
-### Requests with credentials
+### Requests with Credentials
 
 Credentialed requests allow to send HTTP cookies and HTTP Authentication information (by default browsers will not send
  credentials).
@@ -89,7 +89,7 @@ When responding to a credentialed request, the server must specify an origin in 
 
 > Note: Cookies set in CORS responses are subject to normal third-party cookie policies.
 
-### The HTTP response headers
+### The HTTP Response Headers
 
 This section lists the HTTP response headers that servers send back for access control requests as defined by the
  Cross-Origin Resource Sharing specification.
@@ -157,7 +157,7 @@ Access-Control-Allow-Headers: <header-name>[, <header-name>]*
 The `Access-Control-Allow-Headers` header is used in response to a preflight request to indicate which HTTP headers can
  be used when making the actual request.
 
-### The HTTP request headers
+### The HTTP Request Headers
 
 This section lists headers that clients may use when issuing HTTP requests in order to make use of the cross-origin 
  sharing feature. Note that these headers are set for you when making invocations to servers. Developers using cross-site
@@ -197,7 +197,7 @@ The `Access-Control-Request-Headers` header is used when issuing a preflight req
 
 ## CORS Misconfiguration
 
-### Generation the Access-Control-Allow-Origin header
+### Generation the Access-Control-Allow-Origin Header
 
 No browsers actually support a space-separated list of origins (the specification suggests this), like:
 
@@ -220,7 +220,7 @@ Since you cannot use wildcard in `Access-Control-Allow-Origin` when credentials 
  servers will only send CORS headers if they receive a request containing the Origin header, making associated 
  vulnerabilities extremely easy to miss.
 
-### The null origin
+### The null Origin
 
 The specification mentions the null origin being triggered by redirects, and a few stackoverflow posts show that local
  HTML files also get it. Quite a few websites whitelist it, perhaps due to the association with local files, like:
@@ -242,7 +242,7 @@ Any website can easily obtain the null origin using a sandboxed iframe:
 src='data:text/html,<script>*cors stuff here*</script>’></iframe>
 ```
 
-### Breaking parsers
+### Breaking Parsers
 
 Useful references:
 - [Advanced CORS Exploitation Techniques](https://www.corben.io/advanced-cors-techniques/)
@@ -262,7 +262,7 @@ Origin: http://foo.com`.bar.net/
 Chrome and Firefox supported the `_` character in subdomains. This allow to use `_` instead of `` ` `` to exploit 
  Firefox and Chrome users.
 
-### Abusing CORS without credentials
+### Abusing CORS without Credentials
 
 If the victim's network location functions as a kind of authentication, then you can use a victim’s browser as a proxy
  to bypass IP-based authentication and access intranet applications. In terms of impact this is similar to DNS rebinding,
@@ -281,7 +281,7 @@ HTTP header whenever `Access-Control-Allow-Origin` headers are dynamically gener
 That might sound pretty simple, but immense numbers of people forget, including the
  [W3C itself](https://lists.w3.org/Archives/Public/public-webappsec/2016Jun/0057.html). 
 
-#### Client-Side cache poisoning
+#### Client-Side Cache Poisoning
 
 Say a web page reflects the contents of a custom header without encoding (reflected XSS in a custom HTTP header):
 
@@ -306,7 +306,7 @@ With CORS, we can make them send this request. By itself, that's useless since t
  won't be rendered. However, if `Vary: Origin` hasn't been specified the response may be stored in the browser's cache
  and displayed directly when the browser navigates to the associated URL.
 
-### Server-side cache poisoning
+### Server-side Cache Poisoning
 
 If an application reflects the `Origin` header without even checking it for illegal characters like `\r`, we effectively
  have a HTTP header injection vulnerability against IE/Edge users as IE and Edge view `\r (0x0d)` as a valid HTTP header
