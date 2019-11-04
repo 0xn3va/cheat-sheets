@@ -27,10 +27,6 @@
  abilities develop their skills. All the missions are based on real vulnerabilities I've personally found while doing
  pentests, bug bounty hunting, and research.
 
-## Cache Poisoning
-
-- [Practical Web Cache Poisoning](https://portswigger.net/research/practical-web-cache-poisoning)
-
 ## Javascript
 
 - [Prototype Pollution in Kibana](https://slides.com/securitymb/prototype-pollution-in-kibana/#/)
