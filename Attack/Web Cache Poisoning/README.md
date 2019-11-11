@@ -1,5 +1,10 @@
 # Web Cache Poisoning
 
+The objective of web cache poisoning is to send a request that causes a harmful response that gets saved in the cache
+ and served to other users.
+
+![cache-poisoning](img/cache-poisoning.svg)
+
 ## Summary
 
 - [HTTP Caching](#http-caching)
@@ -17,8 +22,7 @@
     - [Cache Validation](#cache-validation)
         - [ETag](#etag)
     - [Freshness](#freshness)
-- [Cache Poisoning](#cache-poisoning)
-    - [Basic Poisoning](#basic-poisoning)
+- [Basic Poisoning](#basic-cache-poisoning)
 - [References](#references)
 
 ## HTTP Caching
@@ -198,14 +202,7 @@ The freshness lifetime is calculated based on several headers:
 3. Else if Last-Modified header is present, then the freshness lifetime is equal to the value of the `Date` header minus
  the value of the `Last-Modified` header divided by 10.
 
-## Cache Poisoning
-
-The objective of web cache poisoning is to send a request that causes a harmful response that gets saved in the cache
- and served to other users.
-
-![cache-poisoning](img/cache-poisoning.svg)
-
-### Basic Poisoning
+### Basic Cache Poisoning
 
 Let's take a look at Red Hat's homepage:
 
