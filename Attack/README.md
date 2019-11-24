@@ -11,5 +11,6 @@
 
 - [CORS Misconfiguration](CORS%20Misconfiguration/README.md)
 - [HTTP Request Smuggling](HTTP%20Request%20Smuggling/README.md)
+- [Race Condition](Race%20Condition/README.md)
 - [Web Cache Poisoning](Web%20Cache%20Poisoning/README.md)
 - [XSS](XSS/README.md)
