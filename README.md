@@ -46,10 +46,6 @@
 
 - [CSP bypass zeronights slides](https://2018.zeronights.ru/wp-content/uploads/materials/3%20ZN2018%20WV%20-%20CSP%20bypass.pdf)
 
-## Race Condition
-
-- [Race Condition in Web Applications ](https://lab.wallarm.com/race-condition-in-web-applications/amp/?__twitter_impression=true)
-
 ## HTTP Smuggling
 
 - [HTTP smuggling via fake WebSocket connection](https://twitter.com/0ang3el/status/1190668258124423168?s=12)
