@@ -4,6 +4,9 @@
 
 - [Android Application Penetration Guide](https://nightowl131.github.io/AAPG/)
 - [Simplify - Generic Android Deobfuscator](https://github.com/CalebFenton/simplify)
+- [DexPatcher-tool](https://github.com/DexPatcher/dexpatcher-tool) - Android Dalvik bytecode patcher.
+- [apk-mitm](https://github.com/shroudedcode/apk-mitm) - A CLI application that automatically prepares Android APK files
+ for HTTPS inspection
 
 ## Linux
 
@@ -20,6 +23,7 @@
  easier working on a bug bounty or pentest project.
 - [Lets Map Your Network ](https://github.com/varchashva/LetsMapYourNetwork) - Lets Map Your Network enables you to
  visualise your physical network in form of graph with zero manual error.
+- [CloudUnflare](https://github.com/greycatz/CloudUnflare) - Reconnaissance Real IP address for Cloudflare Bypass.
 
 ## Challenge
 
@@ -50,9 +54,21 @@
 
 - [HTTP smuggling via fake WebSocket connection](https://twitter.com/0ang3el/status/1190668258124423168?s=12)
 
-## WebSocket
+## HTML Injection
 
-- [Testing for WebSockets security vulnerabilities](https://portswigger.net/web-security/websockets)
+- [Data leakage though embed tag and Chrome PNaCI](https://shhnjk.blogspot.com/2019/07/intro-to-chromes-gold-features.html?m=1)
+
+## OAuth
+
+- [Bypassing GitHub's OAuth flow](https://blog.teddykatz.com/2019/11/05/github-oauth-bypass.html)
+
+## CORS
+
+- [What is CORS (cross-origin resource sharing)? Tutorial & Examples](https://portswigger.net/web-security/cors)
+
+## Abusing HTTP hop-by-hop request headers
+
+- [Abusing HTTP hop-by-hop request headers](https://nathandavison.com/blog/abusing-http-hop-by-hop-request-headers)
 
 ## Mass Assignment
 
@@ -67,9 +83,11 @@
 - [Java Deserialization Exploit](https://github.com/njfox/Java-Deserialization-Exploit) - A tool which weaponizes
  frohoff's original ysoserial code to gain a remote shell on vulnerable Linux machines.
 
-## Burp Plugins
+## XSS
 
 - [Femida - An automated blind-xss search plugin](https://github.com/wish-i-was/femida)
+- [Escalating XSS in PhantomJS Image Rendering to SSRF/Local-File Read](https://buer.haus/2017/06/29/escalating-xss-in-phantomjs-image-rendering-to-ssrflocal-file-read/)
+- [XSS in GMail's AMP4Email via DOM Clobbering](https://research.securitum.com/xss-in-amp4email-dom-clobbering/)
 
 ## MITM
 
@@ -92,6 +110,7 @@
 
 ## k8s & docker
 
+- [Заделываем дыры в кластере Kubernetes. Доклад и расшифровка с DevOpsConf](https://habr.com/ru/company/southbridge/blog/472484/)
 - [k8s-security](https://github.com/kabachook/k8s-security) - Kubernetes security notes and best practices.
 - [KubiScan](https://github.com/cyberark/KubiScan) - A tool to scan Kubernetes cluster for risky permissions
 - [Securing Docker Containers](https://0x00sec.org/t/securing-docker-containers/16913) - A guide on how to secure docker.
