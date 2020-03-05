@@ -72,4 +72,4 @@ This shows that ports `22` and `6379` are open on `127.0.0.1` because there were
 
 ## References
 
-- [Подделка серверных запросов, эксплуатация Blind SSRF](https://bo0om.ru/blind-ssrf)
+- [Blind SSRF exploitation](https://lab.wallarm.com/blind-ssrf-exploitation/amp/?__twitter_impression=true)
