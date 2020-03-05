@@ -7,13 +7,13 @@ Since HTTP/1.1 there's been widespread support for sending multiple HTTP request
 By itself, this is harmless. However, modern websites are composed of chains of systems, all talking over HTTP. This
  multi-tiered architecture takes HTTP requests from multiple different users and routes them over a single TCP/TLS connection.
 
-![article-revproxy](/web/HTTP%20Request%20Smuggling/img/article-revproxy.svg)
+![article-revproxy](/Web%20Application/HTTP%20Request%20Smuggling/img/article-revproxy.svg)
 
 This means that suddenly, it's crucial that the back-end agrees with the front-end about where each message ends. 
  Otherwise, an attacker might be able to send an ambiguous message which gets interpreted as two distinct HTTP requests
  by the back-end.
 
-![article-revproxy-desynced](/web/HTTP%20Request%20Smuggling/img/article-revproxy-desynced.svg)
+![article-revproxy-desynced](/Web%20Application/HTTP%20Request%20Smuggling/img/article-revproxy-desynced.svg)
 
 ## Summary
 
