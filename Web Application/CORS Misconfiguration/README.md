@@ -1,33 +1,5 @@
 # CORS Misconfiguration
 
-## Summary
-
-- [Cross-Origin Resource Sharing (CORS)](#cross-origin-resource-sharing-cors)
-    - [Overview](#overview)
-    - [Simple Requests](#simple-requests)
-    - [Preflighted Requests](#preflighted-requests)
-    - [Requests with Credentials](#requests-with-credentials)
-    - [The HTTP Response Headers](#the-http-response-headers)
-        - [Access-Control-Allow-Origin](#access-control-allow-origin)
-        - [Access-Control-Expose-Headers](#access-control-expose-headers)
-        - [Access-Control-Max-Age](#access-control-max-age)
-        - [Access-Control-Allow-Credentials](#access-control-allow-credentials)
-        - [Access-Control-Allow-Methods](#access-control-allow-methods)
-        - [Access-Control-Allow-Headers](#access-control-request-headers)
-    - [The HTTP Request Headers](#the-http-request-headers)
-        - [Origin](#origin)
-        - [Access-Control-Request-Method](#access-control-request-method)
-        - [Access-Control-Request-Headers](#access-control-request-headers)
-- [CORS Misconfiguration]()
-    - [Generation the Access-Control-Allow-Origin Header](#generation-the-access-control-allow-origin-header)
-    - [The null Origin](#the-null-origin)
-    - [Breaking Parsers](#breaking-parsers)
-    - [Abusing CORS without Credentials](#abusing-cors-without-credentials)
-    - [Vary: Origin](#vary-origin)
-        - [Client-Side Cache Poisoning](#client-side-cache-poisoning)
-    - [Server-Side Cache Poisoning](#server-side-cache-poisoning)
-- [References](#references)
-
 ## Cross-Origin Resource Sharing (CORS)
 
 Useful references:

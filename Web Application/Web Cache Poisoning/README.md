@@ -5,26 +5,6 @@ The objective of web cache poisoning is to send a request that causes a harmful 
 
 ![cache-poisoning](img/cache-poisoning.svg)
 
-## Summary
-
-- [HTTP Caching](#http-caching)
-    - [Private Browser Caches](#private-browser-caches)
-    - [Shared Proxy Caches](#shared-proxy-caches)
-    - [Targets of Caching Operations](#targets-of-caching-operations)
-        - [Varying Responses](#varying-responses)
-    - [Cache Control](#cache-control)
-        - [No Caching](#no-caching)
-        - [Cache But Revalidate](#cache-but-revalidate)
-        - [Public Cache](#public-cache)
-        - [Private Cache](#private-cache)
-        - [Expiration](#expiration)
-        - [Validation](#validation)
-    - [Cache Validation](#cache-validation)
-        - [ETag](#etag)
-    - [Freshness](#freshness)
-- [Basic Poisoning](#basic-cache-poisoning)
-- [References](#references)
-
 ## HTTP Caching
 
 Caching is a technique that stores a copy of a given resource and serves it back when requested. When a web cache has a

@@ -15,19 +15,6 @@ This means that suddenly, it's crucial that the back-end agrees with the front-e
 
 ![article-revproxy-desynced](/Web%20Application/HTTP%20Request%20Smuggling/img/article-revproxy-desynced.svg)
 
-## Summary
-
-- [Double Content Length](#double-content-length)
-- [NULL Character Injection](#null-character-injection)
-- [Huge Header](#huge-header)
-- [Chunked Encoding](#chunked-encoding)
-    - [Chunked Messages](#chunked-messages)
-    - [Header Fields](#header-fields)
-    - [CL.TE Vulnerabilities](#clte-vulnerabilities)
-    - [TE.CL Vulnerabilities](#tecl-vulnerabilities)
-    - [TE.TE Vulnerabilities](#tete-vulnerabilities)
-- [References](#references)
-
 ## Double Content Length
 
 Let's imagine that the front-end prioritises the first content-length header, and the back-end prioritises the second.

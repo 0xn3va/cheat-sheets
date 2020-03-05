@@ -3,16 +3,6 @@
 Race condition is architectural vulnerability of a multi-threaded application, in which the application operation
  depends on the order in which the parts of the code are executed.
 
-## Summary
-
-- [Typical Exploitation](#typical-exploitation)
-- [Advanced Exploitation](#advanced-exploitation)
-    - [Splitting an HTTP Request into Two Parts](#splitting-an-http-request-into-two-parts)
-    - [Awesome Tricks](#awesome-tricks)
-        - [Session Capabilities in Race Condition](#session-capabilities-in-race-condition)
-        - [Proximity to the Server](#proximity-to-the-server)
-- [References](#references)
-
 ## Typical Exploitation
 
 In most cases, multi-threaded software is used as a client to check or exploitation the race condition, e.g. Burp Suite

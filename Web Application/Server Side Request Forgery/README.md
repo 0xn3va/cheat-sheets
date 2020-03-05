@@ -2,14 +2,6 @@
 
 Server Side Request Forgery is a vulnerability in which an attacker forces a server to perform requests on their behalf.
 
-## Summary
-
-- [Credentials Bruteforce](#credentials-bruteforce)
-- [Responses Anomaly](#responses-anomaly)
-- [Bypass IP Check](#bypass-ip-check)
-- [Port Scanning Using DNS](#port-scanning-using-dns)
-- [References](#references)
-
 ## Credentials Bruteforce
 
 SSRF allows you to bruteforce credentials for resources that use Basic access authentication as an authentication

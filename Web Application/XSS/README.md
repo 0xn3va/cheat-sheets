@@ -9,20 +9,6 @@
 
 - [XSS'OR - Hack with Javascript](http://xssor.io/#ende) - swisskey for payload editing
 
-## Summary
-
-- [DOM Based XSS](#dom-based-xss)
-    - [DOM Clobbering](#dom-clobbering)
-- [Bypass](#bypass)
-    - [Filter](#filter)
-        - [Bypass using JS-Alpha](#bypass-using-js-alpha)
-        - [Bypass using JS global variables](#bypass-using-js-global-variables)
-        - [Bypass using JSFuck](#bypass-using-jsfuck)
-        - [Bypass using a little known JS comment style](#bypass-using-a-little-known-js-comment-style)
-    - [CSP](#csp)
-        - [Bypass using encode '/' by @SecurityMB](#bypass-using-encode--by-securitymb)
-        - [Bypass using JSONP](#bypass-using-jsonp)
-
 ## DOM Based XSS
 
 Useful references:

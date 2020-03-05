@@ -3,32 +3,6 @@
 This section describes the possible vulnerabilities of two-factor authentication, which is implemented as a confirmation
  of user actions with a One-Time Password (OTP).
 
-## Summary
-
-- [Rate Limit](#rate-limit)
-    - [Bandwidth Throttling after Reaching a Certain Rate](#bandwidth-throttling-after-reaching-a-certain-rate)
-    - [The OTP does not Change](#the-otp-does-not-change)
-    - [Reset Rate Limit when Updating OTP](#reset-rate-limit-when-updating-otp)
-    - [Bypassing Rate Limit by changing the IP](#bypassing-rate-limit-by-changing-the-ip)
-        - [Change IP Address](#change-ip-address)
-        - [Using the X-Forwarded-For Header](#using-the-x-forwarded-for-header)
-    - [Rate Limit in Account](#rate-limit-in-account)
-- [Bypass by the substitution of part of the request](#bypass-by-the-substitution-of-part-of-the-request)
-- [Bypass with "remember me"](#bypass-with-remember-me)
-    - [Cookie Setting](#cookie-setting)
-    - [IP Address Remembering](#ip-address-remembering)
-- [Improper Access Control to 2FA Page](#improper-access-control-to-2fa-page)
-- [Information Disclosure on 2FA Page](#information-disclosure-on-2fa-page)
-- [Ignoring 2FA](#ignoring-2fa)
-    - [Password Recovery](#password-recovery)
-    - [Sign in with a Social Network Account](#sign-in-with-a-social-network-account)
-    - [Old API Version](#old-api-version)
-    - [Cross Platform Applications](#cross-platform-applications)
-    - [Disabling 2FA](#disabling-2fa)
-- [Enabling 2FA does not End Previously Created Sessions](#enabling-2fa-does-not-end-previously-created-sessions)
-- [Improper Access Control to the Backup Codes](#improper-access-control-to-the-backup-codes)
-- [References](#references)
-
 ## Rate Limit
 
 A rate limit is used to bandwidth throttling and / or a limit on the number of attempts when checking OTP. If the lack
