@@ -1,4 +1,6 @@
-# Web Application
+# Summary
+
+## Web Application
 
 - [Cookie Security](/Web%20Application/Cookie%20Security/README.md)
 - [CORS Misconfiguration](/Web%20Application/CORS%20Misconfiguration/README.md)
