@@ -78,7 +78,7 @@ The [Pragma](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Pragma) (
 
 #### No Caching
 
-```http request
+```
 Cache-Control: no-store
 ```
 
@@ -87,7 +87,7 @@ The cache should not store anything about the client request or server response.
 
 #### Cache But Revalidate
 
-```http request
+```
 Cache-Control: no-cache
 ```
 
@@ -97,7 +97,7 @@ See: [Cache Validation](#cache-validation) section.
 
 #### Public Cache
 
-```http request
+```
 Cache-Control: public
 ```
 
@@ -107,7 +107,7 @@ The `public` directive indicates the response may be cached by any cache, even i
 
 #### Private Cache
 
-```http request
+```
 Cache-Control: private
 ```
 
@@ -116,7 +116,7 @@ The `private` directive indicates that the response is intended for a single use
 
 #### Expiration
 
-```http request
+```
 Cache-Control: max-age=31536000
 ```
 
@@ -126,7 +126,7 @@ See: [Freshness](#freshness) section.
 
 #### Validation
 
-```http request
+```
 Cache-Control: must-revalidate
 ```
 
@@ -186,7 +186,7 @@ The freshness lifetime is calculated based on several headers:
 
 Let's take a look at Red Hat's homepage:
 
-```http request
+```
 GET /en?cb=1 HTTP/1.1
 Host: www.redhat.com
 X-Forwarded-Host: canary
@@ -200,7 +200,7 @@ Cache-Control: public, no-cache
 Here the `X-Forwarded-Host` header has been used by the application to generate an Open Graph URL inside a meta tag.
  The next step is to explore whether it's exploitable – start with a simple XSS payload:
 
-```http request
+```
 GET /en?dontpoisoneveryone=1 HTTP/1.1
 Host: www.redhat.com
 X-Forwarded-Host: a."><script>alert(1)</script>
@@ -218,7 +218,7 @@ The final step is to check if this response has been stored in a cache so that i
  You can verify this first by sending the request without the malicious header, and then by fetching the URL directly
  in a browser on a different machine:
 
-```http request
+```
 GET /en?dontpoisoneveryone=1 HTTP/1.1
 Host: www.redhat.com
 

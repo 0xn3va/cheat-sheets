@@ -7,7 +7,7 @@ Server Side Request Forgery is a vulnerability in which an attacker forces a ser
 SSRF allows you to bruteforce credentials for resources that use Basic access authentication as an authentication
  mechanism. To do this, just create a following link:
 
-```http request
+```
 http://login:password@site.com/path/
 ```
 
@@ -29,7 +29,7 @@ Often applications implement IP address verification, for example, that it is no
 
 For example, if two requests go one after another, for 5 seconds, with DNS resolution
 
-```http request
+```
 make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms
 ```
 
@@ -40,7 +40,7 @@ the first DNS query, the address `1.1.1.1` will be returned, and to the second` 
 Many libraries try to access the resource by IP in the order that they are placed in DNS records. For example, if the
  DNS records look like this:
 
-```http request
+```
 site.com 172.16.1.1
 site.com 172.16.1.2
 ```
@@ -51,13 +51,13 @@ first there will be an attempted connect to `172.16.1.1`, and if problems arise,
 For this you can also use the service `http://1u.ms`. For example, if you need to find available ports on `127.0.0.1`,
  you can use
 
-```http request
+```
 make-127-0-0-1-and-123-123-123-123rr.1u.ms
 ```
 
 this will allow you to change the port number to determine which port is available.
 
-```http request
+```
 http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:22 - запрос не пришел на 123.123.123.123:22
 http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:80 - запрос пришел на 123.123.123.123:80
 http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:6379 - запрос не пришел на 123.123.123.123:6379
