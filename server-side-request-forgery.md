@@ -4,13 +4,11 @@ Server Side Request Forgery is a vulnerability in which an attacker forces a ser
 
 ## Credentials Bruteforce
 
-SSRF allows you to bruteforce credentials for resources that use Basic access authentication as an authentication
- mechanism. To do this, just create a following link:
+SSRF allows you to bruteforce credentials for resources that use Basic access authentication as an authentication mechanism. To do this, just create a following link:
 
-```http request
-http://login:password@site.com/path/
-```
+\`\`\`http request [http://login:password@site.com/path/](http://login:password@site.com/path/)
 
+```text
 ## Responses Anomaly
 
 Sometimes you can rely on an anomaly of answers when using SSRF, if the response of request execution is not available
@@ -33,18 +31,15 @@ For example, if two requests go one after another, for 5 seconds, with DNS resol
 make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms
 ```
 
-the first DNS query, the address `1.1.1.1` will be returned, and to the second` 127.0.0.1`.
+the first DNS query, the address `1.1.1.1` will be returned, and to the second`127.0.0.1`.
 
 ## Port Scanning Using DNS
 
-Many libraries try to access the resource by IP in the order that they are placed in DNS records. For example, if the
- DNS records look like this:
+Many libraries try to access the resource by IP in the order that they are placed in DNS records. For example, if the DNS records look like this:
 
-```http request
-site.com 172.16.1.1
-site.com 172.16.1.2
-```
+\`\`\`http request site.com 172.16.1.1 site.com 172.16.1.2
 
+```text
 first there will be an attempted connect to `172.16.1.1`, and if problems arise, to `172.16.1.2`. This allows you to
  find out which ports are open and which are not.
 
@@ -57,19 +52,15 @@ make-127-0-0-1-and-123-123-123-123rr.1u.ms
 
 this will allow you to change the port number to determine which port is available.
 
-```http request
-http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:22 - запрос не пришел на 123.123.123.123:22
-http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:80 - запрос пришел на 123.123.123.123:80
-http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:6379 - запрос не пришел на 123.123.123.123:6379
-http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:8080 - запрос пришел на 123.123.123.123:8080
-```
+\`\`\`http request [http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:22](http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:22) - запрос не пришел на 123.123.123.123:22 [http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:80](http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:80) - запрос пришел на 123.123.123.123:80 [http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:6379](http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:6379) - запрос не пришел на 123.123.123.123:6379 [http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:8080](http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:8080) - запрос пришел на 123.123.123.123:8080
 
-This shows that ports `22` and `6379` are open on `127.0.0.1` because there were no connection attempts for the IP
- address from the second DNS record.
+\`\`\`
 
-> It is worth paying attention to what DNS server resolves names on the backend side. DNS server can use the built-in 
- round robin algorithm for resolving domain names and change the order of records
+This shows that ports `22` and `6379` are open on `127.0.0.1` because there were no connection attempts for the IP address from the second DNS record.
+
+> It is worth paying attention to what DNS server resolves names on the backend side. DNS server can use the built-in round robin algorithm for resolving domain names and change the order of records
 
 ## References
 
-- [Blind SSRF exploitation](https://lab.wallarm.com/blind-ssrf-exploitation/amp/?__twitter_impression=true)
+* [Blind SSRF exploitation](https://lab.wallarm.com/blind-ssrf-exploitation/amp/?__twitter_impression=true)
+
