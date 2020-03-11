@@ -71,7 +71,7 @@ If the server relies on the contents of the `X-Forwarded-For` header to determin
  try using this header to spoof the IP. To do this, just add the `X-Forwarded-For` header to the OTP check request,
  for example:
 
-```http request
+```
 POST /api/v1/otp/check HTTP/1.1
 Host: foo.com
 Content-Type: application/x-www-form-urlencoded
