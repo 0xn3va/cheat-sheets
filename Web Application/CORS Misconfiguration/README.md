@@ -57,7 +57,7 @@ This section lists headers that clients may use when issuing HTTP requests in or
 
 ### Origin
 
-```
+```http
 Origin: <origin>
 ```
 
@@ -70,7 +70,7 @@ The `Origin` header indicates the origin of the cross-site access request or pre
 
 ### Access-Control-Request-Method
 
-```
+```http
 Access-Control-Request-Method: <method>
 ```
 
@@ -78,7 +78,7 @@ The `Access-Control-Request-Method` is used when issuing a preflight request to 
 
 ### Access-Control-Request-Headers
 
-```
+```http
 Access-Control-Request-Headers: <field-name>[, <field-name>]*
 ```
 
@@ -90,7 +90,7 @@ This section lists the HTTP response headers that servers send back for access c
 
 ### Access-Control-Allow-Origin
 
-```
+```http
 Access-Control-Allow-Origin: <origin-or-null> | *
 ```
 
@@ -100,7 +100,7 @@ If the server specifies a single origin rather than the `'*'` wildcard, then the
 
 ### Access-Control-Allow-Methods
 
-```
+```http
 Access-Control-Allow-Methods: <method>[, <method>]*
 ```
 
@@ -108,7 +108,7 @@ The `Access-Control-Allow-Methods` header specifies the method or methods allowe
 
 ### Access-Control-Allow-Headers
 
-```
+```http
 Access-Control-Allow-Headers: <header-name>[, <header-name>]*
 ```
 
@@ -116,7 +116,7 @@ The `Access-Control-Allow-Headers` header is used in response to a preflight req
 
 ### Access-Control-Expose-Headers
 
-```
+```http
 Access-Control-Expose-Headers: <header-name>[, <header-name>]*
 ```
 
@@ -131,7 +131,7 @@ The `Access-Control-Expose-Headers` header lets a server whitelist headers that 
 
 ### Access-Control-Max-Age
 
-```
+```http
 Access-Control-Max-Age: <delta-seconds>
 ```
 
@@ -141,7 +141,7 @@ The `Access-Control-Max-Age` header indicates how long the results of a prefligh
 
 ### Access-Control-Allow-Credentials
 
-```
+```http
 Access-Control-Allow-Credentials: true
 ```
 
@@ -157,13 +157,13 @@ Many modern websites use CORS to allow access from subdomains and trusted third 
 
 No browsers actually support a space-separated list of origins (the specification suggests this), like:
 
-```
+```http
 Access-Control-Allow-Origin: http://foo.com http://bar.net
 ```
 
 Additionally, a wildcard won't work to trust all subdomains, like
 
-```
+```http
 Access-Control-Allow-Origin: *.bar.net
 ```
 
@@ -173,7 +173,7 @@ Since you cannot use wildcard in `Access-Control-Allow-Origin` when credentials 
 
 For example, application receives the following request:
 
-```
+```http
 GET /sensitive-victim-data HTTP/1.1
 Host: vulnerable-website.com
 Origin: https://malicious-website.com
@@ -182,7 +182,7 @@ Cookie: sessionid=<token>
 
 and responds with:
 
-```
+```http
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: https://malicious-website.com
 Access-Control-Allow-Credentials: true
@@ -212,7 +212,7 @@ Some applications might whitelist the `null` origin to support local development
 
 For example, application receives the following request:
 
-```
+```http
 GET /sensitive-victim-data
 Host: vulnerable-website.com
 Origin: null
@@ -220,7 +220,7 @@ Origin: null
 
 and responds with:
 
-```
+```http
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: null
 Access-Control-Allow-Credentials: true
@@ -249,7 +249,7 @@ Most websites use basic string operations to verify the `Origin` header, but som
 
 In Safari, `http://foo.com%60.bar.net/` is a valid URL. If the CORS request originating from that URL will contain:
 
-```
+```http
 Origin: http://foo.com`.bar.net/
 ``` 
 
@@ -265,7 +265,7 @@ If the victim's network location functions as a kind of authentication, then you
 
 The CORS specification instructs developers specify the header
 
-```
+```http
 Vary: Origin
 ```
 
@@ -277,7 +277,7 @@ That might sound pretty simple, but immense numbers of people forget, including 
 
 Say a web page reflects the contents of a custom header without encoding (reflected XSS in a custom HTTP header):
 
-```
+```http
 GET / HTTP/1.1
 Host: example.com
 X-User-id: <svg/onload=alert(1)>
@@ -299,14 +299,14 @@ With CORS, we can make them send this request. By itself, that's useless since t
 
 If an application reflects the `Origin` header without even checking it for illegal characters like `\r`, we effectively have a HTTP header injection vulnerability against IE/Edge users as IE and Edge view `\r (0x0d)` as a valid HTTP header terminator:
 
-```
+```http
 GET / HTTP/1.1
 Origin: z[0x0d]Content-Type: text/html; charset=UTF-7
 ```
 
 Internet Explorer sees the response as:
 
-```
+```http
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: z
 Content-Type: text/html; charset=UTF-7
@@ -320,7 +320,7 @@ Even "correctly" configured CORS establishes a trust relationship between two or
 
 Given the following request:
 
-```
+```http
 GET /api/request/api_key HTTP/1.1
 Host: vulnerable-website.com
 Origin: https://subdomain.vulnerable-website.com
@@ -329,7 +329,7 @@ Cookie: sessionid=...
 
 If the server responds with:
 
-```
+```http
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: https://subdomain.vulnerable-website.com
 Access-Control-Allow-Credentials: true
@@ -341,7 +341,7 @@ Then an attacker who finds an XSS vulnerability on `subdomain.vulnerable-website
 
 Suppose an application that rigorously employs HTTPS also whitelists a trusted subdomain that is using plain HTTP. For example, when the application receives the following request:
 
-```
+```http
 GET /api/request/api_key HTTP/1.1
 Host: vulnerable-website.com
 Origin: http://trusted-subdomain.vulnerable-website.com
@@ -350,7 +350,7 @@ Cookie: sessionid=...
 
 The application responds with:
 
-```
+```http
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: http://trusted-subdomain.vulnerable-website.com
 Access-Control-Allow-Credentials: true
