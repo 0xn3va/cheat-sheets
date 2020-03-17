@@ -2,6 +2,7 @@
 
 ## Web Application
 
+- [Abusing HTTP hop-by-hop Request Headers](/Web%20Application/Abusing%20HTTP%20hop-by-hop%20Request%20Headers/README.md)
 - [Cookie Security](/Web%20Application/Cookie%20Security/README.md)
 - [CORS Misconfiguration](/Web%20Application/CORS%20Misconfiguration/README.md)
 - [HTTP Request Smuggling](/Web%20Application/HTTP%20Request%20Smuggling/README.md)
