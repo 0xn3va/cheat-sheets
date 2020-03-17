@@ -74,3 +74,4 @@ As a result, this can lead to the fact that the web cache before the application
 # References
 
 - [Abusing HTTP hop-by-hop request headers](https://nathandavison.com/blog/abusing-http-hop-by-hop-request-headers)
+- [Python script to find hop-by-hop header abuse potential against the provided URL](https://gist.github.com/ndavison/298d11b3a77b97c908d63a345d3c624d)
