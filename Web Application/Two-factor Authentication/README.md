@@ -48,7 +48,7 @@ If the server relies on the contents of the `X-Forwarded-For` header to determin
 
 ```http
 POST /api/v1/otp/check HTTP/1.1
-Host: foo.com
+Host: vulnerable-website.com
 Content-Type: application/x-www-form-urlencoded
 Content-Length: 9
 X-Forwarded-For: <desired-ip>
