@@ -46,19 +46,20 @@ This is especially important when it comes to a large POST request, for example,
 
 > You should not only split the request, but also make a delay of several seconds between sending the main and final part of the data. And all because web servers begin to parse requests even before they receive them completely.
 
-## Awesome Tricks
+# Awesome Tricks
 
-### Session Capabilities in Race Condition
+## Session Capabilities in Race Condition
 
 The session itself may prevent exploitation of the race condition. For example, in PHP, after `session_start()`, a session file is locked, and its unlocking occurs only at the end of the script (if there was no call of `session_write_close`). If another script that uses the session is called at this moment, it will wait.
 
 To circumvent this capability, you can use a simple trick: to authenticate as many times as necessary. If the web application allows you to create many sessions for one user, just collect all the `PHPSESSID` and assign each request with its own ID.
 
-### Proximity to the Server
+## Proximity to the Server
 
 If the site you want to attack is hosted on AWS, rent a host on AWS. If the server is on DigitalOcean, rent it there. When the main task is to minimize the interval between requests being sent, immediate proximity to the web server will be a plus. In this situation, it is really important which ping to the server is 200 or 10 ms. Moreover, if you are lucky, you can even end up on the same physical server, then the exploitation will be a little easier.
 
 # References
 
 - [Race Condition in Web Applications](https://lab.wallarm.com/race-condition-in-web-applications/amp/)
-- [RacePWN (Race Condition framework)](https://github.com/racepwn/racepwn)
+- [RacePWN - Race Condition framework](https://github.com/racepwn/racepwn)
+- [Write up: Race Condition allows to redeem multiple times gift cards which leads to free "money"](https://hackerone.com/reports/759247)
