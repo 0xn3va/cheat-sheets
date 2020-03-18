@@ -92,7 +92,7 @@ self["\x65\x76\x61\x6c"](
 self["$"]["globalEval"]("alert(1)");
 self["\x24"]["\x67\x6c\x6f\x62\x61\x6c\x45\x76\x61\x6c"]("\x61\x6c\x65\x72\x74\x28\x31\x29");
 // getScript loads a JavaScript file from the server using a GET HTTP request, then execute it.
-self["$"]["getScript"]("https://example.com/my.js");
+self["$"]["getScript"]("https://vulnerable-website.com/my.js");
 
 // Iteration and Object.keys
 Object.keys(self)[5]; // "alert"

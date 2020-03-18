@@ -279,7 +279,7 @@ Say a web page reflects the contents of a custom header without encoding (reflec
 
 ```http
 GET / HTTP/1.1
-Host: example.com
+Host: vulnerable-website.com
 X-User-id: <svg/onload=alert(1)>
 
 HTTP/1.1 200 OK
