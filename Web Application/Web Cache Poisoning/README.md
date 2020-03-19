@@ -127,6 +127,7 @@ Once a resource is stored in a cache, it could theoretically be served by the ca
 As HTTP is a client-server protocol, servers can't contact caches and clients when a resource changes, they have to communicate an expiration time for the resource. Before this expiration time, the resource is **fresh**, after the expiration time, the resource is **stale**. Eviction algorithms often privilege fresh resources over stale resources. 
 
 The freshness lifetime is calculated based on several headers:
+
 1. If a `Cache-control: max-age=N` header is specified, then the freshness lifetime is equal to N,
 2. Else if an [Expires](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Expires) header is specified, then the freshness lifetime is equal to the value of `Expires` header minus the value of the [Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date) header. 
 3. Else if `Last-Modified` header is present, then the freshness lifetime is equal to the value of the `Date` header minus the value of the `Last-Modified` header divided by 10.
