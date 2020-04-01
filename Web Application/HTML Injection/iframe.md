@@ -1,4 +1,4 @@
-The [\<iframe>](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe) tag is used to embed an HTML document in another HTML document. If source of inserted document located on another origin, same origin policy will block any access to content of other document for both of them.
+The [&lt;iframe&gt;](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe) tag is used to embed an HTML document in another HTML document. If source of inserted document located on another origin, same origin policy will block any access to content of other document for both of them.
 
 # Open redirect
 
@@ -20,4 +20,4 @@ When the iframe is loaded, the parent will be redirected to the `https://malware
 
 # References
 
-- [\<meta> and \<iframe> tags chained to SSRF](https://medium.com/@know.0nix/hunting-good-bugs-with-only-html-d8fd40d17b38)
+- [&lt;meta&gt; and &lt;iframe&gt; tags chained to SSRF](https://medium.com/@know.0nix/hunting-good-bugs-with-only-html-d8fd40d17b38)
