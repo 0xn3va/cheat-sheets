@@ -5,6 +5,9 @@
 - [Abusing HTTP hop-by-hop Request Headers](/Web%20Application/Abusing%20HTTP%20hop-by-hop%20Request%20Headers/README.md)
 - [Cookie Security](/Web%20Application/Cookie%20Security/README.md)
 - [CORS Misconfiguration](/Web%20Application/CORS%20Misconfiguration/README.md)
+- HTML Injection
+    - [iframe](/Web%20Application/HTML%20Injection/iframe.md)
+    - [meta](/Web%20Application/HTML%20Injection/meta.md)
 - [HTTP Request Smuggling](/Web%20Application/HTTP%20Request%20Smuggling/README.md)
 - [Race Condition](/Web%20Application/Race%20Condition/README.md)
 - [Server Side Request Forgery](/Web%20Application/Server%20Side%20Request%20Forgery/README.md)
