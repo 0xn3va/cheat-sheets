@@ -1,4 +1,4 @@
-The [\<meta>](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta) tag represents metadata that cannot be represented by other HTML meta-related elements.
+The [&lt;meta&gt;](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta) tag represents metadata that cannot be represented by other HTML meta-related elements.
 
 Some `<meta>` tags are informational, for example:
 
@@ -42,4 +42,4 @@ Using a similar payload, you can redirect the victim to an malicious page:
 
 # References
 
-- [\<meta> and \<iframe> tags chained to SSRF](https://medium.com/@know.0nix/hunting-good-bugs-with-only-html-d8fd40d17b38)
+- [&lt;meta&gt; and &lt;iframe&gt; tags chained to SSRF](https://medium.com/@know.0nix/hunting-good-bugs-with-only-html-d8fd40d17b38)
