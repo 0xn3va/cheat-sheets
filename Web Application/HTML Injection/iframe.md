@@ -17,3 +17,7 @@ where `https://malicious-website.com/toplevel.html` contains:
 ```
 
 When the iframe is loaded, the parent will be redirected to the `https://malware-website.com/pwned.html` page, even if the child document is loaded from a different origin. Same origin policy will be bypassed because the iframe is not being "sandboxed", q.v. [sandbox iframe attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe).
+
+# References
+
+- [\<meta> and \<iframe> tags chained to SSRF](https://medium.com/@know.0nix/hunting-good-bugs-with-only-html-d8fd40d17b38)
