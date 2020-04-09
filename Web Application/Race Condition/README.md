@@ -62,4 +62,4 @@ If the site you want to attack is hosted on AWS, rent a host on AWS. If the serv
 
 - [Race Condition in Web Applications](https://lab.wallarm.com/race-condition-in-web-applications/amp/)
 - [RacePWN - Race Condition framework](https://github.com/racepwn/racepwn)
-- [Write up: Race Condition allows to redeem multiple times gift cards which leads to free "money"](https://hackerone.com/reports/759247)
+- [Report: Race Condition allows to redeem multiple times gift cards which leads to free "money"](https://hackerone.com/reports/759247)

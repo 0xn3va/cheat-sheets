@@ -243,5 +243,5 @@ Depending on whether it is the front-end or the back-end server that can be indu
 - [HTTP Request Smuggling CL.TE](https://memn0ps.github.io/2019/09/13/HTTP-Request-Smuggling-CL-TE.html)
 - [HAProxy HTTP request smuggling](https://nathandavison.com/blog/haproxy-http-request-smuggling)
 - [Write up of two HTTP Requests Smuggling](https://medium.com/@cc1h2e1/write-up-of-two-http-requests-smuggling-ff211656fe7d)
-- [Write up: Password theft login.newrelic.com via Request Smuggling](https://hackerone.com/reports/498052)
-- [Write up: Mass account takeovers using HTTP Request Smuggling to steal session cookies](https://hackerone.com/reports/737140)
+- [Report: Password theft login.newrelic.com via Request Smuggling](https://hackerone.com/reports/498052)
+- [Report: Mass account takeovers using HTTP Request Smuggling to steal session cookies](https://hackerone.com/reports/737140)
