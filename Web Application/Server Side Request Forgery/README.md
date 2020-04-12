@@ -40,7 +40,6 @@ Rare IP address formats defined in [RFC 3986](https://tools.ietf.org/html/rfc398
 
 - Dotted hexadecimal IP: `0x7f.0x0.0x0.0x1`
 - Dotless hexadecimal IP: `0x7f001`
-- Dotless hexadecimal IP with padding: `0x7f.00000.000.000001`
 - Dotless hexadecimal IP with padding: `0x0a0b0c0d7f000001` (padding is `0a0b0c0d`)
 - Dotless decimal IP: `2130706433`
 - Dotted decimal IP with overflow (256): `383.256.256.257`
@@ -104,10 +103,11 @@ References:
 0:0:0:0:0:0:0:0
 ```
 
-- IPv4-mapped IPv6 address: `::ffff:7f00:1`
-- IPv4-mapped IPv6 address: `::ffff:127.0.0.1`
-- IPv4-compatible IPv6 address (deprecated, q.v. [RFC4291](https://tools.ietf.org/html/rfc4291#section-2.5.5.1): `::127.0.0.1`
-- IPv4-mapped IPv6 address with [zone index](https://tools.ietf.org/html/rfc6874): `::ffff:127.0.0.1%25`
+- IPv4-mapped IPv6 address: `[::ffff:7f00:1]`
+- IPv4-mapped IPv6 address: `[::ffff:127.0.0.1]`
+- IPv4-compatible IPv6 address (deprecated, q.v. [RFC4291](https://tools.ietf.org/html/rfc4291#section-2.5.5.1): `[::127.0.0.1]`
+- IPv4-mapped IPv6 address with [zone identifier](https://tools.ietf.org/html/rfc6874): `[::ffff:7f00:1%25]`
+- IPv4-mapped IPv6 address with [zone identifier](https://tools.ietf.org/html/rfc6874): `[::ffff:127.0.0.1%eth0]`
 
 ## Abusing Enclosed Alphanumerics
 
@@ -133,6 +133,29 @@ Enclosed alphanumerics is a Unicode block of typographical symbols of an alphanu
 𝟘𝟘①𝟕⑦．１
 ⓪𝟘𝟙𝟳𝟽｡𝟎𝓧₀｡𝟏
 ```
+
+## Broken parser
+
+The [URL specification](https://tools.ietf.org/html/rfc3986) contains a number of features that are liable to be overlooked when implementing ad hoc parsing and validation of URLs:
+- Embedded credentials in a URL before the hostname, using the @ character: `https://expected-host@evil-host`
+- Indication a URL fragment using the `#` character: `https://evil-host#expected-host`
+- DNS naming hierarchy: `https://expected-host.evil-host`
+- URL-encode characters. This can help confuse URL-parsing code. This is particularly useful if the code that implements the filter handles URL-encoded characters differently than the code that performs the back-end HTTP request.
+- Combinations of these techniques together:
+
+```http
+foo@evil-host:80@expected-host
+foo@evil-host%20@expected-host
+evil-host%09expected-host
+127.1.1.1:80\@127.2.2.2:80
+127.1.1.1:80:\@@127.2.2.2:80
+127.1.1.1:80#\@127.2.2.2:80
+ß.evil-host
+```
+
+References:
+- [A New Era of SSRF - Exploiting URL Parser in Trending Programming Languages!](https://github.com/0xn3va/cheat-sheets/blob/master/Web%20Application/Server%20Side%20Request%20Forgery/materials/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf)
+- [Tool: Tiny URL Fuzzer](https://github.com/orangetw/Tiny-URL-Fuzzer)
 
 ## DNS Pinning
 
@@ -180,29 +203,6 @@ make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms. 0 IN A 127.0.0.1
 ```
 
 See more [1u.ms](http://1u.ms)
-
-## Broken parser
-
-The [URL specification](https://tools.ietf.org/html/rfc3986) contains a number of features that are liable to be overlooked when implementing ad hoc parsing and validation of URLs:
-- Embedded credentials in a URL before the hostname, using the @ character: `https://expected-host@evil-host`
-- Indication a URL fragment using the `#` character: `https://evil-host#expected-host`
-- DNS naming hierarchy: `https://expected-host.evil-host`
-- URL-encode characters. This can help confuse URL-parsing code. This is particularly useful if the code that implements the filter handles URL-encoded characters differently than the code that performs the back-end HTTP request.
-- Combinations of these techniques together:
-
-```http
-foo@evil-host:80@expected-host
-foo@evil-host%20@expected-host
-evil-host%09expected-host
-127.1.1.1:80\@127.2.2.2:80
-127.1.1.1:80:\@@127.2.2.2:80
-127.1.1.1:80#\@127.2.2.2:80
-ß.evil-host
-```
-
-References:
-- [A New Era of SSRF - Exploiting URL Parser in Trending Programming Languages!](https://github.com/0xn3va/cheat-sheets/blob/master/Web%20Application/Server%20Side%20Request%20Forgery/materials/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf)
-- [Tool: Tiny URL Fuzzer](https://github.com/orangetw/Tiny-URL-Fuzzer)
 
 # Credentials Bruteforce
 
