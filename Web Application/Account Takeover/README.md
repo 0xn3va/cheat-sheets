@@ -117,6 +117,7 @@ References:
 Applications that implement third party sign-in or sign-up often identify users based on the attached email address that the third party application sends. In such cases, you can try sign-in or sign-up with two different third-party applications that are linked to the same email address. Sometimes these two accounts can be joined and you will have access to the victim's account by sign-in or sign-up with your third-party application account.
 
 For example, suppose a victim sign-in or sign-up to `vulnerable-website.com` with `third-party-app1.com`, which is linked to `victim@website.com`. To exploit this, you can try the following:
+
 1. Create an account at `third-party-app2.com` and enter the `victim@website.com` email address (ideal if email confirmation is not required),
 2. Try sign-in or sign-up at `vulnerable-website.com` through `third-party-app2.com`,
 3. If the application is vulnerable, then you will have access to the victim's account.
