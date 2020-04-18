@@ -26,7 +26,7 @@ Also, do not disregard the situation when OTP is a long number. Attackers can fi
 
 If the OTP check has a rate limit that is reset after resending, you can successfully implement a bruteforce attack.
 
-Example of reports:
+References:
 
 - [Insecure 2FA/authentication implementation creates a brute force vulnerability](https://hackerone.com/reports/149598)
 - [Authorization bypass using login by phone option+horizontal escalation possible on Grab Android App](https://hackerone.com/reports/205000)
@@ -110,7 +110,7 @@ If developers add an intermediate version of the application to a domain or subd
 
 It is also worth checking support for older versions of the API, which may not have 2FA or the rate-limit algorithm.
 
-Example of reports:
+References:
 
 - [I figured out a way to hack any of Facebook’s 2 billion accounts, and they paid me a $15,000 bounty...](https://medium.com/@iSecMax/two-factor-authentication-security-testing-and-possible-bypasses-f65650412b35)
 
