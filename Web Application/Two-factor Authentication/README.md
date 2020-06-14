@@ -137,3 +137,4 @@ If there is a vulnerability that allows you to steal backup codes from a respons
 # References
 
 - [Two-factor authentication security testing and possible bypasses](https://medium.com/@iSecMax/two-factor-authentication-security-testing-and-possible-bypasses-f65650412b35)
+- [List of websites and whether or not they support 2FA](https://twofactorauth.org/)

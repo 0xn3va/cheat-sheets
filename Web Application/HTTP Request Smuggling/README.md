@@ -245,3 +245,6 @@ Depending on whether it is the front-end or the back-end server that can be indu
 - [Write up of two HTTP Requests Smuggling](https://medium.com/@cc1h2e1/write-up-of-two-http-requests-smuggling-ff211656fe7d)
 - [Report: Password theft login.newrelic.com via Request Smuggling](https://hackerone.com/reports/498052)
 - [Report: Mass account takeovers using HTTP Request Smuggling to steal session cookies](https://hackerone.com/reports/737140)
+- [Write up: Account takeover via HTTP Request Smuggling](https://hipotermia.pw/bb/http-desync-account-takeover)
+- [NGINX error_page request smuggling](https://bertjwregeer.keybase.pub/2019-12-10%20-%20error_page%20request%20smuggling.pdf)
+- [Write up; XXE-scape through the front door: circumventing the firewall with HTTP request smuggling](https://honoki.net/2020/03/18/xxe-scape-through-the-front-door-circumventing-the-firewall-with-http-request-smuggling/)
