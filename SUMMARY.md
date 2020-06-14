@@ -7,6 +7,7 @@
 - [Cookie Security](/Web%20Application/Cookie%20Security/README.md)
 - [CORS Misconfiguration](/Web%20Application/CORS%20Misconfiguration/README.md)
 - HTML Injection
+    - [base](/Web%20Application/HTML%20Injection/base.md)
     - [iframe](/Web%20Application/HTML%20Injection/iframe.md)
     - [meta](/Web%20Application/HTML%20Injection/meta.md)
 - [HTTP Request Smuggling](/Web%20Application/HTTP%20Request%20Smuggling/README.md)
