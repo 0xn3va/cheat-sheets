@@ -550,4 +550,6 @@ Some applications employ server-side analytics software that tracks visitors. Th
 - [PayloadsAllTheThings: Server Side Request Forgery](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Request%20Forgery)
 - [Write up: SSRF in CI after first run](https://hackerone.com/reports/369451)
 - [Write up: GitLab::UrlBlocker validation bypass leading to full Server Side Request Forgery](https://hackerone.com/reports/541169)
+- [Report: Gitlab DNS rebinding protection bypass](https://hackerone.com/reports/632101)
+- [Write up: How I Chained 4 vulnerabilities on GitHub Enterprise, From SSRF Execution Chain to RCE!](http://blog.orange.tw/2017/07/how-i-chained-4-vulnerabilities-on.html)
 - [Tool: SSRF Proxy](https://github.com/bcoles/ssrf_proxy)
