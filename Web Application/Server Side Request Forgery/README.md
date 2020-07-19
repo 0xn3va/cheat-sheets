@@ -552,4 +552,5 @@ Some applications employ server-side analytics software that tracks visitors. Th
 - [Write up: GitLab::UrlBlocker validation bypass leading to full Server Side Request Forgery](https://hackerone.com/reports/541169)
 - [Report: Gitlab DNS rebinding protection bypass](https://hackerone.com/reports/632101)
 - [Write up: How I Chained 4 vulnerabilities on GitHub Enterprise, From SSRF Execution Chain to RCE!](http://blog.orange.tw/2017/07/how-i-chained-4-vulnerabilities-on.html)
+- [Write up: GitLab 11.4.7 Remote Code Execution](https://liveoverflow.com/gitlab-11-4-7-remote-code-execution-real-world-ctf-2018/)
 - [Tool: SSRF Proxy](https://github.com/bcoles/ssrf_proxy)
