@@ -11,6 +11,7 @@
     - [iframe](/Web%20Application/HTML%20Injection/iframe.md)
     - [meta](/Web%20Application/HTML%20Injection/meta.md)
 - [HTTP Request Smuggling](/Web%20Application/HTTP%20Request%20Smuggling/README.md)
+- [OAuth](/Web%20Application/OAuth/README.md)
 - [Race Condition](/Web%20Application/Race%20Condition/README.md)
 - [Server Side Request Forgery](/Web%20Application/Server%20Side%20Request%20Forgery/README.md)
 - [Two-factor Authentication](/Web%20Application/Two-factor%20Authentication/README.md)
