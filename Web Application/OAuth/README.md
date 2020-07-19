@@ -111,8 +111,8 @@ Additional parameters:
 
 ![auth-code-flow](img/auth-code-flow.png)
 
-1. The user clicks `Login` within the regular web application,
-2. The application redirects the user to the login and authorization prompt. The request may look like this:
+- (1) The user clicks `Login` within the regular web application,
+- (2) The application redirects the user to the login and authorization prompt. The request may look like this:
 
 ```http
 https://auth-server.com/auth?
@@ -123,17 +123,17 @@ https://auth-server.com/auth?
     &state=kYlr93jbdhyguIVF73moq
 ```
 
-3. The user authenticates using one of the configured login options and may see a consent page listing the permissions the authorization server will give to the regular web application. The consent page may look like this:
+- (3) The user authenticates using one of the configured login options and may see a consent page listing the permissions the authorization server will give to the regular web application. The consent page may look like this:
 
 ![authorize-example](img/authorize-example.png)
 
-4. Once accepted, the authorization server will send a request back to the `redirect_uri` with the `code` and `state` parameters:
+- (4) Once accepted, the authorization server will send a request back to the `redirect_uri` with the `code` and `state` parameters:
 
 ```http
 https://application-website.com/callback?code=a68YhewbiYl93TR89hdjYwqP0&state=kYlr93jbdhyguIVF73moq
 ```
 
-5. The application using the received `code` and its own `client_id` and `client_secret` will make a request for `access_token`:
+- (5) The application using the received `code` and its own `client_id` and `client_secret` will make a request for `access_token`:
 
 ```http
 POST /oauth/access_token
@@ -144,7 +144,7 @@ Content-Length: 157
 {"client_id": "application_client_id", "client_secret": "application_client_secret", "code": "a68YhewbiYl93TR89hdjYwqP0", "grant_type": "authorization_code"}
 ```
 
-6. Finally, the flow is complete and the application will make an API call to the resource server with user `access_token` to access the user data.
+- (6) Finally, the flow is complete and the application will make an API call to the resource server with user `access_token` to access the user data.
 
 # Security issues
 
