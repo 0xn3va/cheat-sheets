@@ -374,3 +374,4 @@ This attack is effective even if the vulnerable website is otherwise robust in i
 - [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 - [Exploiting CORS misconfigurations for Bitcoins and bounties](https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties)
 - [Tricky CORS Bypass in Yahoo! View](https://www.corben.io/tricky-CORS/)
+- [Report: SOP bypass using browser cache](https://hackerone.com/reports/761726)
