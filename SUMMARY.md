@@ -2,8 +2,9 @@
 
 ## Web Application
 
-- [Account Takeover](/Web%20Application/Account%20Takeover/README.md)
 - [Abusing HTTP hop-by-hop Request Headers](/Web%20Application/Abusing%20HTTP%20hop-by-hop%20Request%20Headers/README.md)
+- [Account Takeover](/Web%20Application/Account%20Takeover/README.md)
+- [Content Security Policy](/Web%20Application/Content%20Security%20Policy/README.md)
 - [Cookie Security](/Web%20Application/Cookie%20Security/README.md)
 - [CORS Misconfiguration](/Web%20Application/CORS%20Misconfiguration/README.md)
 - HTML Injection
