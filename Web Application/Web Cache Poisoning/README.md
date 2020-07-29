@@ -190,3 +190,5 @@ More examples: [Practical Web Cache Poisoning](https://portswigger.net/research/
 - [Hypertext Transfer Protocol (HTTP/1.1): Caching](https://tools.ietf.org/html/rfc7234)
 - [HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching)
 - [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control)
+- [Write up: Abusing HTTP Path Normalization and Cache Poisoning to steal Rocket League accounts](https://samcurry.net/abusing-http-path-normalization-and-cache-poisoning-to-steal-rocket-league-accounts/)
+- [Tool: FockCache - Minimalized Test Cache Poisoning](https://github.com/tismayil/fockcache)
