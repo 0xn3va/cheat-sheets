@@ -61,7 +61,7 @@ The `SameSite` attribute prevents the browser from sending cookies along with cr
 
 > Notice that from Chrome 80 (February 2019) the default behaviour of a cookie without a cookie SameSite attribute will be Lax, [link](https://www.troyhunt.com/promiscuous-cookies-and-their-impending-death-via-the-samesite-policy/).
 
-> Notice that temporary, after applying this change, the cookies without a SameSite policy in Chrome will be treated as None during the first 2 minutes and then as Lax.
+> Notice that temporary, after applying this change, the cookies without a SameSite policy in Chrome will be treated as None during the first 2 minutes and then as Lax, [Bypass SameSite Cookies Default to Lax and get CSRF](https://medium.com/@renwa/bypass-samesite-cookies-default-to-lax-and-get-csrf-343ba09b9f2b)
 
 # Cookie prefix
 
