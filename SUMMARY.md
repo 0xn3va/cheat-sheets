@@ -11,6 +11,7 @@
     - [base](/Web%20Application/HTML%20Injection/base.md)
     - [iframe](/Web%20Application/HTML%20Injection/iframe.md)
     - [meta](/Web%20Application/HTML%20Injection/meta.md)
+    - [target attribute](/Web%20Application/HTML%20Injection/target.md)
 - [HTTP Request Smuggling](/Web%20Application/HTTP%20Request%20Smuggling/README.md)
 - [Mass Assignment](/Web%20Application/Mass%20Assignment/README.md)
 - [OAuth](/Web%20Application/OAuth/README.md)
