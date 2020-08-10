@@ -162,9 +162,9 @@ Depending on the logic handled by the server, there are a number of weak configu
 
 ## Improper handling of state parameter
 
-Sometimes the `status` parameter is not used or is being used incorrectly.
+Sometimes the `state` parameter is not used or is being used incorrectly.
 
-If the `status` parameter is:
+If the `state` parameter is:
 - missing,
 - a static value that never changes, 
 - present but not validated,
