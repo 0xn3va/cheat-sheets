@@ -181,10 +181,39 @@ Often applications allow authentication using login and password or third-party 
 
 Sometimes private OAuth parameters may leak. For example, if the request for `access_token` (step 5) is executed from the client, instead of the server.
 
+## Open redirect
+
+Open redirect can occur not only in cases where the `redirect_uri` configuration is weak, but also if the application redirects the user to `redirect_uri` in case of an error, for example, due to an incorrect scope value, see the [link](http://blog.intothesymmetry.com/2015/04/open-redirect-in-rfc6749-aka-oauth-20.html).
+
+In this case, the attacker crafts a following link:
+
+```http
+https://vulnerable-website.com/authorize?response_type=code&client_id=abcdef123456&scope=WRONG_SCOPE&redirect_uri=https://attacker-website.com
+```
+
+and the application, when processing the request, redirects the victim to the attacker's host.
+
+## Abusing API
+
+If the `access_token` allows making requests to the API, it is worth checking whether it is possible to abuse this. Sometimes the granted rights to `access_token` allows you to release new tokens with increased privileges or get access to additional functionality available only with session token.
+
+## Abusing re-release tokens
+
+Applications often support token re-release functionality. There are several ways to attack this:
+
+- Try to explicitly pass the scope in the token re-release request. Sometimes this allows you to change the scope for a new token.
+- If the application can act as an OAuth2 provider and you can manage the scope, try to create tokens, change the scope and re-release them. Sometimes the scope of a new token changes.
+
+## CSRF authorization server
+
+The CSRF vulnerability in doorkeeper allowed attackers to silently install their applications on DigitalOcean to victims and transfer `access_token` to a controlled server. Details of the attack can be viewed [here](https://habr.com/ru/post/246025/) (in Russian) or [here](http://homakov.blogspot.com/2014/12/blatant-csrf-in-doorkeeper-most-popular.html).
+
 # References
 
 - [OAuth 2.0 Authorization Framework](https://auth0.com/docs/protocols/oauth2)
+- [Top X OAuth 2 Hacks (OAuth Implementation vulnerabilities)](https://github.com/0xn3va/cheat-sheets/blob/master/Web%20Application/OAuth/materials/20151215-Top_X_OAuth_2_Hacks-asanso.pdf)
 - [Write up: Bypassing GitHub's OAuth flow](https://blog.teddykatz.com/2019/11/05/github-oauth-bypass.html)
 - [Report: Stealing users Bitbucket app tokens to retrieve sensitive data from connected Bitbucket accounts](https://gitlab.com/gitlab-org/gitlab-foss/-/issues/56500)
 - [Report: Chained Bugs to Leak Victim's Uber's FB Oauth Token](https://hackerone.com/reports/202781)
 - [Write up: Facebook OAuth Framework Vulnerability](https://www.amolbaikar.com/facebook-oauth-framework-vulnerability/)
+- [Write up: How I hacked Github again](http://homakov.blogspot.com/2014/02/how-i-hacked-github-again.html)
