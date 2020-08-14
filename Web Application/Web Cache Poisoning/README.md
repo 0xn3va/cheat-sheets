@@ -35,7 +35,6 @@ The primary cache keys:
 - Target URI.
 
 Common forms of caching entries are:
-
 - Successful results of a retrieval request: a `200 OK` response to a `GET` request containing a resource like HTML documents, images or files,
 - Permanent redirects: a `301 Moved Permanently` response,
 - Error responses: a `404 Not Found` result page,
@@ -116,7 +115,7 @@ Revalidation is triggered:
 
 The [ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) response header is an opaque-to-the-useragent value that can be used as a **strong** validator. That means that a HTTP user-agent, such as the browser, does not know what this string represents and can't predict what its value would be. If the `ETag` header was part of the response for a resource, the client can issue an [If-None-Match](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-None-Match) in the header of future requests – in order to validate the cached resource.
 
-The [Last-Modified](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Last-Modified) response header can be used as a **weak** validator. It is considered weak because it only has 1-second resolution. If the `Last-Modified` header is present in a response, then the client can issue an [If-Modified-Since](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since) request header to validate the cached document.
+The [Last-Modified](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Last-Modified) response header can be used as a **weak** validator. It is considered weak because it only has 1-second resolution. If the `Last-Modified` header is present in a response, the client can issue an [If-Modified-Since](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since) request header to validate the cached document.
 
 When a validation request is made, the server can either ignore the validation request and response with a normal `200 OK`, or it can return `304 Not Modified` (with an empty body) to instruct the browser to use its cached copy. The latter response can also include headers that update the expiration time of the cached document.
 
@@ -182,13 +181,14 @@ HTTP/1.1 200 OK
 ```
 
 {% hint style="info" %}
-More examples: [Practical Web Cache Poisoning](https://portswigger.net/research/practical-web-cache-poisoning)
+More examples and techniques: [Web Cache Entanglement: Novel Pathways to Poisoning](https://portswigger.net/research/web-cache-entanglement) and [Practical Web Cache Poisoning](https://portswigger.net/research/practical-web-cache-poisoning)
 {% endhint %}
 
 # References
 
-- [Hypertext Transfer Protocol (HTTP/1.1): Caching](https://tools.ietf.org/html/rfc7234)
-- [HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching)
-- [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control)
+- [RFC7234 - Hypertext Transfer Protocol (HTTP/1.1): Caching](https://tools.ietf.org/html/rfc7234)
+- [Docs - HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching)
+- [Docs - Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control)
+- [Cache poisoning and other dirty tricks](https://lab.wallarm.com/cache-poisoning-and-other-dirty-tricks-120468f1053f/)
 - [Write up: Abusing HTTP Path Normalization and Cache Poisoning to steal Rocket League accounts](https://samcurry.net/abusing-http-path-normalization-and-cache-poisoning-to-steal-rocket-league-accounts/)
 - [Tool: FockCache - Minimalized Test Cache Poisoning](https://github.com/tismayil/fockcache)
