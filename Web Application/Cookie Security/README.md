@@ -23,7 +23,7 @@ The `Path` attribute limits the scope of a cookie to a specific path on the serv
 
 **Cookie scope vs Same-Origin Policy**
 
-![cooke-scope](/Web%20Application/Cookie%20Security/img/scope-sop-cookie.png)
+![cookie-scope](/Web%20Application/Cookie%20Security/img/scope-sop-cookie.png)
 
 **Isolation two different applications on shared host**
 
