@@ -32,19 +32,19 @@ A quick guide to the most used objection's commands.
 ## Environment
 
 ```bash
-# env
+$ env
 ```
 
 ## Run OS command
 
 ```bash
-# !cat Info.plist 
+$ !cat Info.plist 
 ```
 
 ## Download file
 
 ```bash
-# file download Info.plist
+$ file download Info.plist
 ```
 
 ## Import Frida scripts
@@ -52,5 +52,5 @@ A quick guide to the most used objection's commands.
 In order to import and **run** the Frida script use the following command:
 
 ```bash
-# import "/tmp/frida-script.js"
+$ import "/tmp/frida-script.js"
 ```
