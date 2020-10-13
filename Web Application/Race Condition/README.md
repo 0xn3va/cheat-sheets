@@ -31,7 +31,7 @@ The end of the message body is detected based on the `Transfer-Encoding` or `Con
 If you send the following request from the command line:
 
 ```bash
-echo -ne "GET / HTTP/1.1\r\nHost: website.com\r\n\r\n" | nc website.com 80
+$ echo -ne "GET / HTTP/1.1\r\nHost: website.com\r\n\r\n" | nc website.com 80
 ```
 
 then you will get a response since the HTTP request will be completed. But this will not happen if you remove the last `\n` character, in this case, the server will wait for the last character before the timeout expires.

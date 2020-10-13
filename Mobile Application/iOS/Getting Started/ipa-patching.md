@@ -81,7 +81,7 @@ What this means is that you need to also trust the iTunes account you used to ru
 The main script that loads the FridaGadget.dylib, signs the code and deploys the IPA to the device.
 
 ```bash
-git clone https://github.com/0xn3va/ipa-patching.git
+$ git clone https://github.com/0xn3va/ipa-patching.git
 ```
 
 **brew**
@@ -89,7 +89,7 @@ git clone https://github.com/0xn3va/ipa-patching.git
 The ipa-patching.sh script to patching an IPA requires [brew](https://github.com/Homebrew/brew)
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 ```
 
 # Patching
@@ -99,8 +99,8 @@ Before patching IPA, you need to set a number of variables in `ipa-patching.sh`,
 With all of the above dependencies solved, you can finally patch an IPA. To do this, simply run the script:
 
 ```bash
-cd ipa-patching
-./ipa-patching.sh
+$ cd ipa-patching
+$ ./ipa-patching.sh
 ```
 
 This script will extract the IPA, locate the app binary, patch it to load the FridaGadget.dylib, sign code and deploy it to device.
