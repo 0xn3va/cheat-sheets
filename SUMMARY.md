@@ -8,6 +8,7 @@
     - [Deployment](Mobile%20Application/iOS/Overview/deployment.md)
 - Getting Started
     - [IPA patching](Mobile%20Application/iOS/Getting%20Started/ipa-patching.md)
+    - [Testing with Objection](Mobile%20Application/iOS/Getting%20Started/objection.md)
 
 ## Web Application
 
