@@ -57,31 +57,45 @@ Sources are nothing but the defined directives values. A common sources that are
 Content-Security-Policy: default-src 'self'; script-src https://website.com;
 ```
 
-```html
-<img src=image.jpg>
-```
-
-This image will be allowed as image is loading from same domain i.e. `website.com`.
+This image will be **allowed** as image is loading from same domain i.e. `website.com`:
 
 ```html
-<script src=script.js>
+<img src="assets/images/logo.png">
 ```
 
-This script will be allowed as the script is loading from the same domain i.e. `website.com`.
+This script will be **allowed** as the script is loading from the same domain i.e. `website.com`:
 
 ```html
-<script src=https://attacker-website.com/script.js>
+<script src="assets/scripts/main.js"></script>
 ```
 
-This script will not-allowed as the script is trying to load from undefined domain i.e. `attacker-website.com`.
+This script will **not-allowed** as the script is trying to load from undefined domain i.e. `attacker-website.com`:
+
+```html
+<script src=https://attacker-website.com/hook.js></script>
+```
+
+This will **not-allowed** on the page as inline scripts are blocked by default:
 
 ```html
 "/><script>alert(1337)</script>
 ```
 
-This will not-allowed on the page. But why? Because `inline-src` is set to `self`. But wait! where the hell it is mentioned? I can't see `inline-src` defined in above CSP at all.
+This image will **not-allowed** as the image is trying to load from undefined domain i.e. `attacker-website.com`:
 
-The answer is have you noticed `default-src 'self'`? So even other directives are not defined but they will be following `default-src` directive value only.
+```html
+<img src="https://attacker-website.com/image.svg">
+```
+
+This is because `img-src` is set to `self`, since the directive is not defined in the CSP, it will by default follow `default-src`.
+
+This happen because `img-src` is set to `self` as directives are not defined in CSP will be following `default-src` by default. But you must remember that the next directives do not follow `default-src` by default:
+- base-uri
+- form-action
+- frame-ancestors
+- plugin-types
+- report-uri
+- sandbox
 
 # Bypassing techniques
 
