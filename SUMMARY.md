@@ -36,3 +36,5 @@
 
 - Overview
     - [Container basics](Container/Overview/basics.md)
+- Escaping
+    - [Exposed Docker socket](Container/Escaping/exposed-docker-socket.md)
