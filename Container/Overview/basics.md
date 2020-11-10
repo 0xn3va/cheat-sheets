@@ -34,15 +34,23 @@ Traditional UNIX implementations of permissions distinguish two categories:
 
 ## Capabilities
 
-Since kernel 2.2, Linux divides the privileges associated with superuser into distinct units known as **capabilities**.
+Since kernel 2.2, Linux divides the privileges associated with superuser into distinct units known as [capabilities](https://man7.org/linux/man-pages/man7/capabilities.7.html).
 
-These provide vastly more granular control over the task's permissions for privileged operations.
+Linux capabilities were introduced as a way to break the role of root down into discrete subsections, which could be granted to non-root processes to allow them to perform privileged actions.
 
-![capabilities](img/capabilities.png) 
+![capabilities](img/capabilities.png)
+
+A process has a concept of a "permitted set" of capabilities, which acts as a limiting superset for the capabilities it can have. Importantly, and by default, this bounding set is carried over to any child process, so the "init" process of the container creates a limiting set of capabilities for all processes inside the container (as all processes descend from PID 1). 
 
 Containers are tasks which run should run with a restricted set of capabilities.
 
 ![restricted-capabilities](img/restricted-capabilities.png)
+
+To view a list of capabilities, you can use `capsh`:
+
+```bash
+$ capsh --print
+```
 
 ## Filesystem
 
@@ -61,13 +69,13 @@ There are 8 types of namespaces available on Linux.
 | Namespace | Isolates |
 | --- | --- |
 | Cgroup | Cgroup root directory |
-| IPC | System V IPC, POSIX message queues |
-| Network | Network devices, stacks, ports, etc. |
-| Mount | Mount points |
-| PID | Process IDs |
-| Time | Boot and monotonic clocks |
-| User | User and group IDs |
-| UTS | Hostname and NIS domain name |
+| IPC | Provides namespaced versions of SystemV IPC and POSIX message queues. |
+| Network | Provides a namespaced and isolated network stack. The majority of container use-cases involve networked services, so this will prove to be a core feature of containers. |
+| Mount | Provides a namespaced view of mount points. Combined with the [pivot_root()](https://man7.org/linux/man-pages/man2/pivot_root.2.html) syscall, this will be used to isolate the container's filesystem from the host's filesystem. |
+| PID | Provides a namespaced tree of process IDs (PIDs). This allows each container to have a full isolated process tree, in which it has an ‘init’ process that it runs as PID 1 inside this namespace. Processes running in a container will have a different PID on the host than they do inside the container’s PID namespace.  |
+| Time | Boot and monotonic clocks. |
+| User | Provides a namespaced version of User IDs (UIDs) and Group IDs (GIDs). This is one of the most important features of modern container systems, as it is used to provide "unprivileged containers". These are containers in which root (UID 0) inside the container is not root outside the container, greatly increasing the container's security. |
+| UTS | Provides a namespaced version of system identifiers. |
 
 ![namespace-user-example](img/namespace-user-example.png)
 
@@ -88,13 +96,13 @@ Grouping is implemented in the core cgroup kernel code, while resource tracking 
 A cgroup filesystem initially contains a single root cgroup, `/`, which all processes belong to. A new cgroup is created by creating a directory in the cgroup filesystem.
 
 ```bash
-mkdir /sys/fs/cgroup/cpu/cg1
+$ mkdir /sys/fs/cgroup/cpu/cg1
 ```
            
 This creates a new empty cgroup. A process may be moved to this cgroup by writing its PID into the cgroup's `cgroup.procs` file:
 
 ```bash
-echo $$ > /sys/fs/cgroup/cpu/cg1/cgroup.procs
+$ echo $$ > /sys/fs/cgroup/cpu/cg1/cgroup.procs
 ```
 
 ## Linux Security Modules
@@ -111,6 +119,10 @@ Since kernel 3.17, Linux has a mechanism for filtering access to system calls th
 
 ![seccomp](img/seccomp.png)
 
+Seccomp policies come in two versions:
+- **Strict mode** - is a small set of allowed system calls which cannot be customized.
+- **Filter mode** - system call filters are written as Berkeley Packet Filter (BPF) programs; this allows more finely-grained policies to be set on system call usage (with some caveats, seccomp-bpf filters can inspect syscall arguments, but cannot dereference pointers).
+
 # Container security model
 
 ![container-security-model](img/container-security-model.png)
@@ -118,3 +130,5 @@ Since kernel 3.17, Linux has a mechanism for filtering access to system calls th
 # References
 
 - [A Compendium of Container Escapes](https://capsule8.com/assets/ug/us-19-Edwards-Compendium-Of-Container-Escapes.pdf)
+- [Abusing Privileged and Unprivileged Linux Containers](https://www.nccgroup.com/globalassets/our-research/us/whitepapers/2016/june/container_whitepaper.pdf)
+- [Understanding and Hardening Linux Containers](https://research.nccgroup.com/wp-content/uploads/2020/07/ncc_group_understanding_hardening_linux_containers-1-1.pdf)
