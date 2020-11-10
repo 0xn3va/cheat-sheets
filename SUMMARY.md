@@ -38,3 +38,5 @@
     - [Container basics](Container/Overview/basics.md)
 - Escaping
     - [Exposed Docker socket](Container/Escaping/exposed-docker-socket.md)
+    - [Excessive capabilities](Container/Escaping/excessive-capabilities.md)
+    - [Sensitive mounts](Container/Escaping/sensitive-mounts.md)
