@@ -36,7 +36,7 @@ After the patched app has been launched, you need to connect to it using objecti
 - Start the objection exploration REPL.
 
     ```bash
-    objection -N -h 127.0.0.1 -p 27042 explore
+    $ objection -N -h 127.0.0.1 -p 27042 explore
     ```
 
 # Commands
