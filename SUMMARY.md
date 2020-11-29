@@ -14,6 +14,10 @@
 
 - Spring
     - [Overview](Framework/Spring/overview.md)
+    - [Mass assignment](Framework/Spring/mass-assignment.md)
+    - [Spring Boot Actuators](Framework/Spring/spring-boot-actuators.md)
+    - [Spring Data Redis insecure deserialization](Framework/Spring/spring-data-redis-insecure-deserialization.md)
+    - [Spring view manipulation](Framework/Spring/view-manipulation.md)
 
 ## iOS Application
 
@@ -39,7 +43,6 @@
     - [meta](/Web%20Application/HTML%20Injection/meta.md)
     - [target attribute](/Web%20Application/HTML%20Injection/target.md)
 - [HTTP Request Smuggling](/Web%20Application/HTTP%20Request%20Smuggling/README.md)
-- [Mass Assignment](/Web%20Application/Mass%20Assignment/README.md)
 - [OAuth](/Web%20Application/OAuth/README.md)
 - [Race Condition](/Web%20Application/Race%20Condition/README.md)
 - [Server Side Request Forgery](/Web%20Application/Server%20Side%20Request%20Forgery/README.md)
