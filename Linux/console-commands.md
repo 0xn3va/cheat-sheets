@@ -17,6 +17,31 @@ $ aria2c -x5 <URL> # downloading continues
 $ aria2c <name>.torrent
 ```
 
+# chmod
+
+```bash
+# Enable all permissions for the owner, write permissions to the group and execute permissions to others
+# or rwx-w---x
+$ chmod 721 <name>
+
+# Verbose form
+# Enable user for rwx
+$ chmod u+rwx <name>
+
+# Enable group for w
+$ chmod g+w <name>
+
+# Enable others for x
+$ chmod o+x <name>
+
+# Enable everyone for x
+$ chmod a+x <file>
+
+# Remove permissions (use '-' instead of '+')
+# Disable group and others for x
+$ chmod og-x <name>
+```
+
 # find
 
 ```bash
