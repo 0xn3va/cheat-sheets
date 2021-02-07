@@ -24,7 +24,7 @@ $ aria2c <name>.torrent
 # or rwx-w---x
 $ chmod 721 <name>
 
-# Verbose form
+### Verbose form
 # Enable user for rwx
 $ chmod u+rwx <name>
 
@@ -37,9 +37,24 @@ $ chmod o+x <name>
 # Enable everyone for x
 $ chmod a+x <file>
 
-# Remove permissions (use '-' instead of '+')
+### Remove permissions (use '-' instead of '+')
 # Disable group and others for x
 $ chmod og-x <name>
+
+### setuid (4), setgid (2), sticky (1) bits
+# Set setgid bit
+# or rwxr-sr-x
+$ chmod 2755 <name>
+
+## Verbose form
+# Set setuid bit 
+$ chmod u+s <name>
+
+# Set setgid bit
+$ chmod g+s <name>
+
+# Set sticky bit
+$ chmod o+t <name>
 ```
 
 # find
