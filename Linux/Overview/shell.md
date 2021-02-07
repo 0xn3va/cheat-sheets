@@ -22,7 +22,7 @@ The image above is a slight simplification to explain pipe redirection:
 - Since the top bash was forked from the lower, it inherited the file descriptors of the lower one
 - The lower bash did not fork a new process because `echo` is a builtin command
 
-![ls -ail | sort -nr -k 6 | head -n 1 | cut -f 9 -d ' '](img/pipe-example-2.jpg)
+![$ ls -ail | sort -nr -k 6 | head -n 1 | cut -f 9 -d ' '](img/pipe-example-2.jpg)
 
 Note that `stderr` is always routed directly to the `tty`. You can switch streams before the pipe and redirect `stderr` instead of `stdout` to the pipe.
 

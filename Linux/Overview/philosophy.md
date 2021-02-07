@@ -11,7 +11,9 @@ Perhaps as a direct result, the design of UNIX focuses on two major components:
 - Processes
 - Files
 
-> Everything in UNIX is either a process or a file. Nothing else.
+{% hint style="info" %}
+Everything in UNIX is either a process or a file. Nothing else.
+{% endhint %}
 
 # References
 

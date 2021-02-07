@@ -1,8 +1,12 @@
-> Everything that is not a process is a file
+{% hint style="info" %}
+Everything that is not a process is a file
+{% endhint %}
 
 This means a printer, a scanner, a terminal screen, the code of any process - these are all files. Your files on the filesystem is a strings of bytes concatenated together to create something meaningful.
 
-> A file is just a stream of data
+{% hint style="info" %}
+A file is just a stream of data
+{% endhint %}
 
 Directories are files too, they simply contain a list of files and directories present in the current directory, just like a tree. The beauty of this is that you can "open" a directory file to see its contents:
 
@@ -63,7 +67,9 @@ Each file has associated permissions which are 12 bytes:
 
 ## setuid bit
 
-> The `setuid` bit has no effect on directories
+{% hint style="info" %}
+The `setuid` bit has no effect on directories
+{% endhint %}
 
 The `setuid` bit allows an executable to run with the privileges of the user who owns the file and not with the privileges of the user who launched it. For example, if an executable has the `setuid` bit set and is owned by the root, it will run with root privileges when launch as a normal user.
 
@@ -80,7 +86,9 @@ The `s` implies that the executable bit is set, otherwise you would see a capita
 
 ## setgid bit
 
-> The `setgid` bit has effect on both files and directories.
+{% hint style="info" %}
+The `setgid` bit has effect on both files and directories
+{% endhint %}
 
 A file which has the `setgid` bit set is executed with the privileges of the group that owns the file. In other words, the process group-id will be the same as the file.
 
@@ -97,7 +105,9 @@ The `s` implies that the executable bit is set, otherwise you would see a capita
 
 ## sticky bit
 
-> The `sticky` bit has no effect on files
+{% hint style="info" %}
+The `sticky` bit has no effect on files
+{% endhint %}
 
 When `sticky` bit is used for a directory, all files in that directory can only be modified only by their owners.
 
