@@ -1,6 +1,6 @@
 Server Side Request Forgery is a vulnerability in which an attacker forces a server to perform requests on their behalf.
 
-# Bypass Filters
+# Bypass filters
 
 Often applications block input containing non-whitelist hostname, sensitive URLs, or IP address like loopback, IPv4 link local, private address ([RFC1918](https://tools.ietf.org/html/rfc1918)), etc. In this situation, you can often bypass the filter using various techniques.
 
@@ -34,7 +34,7 @@ url=https://vulnerable-website.com/api/v1/project/next?currentProjectId=1929851&
 
 These bypass approaches work because the application can only validate for the provided URL, which causes the redirect. This follows the redirect and makes a request to the internal URL attacker's choosing.
 
-## Rare IP Address
+## Rare IP address
 
 Rare IP address formats defined in [RFC 3986](https://tools.ietf.org/html/rfc3986#section-7.4).
 
@@ -68,7 +68,7 @@ You can short-hand IP addresses by dropping the zeros:
 127.0.1 => 127.0.0.1
 ```
 
-### Abusing a Bug in Ruby's Native Resolver
+### Abusing a bug in Ruby's native resolver
 
 `Resolv::getaddresses` is OS-dependent, therefore by playing around with different IP formats one can return blank values. 
 
@@ -92,7 +92,7 @@ References:
 - [Report: Blind SSRF in "Integrations" by abusing a bug in Ruby's native resolver](https://hackerone.com/reports/287245)
 - [Report: SSRF vulnerability in gitlab.com via project import](https://hackerone.com/reports/215105)
 
-## IPv6 Addresses
+## IPv6 addresses
 
 - IPv6 localhost:
 
@@ -109,7 +109,7 @@ References:
 - IPv4-mapped IPv6 address with [zone identifier](https://tools.ietf.org/html/rfc6874): `[::ffff:7f00:1%25]`
 - IPv4-mapped IPv6 address with [zone identifier](https://tools.ietf.org/html/rfc6874): `[::ffff:127.0.0.1%eth0]`
 
-## Abusing Enclosed Alphanumerics
+## Abusing enclosed alphanumerics
 
 Enclosed alphanumerics is a Unicode block of typographical symbols of an alphanumeric within a circle, a bracket or other not-closed enclosure, or ending in a full stop, q.v. [list](https://jrgraphix.net/r/Unicode/2460-24FF).
 
@@ -157,7 +157,7 @@ References:
 - [A New Era of SSRF - Exploiting URL Parser in Trending Programming Languages!](https://github.com/0xn3va/cheat-sheets/blob/master/Web%20Application/Server%20Side%20Request%20Forgery/materials/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf)
 - [Tool: Tiny URL Fuzzer](https://github.com/orangetw/Tiny-URL-Fuzzer)
 
-## DNS Pinning
+## DNS pinning
 
 If you want to get a A-record that resolves to an IP, use the following subdomain:
 
@@ -188,7 +188,7 @@ make-127-0-0-1-and-127-127-127-127-rr.1u.ms. 0 IN A 127.127.127.127
 
 See more [1u.ms](http://1u.ms)
 
-## DNS Rebinding
+## DNS rebinding
 
 Often applications implement IP address verification, for example, that it is not loopback, IPv4 link local, private address ([RFC1918](https://tools.ietf.org/html/rfc1918)), etc. If the mechanisms for checking and establishing a connection are independent and there is no caching of the DNS resolution response, you can bypass this by controlling the DNS resolution response.
 
@@ -204,7 +204,7 @@ make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms. 0 IN A 127.0.0.1
 
 See more [1u.ms](http://1u.ms)
 
-# Credentials Bruteforce
+# Credentials bruteforce
 
 SSRF allows you to bruteforce credentials for resources that use Basic access authentication as an authentication mechanism. To do this, just create a following link:
 
@@ -212,11 +212,11 @@ SSRF allows you to bruteforce credentials for resources that use Basic access au
 http://login:password@target-website.com/path/
 ```
 
-# Responses Anomaly
+# Responses anomaly
 
 Sometimes you can rely on an anomaly of answers when using SSRF, if the response of request execution is not available to you. To do this, you need to access internal resources and measure the response time for each request. Response time is an indirect sign that may indicate the availability of a resource. Having sent a lot of requests, you need to search among them those for which the response time is different from all the others. This approach allows you to blindly bruteforce internal services, open ports, directories and files.
 
-# Port Scanning Using DNS
+# Port scanning using DNS
 
 Many libraries try to access the resource by IP in the order that they are placed in DNS records. For example, if the
  DNS records look like this:
@@ -247,7 +247,7 @@ This shows that ports `22` and `6379` are open on `127.0.0.1` because there were
 
 > It is worth paying attention to what DNS server resolves names on the backend side. DNS server can use the built-in round robin algorithm for resolving domain names and change the order of records
 
-# Exploitation via URL Scheme & Protocols
+# Exploitation via URL scheme & protocols
 
 ## File
 
@@ -524,7 +524,7 @@ References:
 References:
 - [Report: Blind SSRF/XSPA on dashboard.lob.com + blind code injection](https://hackerone.com/reports/517461)
 
-# PDFs Rendering
+# PDFs rendering
 
 If the web page is automaticaly creating a PDF with some information you have provided, you can insert some JS that will be executed by the PDF creator itself (the server) while creating the PDF. Then, if you insert an iframe trying to load the content of the cloud metadata, the served pdf will contain the results of that iframe.
 
@@ -535,11 +535,11 @@ References:
 
 Create several sessions and try to download heavy files exploiting the SSRF from the sessions.
 
-# Request Splitting
+# Request splitting
 
 {% embed url="https://www.rfk.id.au/blog/entry/security-bugs-ssrf-via-request-splitting/" %}
 
-# Referer Header
+# Referer header
 
 Some applications employ server-side analytics software that tracks visitors. This software often logs the Referer header in requests, since this is of particular interest for tracking incoming links. Often the analytics software will actually visit any third-party URL that appears in the Referer header. This is typically done to analyze the contents of referring sites, including the anchor text that is used in the incoming links. As a result, the Referer header often represents fruitful attack surface for SSRF vulnerabilities.
 

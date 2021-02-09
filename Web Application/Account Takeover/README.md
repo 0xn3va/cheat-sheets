@@ -1,10 +1,10 @@
 Account takeover allows you to take full control on the user's account.
 
-# Password Recovery
+# Password recovery
 
 Password recovery functionality is often implemented by sending a one-time link to email. 
 
-## Several Email Addresses
+## Several email addresses
 
 Sometimes you can takeover an account by specifying several email addresses in the password recovery request. For example, if an application is vulnerable to such an attack, on a similar request:
 
@@ -19,13 +19,13 @@ Content-Length: 57
 
 an application will send the same recovery link to two email addresses.
 
-## Host Header Poisoning
+## Host header poisoning
 
 Applications can use the `Host` header value for generating a password recovery link. If the application is vulnerable to `Host` header poisoning, you could affect the link and specify its own domain name. As a result, if the victim follows the link from the email, the recovery token will leak to the you.
 
 There are several ways to implement `Host` header poisoning.
 
-### X-Forwarded-Host Header
+### X-Forwarded-Host header
 
 The [X-Forwarded-Host](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-Host) header is a header for identifying the original host requested by the client in the `Host` request header. Example of vulnerable request:
 
@@ -43,7 +43,7 @@ References:
 
 - [Write up: Account Takeover Through Password Reset Poisoning](https://medium.com/@vbharad/account-takeover-through-password-reset-poisoning-72989a8bb8ea)
 
-### X-Host Header
+### X-Host header
 
 `X-Host`, like `X-Forwarded-Host`, sometimes is used to identifying the original host. Example of vulnerable request:
 
@@ -57,7 +57,7 @@ Content-Length: 31
 {"email": "victim@website.com"}
 ```
 
-### Several Host Header
+### Several host header
 
 You can try specifying several `Host` headers. Example of vulnerable request:
 
@@ -71,7 +71,7 @@ Content-Length: 31
 {"email": "victim@website.com"}
 ```
 
-### Host Header Replacement
+### Host header replacement
 
 You can try replace the `Host` header on your domain. Examples of vulnerable requests:
 
@@ -99,7 +99,7 @@ References:
 
 # OAuth
 
-## Host Header Poisoning
+## Host header poisoning
 
 Poisoning the `Host` header can lead to account takeover not only during password recovery, but also OAuth authentication. Sometimes you can affect `redirect_uri` by poisoning the `Host` header. As a result, when the victim exchanges the authorization code for access token, he / she will send a request with this token to your domain. Example of vulnerable request:
 
@@ -112,7 +112,7 @@ References:
 
 - [Write up: Account Takeover in Periscope TV](https://hackerone.com/reports/317476) 
 
-# Third-party Sign-in or Sign-up
+# Third-party sign-in or sign-up
 
 Applications that implement third party sign-in or sign-up often identify users based on the attached email address that the third party application sends. In such cases, you can try sign-in or sign-up with two different third-party applications that are linked to the same email address. Sometimes these two accounts can be joined and you will have access to the victim's account by sign-in or sign-up with your third-party application account.
 
@@ -126,6 +126,6 @@ References:
 
 - [Write up: account takeover https://teamplay.qiwi.com](https://hackerone.com/reports/439207)
 
-# Adding or Changing Email Addresses
+# Adding or changing email addresses
 
 If the operations of adding a new email address or changing an existing one do not require password confirmation, session hijacking, XSS or CSRF can lead to account takeover.

@@ -2,7 +2,7 @@ The objective of web cache poisoning is to send a request that causes a harmful 
 
 ![cache-poisoning](img/cache-poisoning.svg)
 
-# HTTP Caching
+# HTTP caching
 
 Caching is a technique that stores a copy of a given resource and serves it back when requested. When a web cache has a requested resource in its store, it intercepts the request and returns its copy instead of re-downloading from the originating server. 
 
@@ -14,19 +14,19 @@ This achieves several goals:
 
 On the other side, it has to be configured properly as not all resources stay identical forever: it is important to cache a resource only until it changes, not longer.
 
-## Private Browser Caches
+## Private browser caches
 
 A private cache is dedicated to a single user. A browser cache holds all documents downloaded via HTTP by the user. This cache is used to make visited documents available for back/forward navigation, saving, viewing-as-source, etc. without requiring an additional trip to the server. It likewise improves offline browsing of cached content.
 
 ![private-cache](img/private-cache.png)
 
-## Shared Proxy Caches
+## Shared proxy caches
 
 A shared cache is a cache that stores responses to be reused by more than one user. For example, an ISP or your company might have set up a web proxy as part of its local network infrastructure to serve many users so that popular resources are reused a number of times, reducing network traffic and latency.
 
 ![shared-cache](img/shared-cache.png)
 
-# Targets of Caching Operations
+# Targets of caching operations
 
 Request methods can be defined as "cacheable" to indicate that responses to them are allowed to be stored for future reuse. The specification [RFC7231](https://tools.ietf.org/html/rfc7231#section-4.2.3) defines `GET`, `HEAD`, and `POST` as cacheable, although the overwhelming majority of cache implementations only support `GET` and `HEAD`.
 
@@ -41,7 +41,7 @@ Common forms of caching entries are:
 - Incomplete results: a `206 Partial Content` response,
 - Responses other than `GET` if something suitable for use as a cache key is defined.
 
-## Varying Responses
+## Varying responses
 
 A cache entry might also consist of multiple stored responses differentiated by a secondary key, if the request is target of content negotiation.
 
@@ -49,13 +49,13 @@ The [Vary](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary) HTTP 
 
 When a cache receives a request that can be satisfied by a cached response that has a `Vary` header field, it must not use that cached response unless all header fields as nominated by the `Vary` header match in both the original (cached) request and the new request.
 
-# Cache Control
+# Cache control
 
 The `Cache-Control` (HTTP/1.1) general-header field is used to specify directives for caching mechanisms in both requests and responses. Caching directives are unidirectional, meaning that a given directive in a request is not implying that the same directive is to be given in the response.
 
 The [Pragma](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Pragma) (HTTP/1.0) header does behave the same as `Cache-Control: no-cache`, if the `Cache-Control` header field is omitted in a request. Use Pragma only for backwards compatibility with HTTP/1.0 clients.
 
-## No Caching
+## No caching
 
 ```http
 Cache-Control: no-store
@@ -63,7 +63,7 @@ Cache-Control: no-store
 
 The cache should not store anything about the client request or server response. A request is sent to the server and a full response is downloaded each and every time.
 
-## Cache But Revalidate
+## Cache but revalidate
 
 ```http
 Cache-Control: no-cache
@@ -71,7 +71,7 @@ Cache-Control: no-cache
 
 A cache will send the request to the origin server for validation before releasing a cached copy, see: [Cache Validation](#cache-validation) section.
 
-## Public Cache
+## Public cache
 
 ```http
 Cache-Control: public
@@ -79,7 +79,7 @@ Cache-Control: public
 
 The `public` directive indicates the response may be cached by any cache, even if the response would normally be [non-cacheable](https://tools.ietf.org/html/rfc7234#section-3).
 
-## Private Cache
+## Private cache
 
 ```http
 Cache-Control: private
@@ -103,7 +103,7 @@ Cache-Control: must-revalidate
 
 The `must-revalidate` directive indicates that the cache must verify the status of the stale resources before using it and expired ones should not be used, see: [Cache Validation](#cache-validation) section.
 
-# Cache Validation
+# Cache validation
 
 When a cached document's expiration time has been reached, it is either validated or fetched again. Validation can only occur if the server provided either a [strong validator](https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests#Strong_validation) or a [weak validator](https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests#Weak_validation).
 
@@ -131,7 +131,7 @@ The freshness lifetime is calculated based on several headers:
 2. Else if an [Expires](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Expires) header is specified, then the freshness lifetime is equal to the value of `Expires` header minus the value of the [Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date) header. 
 3. Else if `Last-Modified` header is present, then the freshness lifetime is equal to the value of the `Date` header minus the value of the `Last-Modified` header divided by 10.
 
-# Basic Cache Poisoning
+# Basic cache poisoning
 
 For example, let's take a look at request:
 

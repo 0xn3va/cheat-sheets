@@ -8,7 +8,7 @@ This means that suddenly, it's crucial that the back-end agrees with the front-e
 
 ![article-revproxy-desynced](/Web%20Application/HTTP%20Request%20Smuggling/img/article-revproxy-desynced.svg)
 
-# Double Content Length
+# Double content length
 
 Let's imagine that the front-end prioritises the first content-length header, and the back-end prioritises the second. From the back-end's perspective, the TCP stream might look something like:
 
@@ -31,7 +31,7 @@ In real life, the dual content-length technique rarely works because many system
 
 > If a message is received without Transfer-Encoding and with either **multiple Content-Length header fields having differing field-values** or a single Content-Length header field having an invalid value, then the message framing is invalid and the recipient **MUST treat it as an unrecoverable error**. If this is a request message, the server MUST respond with a 400 (Bad Request) status code and then close the connection. If this is a response message received by a proxy, the proxy MUST close the connection to the server, discard the received response, and send a 502 (Bad Gateway) response to the client. If this is a response message received by a user agent, the user agent MUST close the connection to the server and discard the received response.
 
-# NULL Character Injection
+# NULL character injection
 
 Using a NULL byte character in a header causes the request to be rejected and premature end of query. If after the first error the pipeline does not close, the next line will be interpreted as the next request in the pipeline.
 
@@ -92,7 +92,7 @@ GET http://vulnerable-website.com/index.html?bar=1 HTTP/1.1
 
 The line `GET http://vulnerable-website.com/index.html?bar=1 HTTP/1.1` will be parse like header with name is `GET http` and value is `//vulnerable-website.com/index.html?bar=1 HTTP/1.1`. This is still an invalid header (the header name contains a space), but some HTTP agents pass such a header. And after the error `400 Bad Request` we have a `200 OK` response.
 
-# Huge Header
+# Huge header
 
 This attack also as the previous is trigger the end-of-query event, but do not need the magical NULL character. We can trigger an end-of-query event using headers of about 65536 characters, and exploit it in the same way like with the NULL premature end of query.
 
@@ -106,7 +106,7 @@ GET http://vulnerable-website.com/index.html?bar=1 HTTP/1.1
 
 It generates the error `400 Bad Request` and a `200 OK` response.
 
-# Chunked Encoding
+# Chunked encoding
 
 The specification [RFC 2616 4.4](https://tools.ietf.org/html/rfc2616#section-4.4) implicitly allows processing requests using both `Transfer-Encoding: chunked` and `Content-Length`, few servers reject such requests:
 
@@ -118,7 +118,7 @@ Whenever we find a way to hide the `Transfer-Encoding` header from one server in
 - **TE.CL**: the front-end server uses the `Transfer-Encoding` header and the back-end server uses the `Content-Length` header,
 - **TE.TE**: the front-end and back-end servers both support the `Transfer-Encoding` header, but one of the servers can be induced not to process it by obfuscating the header in some way.
 
-## Chunked Messages
+## Chunked messages
 
 A chunked message body consists of 0 or more chunks. Each chunk consists of the chunk size, followed by a newline (\r\n), followed by the chunk contents. The message is terminated with a chunk of size 0, followed by a newline (\r\n). Example:
 
@@ -133,7 +133,7 @@ n3va
 
 ```
 
-## Header Fields
+## Header fields
 
 The format of the header fields is regulated by [RFC 7230 3.2](https://tools.ietf.org/html/rfc7230#section-3.2):
 
@@ -152,7 +152,7 @@ And [RFC 7230 3.2.4](https://tools.ietf.org/html/rfc7230#section-3.2.4) adds:
 
 > No whitespace is allowed between the header field-name and colon. In the past, differences in the handling of such whitespace have led to security vulnerabilities in request routing and response handling. A server MUST reject any received request message that contains whitespace between a header field-name and colon with a response code of 400 (Bad Request). A proxy MUST remove any such whitespace from a response message before forwarding the message downstream.
 
-## CL.TE Vulnerabilities
+## CL.TE vulnerabilities
 
 The front-end server uses the `Content-Length` header and the back-end server uses the `Transfer-Encoding` header. We can perform a simple HTTP request smuggling attack as follows:
 
@@ -171,7 +171,7 @@ The front-end server processes the `Content-Length` header and determines that t
 
 The back-end server processes the `Transfer-Encoding` header, and so treats the message body as using chunked encoding. It processes the first chunk, which is stated to be zero length, and so is treated as terminating the request. The following bytes, **SMUGGLED**, are left unprocessed, and the back-end server will treat these as being the start of the next request in the sequence.
 
-## TE.CL Vulnerabilities
+## TE.CL vulnerabilities
 
 The front-end server uses the `Transfer-Encoding` header and the back-end server uses the `Content-Length` header. We can perform a simple HTTP request smuggling attack as follows:
 
@@ -191,7 +191,7 @@ The front-end server processes the `Transfer-Encoding` header, and so treats the
 
 The back-end server processes the `Content-Length` header and determines that the request body is 3 bytes long, up to the start of the line following 8. The following bytes, starting with **SMUGGLED**, are left unprocessed, and the back-end server will treat these as being the start of the next request in the sequence.
 
-## TE.TE Vulnerabilities
+## TE.TE vulnerabilities
 
 The front-end and back-end servers both support the `Transfer-Encoding` header, but one of the servers can be induced not to process it by obfuscating the header in some way.
 

