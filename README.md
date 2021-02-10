@@ -1,10 +1,5 @@
 # Security Cheat Sheet
 
-A list of cheat sheets for application security
+A list of cheat sheets for application security. Feel free to point out mistakes and write your ideas [here](https://github.com/0xn3va/cheat-sheets/issues/new).
 
-## Awesome resources
-
-- [Awesome Hacking](https://github.com/Hack-with-Github/Awesome-Hacking) - A collection of awesome lists for hackers,
- pentesters & security researchers.
-- [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings) - A list of useful payloads and bypasses 
- for Web Application Security.
+You can find the Gitbook version [here](https://0xn3va.gitbook.io/cheat-sheets/).
