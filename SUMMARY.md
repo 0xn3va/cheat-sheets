@@ -46,6 +46,24 @@
     - [Source code patching](Mobile%20Application/iOS/Getting%20Started/source-patching.md)
     - [Testing with Objection](Mobile%20Application/iOS/Getting%20Started/objection.md)
 
+## Resources
+
+- Lists
+    - [Payloads](Resources/Lists/payloads.md)
+    - [Wordlists](Resources/Lists/wordlists.md)
+- Researching
+    - [Web Application](Resources/Researching/web-application.md)
+    - [Write-ups](Resources/Researching/write-ups.md)
+- Software
+    - [Component Analysis](Resources/Software/component-analysis.md)
+    - [Dynamic Analysis](Resources/Software/dynamic-analysis.md)
+    - [Fuzzing](Resources/Software/fuzzing.md)
+    - [Reverse Engineering](Resources/Software/reverse-engineering.md)
+    - [Static Analysis](Resources/Software/static-analysis.md)
+    - [Vulnerability Scanning](Resources/Software/vulnerability-scanning.md)
+- Training
+    - [Secure Development](Resources/Training/secure-development.md)
+
 ## Web Application
 
 - [Abusing HTTP hop-by-hop Request Headers](/Web%20Application/Abusing%20HTTP%20hop-by-hop%20Request%20Headers/README.md)

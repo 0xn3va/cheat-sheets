@@ -1,0 +1,2 @@
+- [Ghidra](https://github.com/NationalSecurityAgency/ghidra) - a software reverse engineering framework
+- [Cutter](https://github.com/rizinorg/cutter) - a free and open-source reverse engineering platform

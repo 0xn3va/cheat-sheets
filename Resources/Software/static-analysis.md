@@ -1,0 +1,1 @@
+- [Semgrep](https://github.com/returntocorp/semgrep) - lightweight static analysis for many languages (also see [Semgrep Registry](https://semgrep.dev/explore))
