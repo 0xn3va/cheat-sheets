@@ -80,5 +80,6 @@
 - [OAuth 2.0 Vulnerabilities](/Web%20Application/OAuth%202.0%20Vulnerabilities/README.md)
 - [Race Condition](/Web%20Application/Race%20Condition/README.md)
 - [Server Side Request Forgery](/Web%20Application/Server%20Side%20Request%20Forgery/README.md)
+    - [Post Exploitation](/Web%20Application/Server%20Side%20Request%20Forgery/post-exploitation.md)
 - [Two-Factor Authentication Vulnerabilities](/Web%20Application/Two-Factor%20Authentication%20Vulnerabilities/README.md)
 - [Web Cache Poisoning](/Web%20Application/Web%20Cache%20Poisoning/README.md)
