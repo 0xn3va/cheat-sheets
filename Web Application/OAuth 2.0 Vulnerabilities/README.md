@@ -136,7 +136,7 @@ Additional parameters:
 5. The application using the received `code` and its own `client_id` and `client_secret` will make a request for `access_token`:
 
     ```http
-    POST /oauth/access_token
+    POST /oauth/access_token HTTP/1.1
     Host: auth-server.com
     Contetn-Type: application/json
     Content-Length: 157
@@ -281,7 +281,7 @@ With the Authorization Code grant type, the user's data is requested and sent vi
 For example, let's say the attacker's malicious client application initially requested access to the user's email address using the `read:email` scope. After the user approves this request, the malicious client application receives an authorization code. As the attacker controls their client application, they can add another scope parameter to the code exchange request containing the additional profile scope:
 
 ```http
-POST /oauth/access_token
+POST /oauth/access_token HTTP/1.1
 Host: auth-server.com
 Contetn-Type: application/json
 Content-Length: 191
