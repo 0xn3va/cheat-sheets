@@ -1,4 +1,4 @@
-App signing allows iOS to identify who signed app and to verify that app has not been modified since developer signed it. The Signing Identity consists of a public-private key pair that Apple creates for developers.
+Application signing allows iOS to identify who signed app and to verify that app has not been modified since developer signed it. The Signing Identity consists of a public-private key pair that Apple creates for developers.
 
 # Certificate Signing Request
 
@@ -10,12 +10,12 @@ Apple (as a certificate authority) will use the CSR to create an SSL certificate
 
 | Name | Explanation | Examples |
 | --- | --- | --- |
-| Common Name | The server fully qualified domain name (FQDN). This must match exactly what you type in your web browser or you will receive a name mismatch error. | *.google.com <br> mail.google.com |
+| Common Name | The server fully qualified domain name (FQDN). This must match exactly what you type in your web browser or you will receive a name mismatch error. | *.google.com<br>mail.google.com |
 | Organization | The legal name of the organization. This should not be abbreviated and should include suffixes such as Inc, Corp, or LLC. | Google Inc. |
-| Organizational Unit | The division of the organization handling the certificate. | Information Technology <br> IT Department |
+| Organizational Unit | The division of the organization handling the certificate. | Information Technology<br>IT Department |
 | City/Locality | The city where the organization is located. | Mountain View |
 | State/County/Region | The state/region where the organization is located. This should not be abbreviated. | California |
-| Country | The two-letter ISO code for the country where the organization is location. | US <br> GB |
+| Country | The two-letter ISO code for the country where the organization is location. | US<br>GB |
 | Email address | An email address used to contact the organization. | webmaster@google.com |
 | Public Key | The public key that will go into the certificate. | |
 

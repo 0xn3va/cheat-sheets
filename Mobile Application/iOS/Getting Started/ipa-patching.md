@@ -15,11 +15,11 @@ To register:
 - Visit [https://developer.apple.com/register/](https://developer.apple.com/register/) and agree to the license agreement.
 - Sign in with your AppleID in XCode by browsing to `XCode > Preferences > Accounts` and clicking on the `+` at the bottom left.
 
-![xcode-sign-in](img/xcode-sign-in.png)
+![](img/xcode-sign-in.png)
 
 - Click on `Manage Certificates` and click on the `+` drop down, selecting `iOS Development`. XCode will generate a new code signing certificate for you to use.
 
-![xcode-manage-certificates](img/xcode-manage-certificates.png)
+![](img/xcode-manage-certificates.png)
 
 - Click `Done`.
 
@@ -44,34 +44,38 @@ So, to build and deploy a blank iOS application using XCode to get the updated e
 
 - Start XCode and select `Create a new Xcode project`.
 
-![xcode-create-a-new-project](img/xcode-create-a-new-project.png)
+![](img/xcode-create-a-new-project.png)
 
 - Select `iOS > App` and click `Next`.
 
-![xcode-select-app](img/xcode-select-app.png)
+![](img/xcode-select-app.png)
 
 - Fill in a `Product Name` and an `Organization Identifier`, click `Next`.
 
-![xcode-project-options](img/xcode-project-options.png)
+![](img/xcode-project-options.png)
 
 - Choose where to save the project and finally click on `Create`.
 - In the projects root, under the `Signing & Capabilities` tab, ensure that there are no errors with the signing certificate. Most of the time, XCode is pretty verbose with what needs to be done to fix any errors you may encounter, so just take a moment to read.
 
-![xcode-siginig-capabilities](img/xcode-siginig-capabilities.png)
+![](img/xcode-siginig-capabilities.png)
 
 - When done, ensure your iOS device is plugged in. Select it as the target device in the top left corner, and hit the big play button. This process will compile the blank app for the target device, and update embedded.mobileprovision file.
 - In the projects root, under the `Signing & Capabilities` tab pick up the updated embedded.mobileprovision by dragging it behind the file with the gear icon.
 
-![xcode-mobileprovision-file](img/xcode-mobileprovision-file.png)
+![](img/xcode-mobileprovision-file.png)
 
 {% hint style="info" %}
 Running your blank application for the first time on an iOS device will most probably result in a error that reads something like:
 
 ```
-Verify the Developer App certificate for your account is trusted on your device. Open Settings on your device and navigate to General > Device Management, then select your Developer App certificate to trust it.
+Verify the Developer App certificate for your account is trusted on your device.
+Open Settings on your device and navigate to General > Device Management,
+then select your Developer App certificate to trust it.
 ```
 
-What this means is that you need to also trust the iTunes account you used to run code on the iOS device you have. Simply navigate to your iOS devices `Settings > General > Device Management > iTunes account from the "Developer App" section > Select "Trust"`.
+What this means is that you need to also trust the iTunes account you used to run code on the iOS device you have. Simply navigate to your iOS devices:
+
+`Settings > General > Device Management > iTunes account from the "Developer App" section > Select "Trust"`
 {% endhint %}
 
 ## Dependencies
