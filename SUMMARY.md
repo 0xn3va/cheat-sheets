@@ -1,5 +1,14 @@
 # Summary
 
+## Android Application
+
+- Overview
+    - [Application data & files](Mobile%20Application/Android/Overview/app-data-files.md)
+    - [Application package](Mobile%20Application/Android/Overview/app-package.md)
+    - [Application signing](Mobile%20Application/Android/Overview/app-signing.md)
+    - [Deployment](Mobile%20Application/Android/Overview/deployment.md)
+    - [Package Manager](Mobile%20Application/Android/Overview/package-manager.md)
+
 ## Container
 
 - Overview
@@ -38,8 +47,9 @@
 ## iOS Application
 
 - Overview
-    - [Application structure](Mobile%20Application/iOS/Overview/app-structure.md)
-    - [Code signing](Mobile%20Application/iOS/Overview/code-signing.md)
+    - [Application data & files](Mobile%20Application/iOS/Overview/app-data-files.md)
+    - [Application package](Mobile%20Application/iOS/Overview/app-package.md)
+    - [Application signing](Mobile%20Application/iOS/Overview/app-signing.md)
     - [Deployment](Mobile%20Application/iOS/Overview/deployment.md)
 - Getting Started
     - [IPA patching](Mobile%20Application/iOS/Getting%20Started/ipa-patching.md)
