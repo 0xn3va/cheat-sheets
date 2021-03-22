@@ -5,6 +5,7 @@
 - Overview
     - [Application data & files](Mobile%20Application/Android/Overview/app-data-files.md)
     - [Application package](Mobile%20Application/Android/Overview/app-package.md)
+    - [Application sandbox](Mobile%20Application/Android/Overview/app-sandbox.md)
     - [Application signing](Mobile%20Application/Android/Overview/app-signing.md)
     - [Deployment](Mobile%20Application/Android/Overview/deployment.md)
     - [Package Manager](Mobile%20Application/Android/Overview/package-manager.md)
