@@ -42,7 +42,7 @@ or you can use Frida:
 ObjC.classes.NSBundle.mainBundle().bundlePath().toString();
 ```
 
-You should see the path like `/var/containers/Bundle/Application/<UUID>/`.
+You should see the path like `/var/containers/Bundle/Application/<app-GUID>/`.
 
 # Data container structure
 
@@ -74,7 +74,7 @@ or using Frida:
 ObjC.classes.NSProcessInfo.processInfo().environment().objectForKey_("HOME").toString();
 ```
 
-You should see a path like `/var/mobile/Containers/Data/Application/<UUID>`.
+You should see a path like `/var/mobile/Containers/Data/Application/<app-GUID>`.
 
 # iCloud container
 
