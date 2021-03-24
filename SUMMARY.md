@@ -50,6 +50,7 @@
 - Overview
     - [Application data & files](Mobile%20Application/iOS/Overview/app-data-files.md)
     - [Application package](Mobile%20Application/iOS/Overview/app-package.md)
+    - [Application sandbox](Mobile%20Application/iOS/Overview/app-sandbox.md)
     - [Application signing](Mobile%20Application/iOS/Overview/app-signing.md)
     - [Deployment](Mobile%20Application/iOS/Overview/deployment.md)
 - Getting Started
