@@ -26,6 +26,24 @@ Bundle directory consists of all the files that come along with the application 
 | Settings.bundle | File | The Settings bundle is a special type of plug-in that contains any application-specific preferences that a developer wants to add to the Settings application. This bundle contains property lists and other resource files to configure and display your preferences. |
 | Subdirectories for localized resources | Directory | These are the language-specific project directories (en.lproj, fr.lproj etc.) that help in switching the language of the application from the available languages as desired by the user of the application. |
 
+To find out where the bundle container is located, you can override the implementation of the [application(_:didFinishLaunchingWithOptions:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622921-application) in the `AppDelegate` class:
+
+```swift
+func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    print(Bundle.main.bundlePath)
+
+    return true
+}
+```
+
+or you can use Frida:
+
+```javascript
+ObjC.classes.NSBundle.mainBundle().bundlePath().toString();
+```
+
+You should see the path like `/var/containers/Bundle/Application/<UUID>/`.
+
 # Data container structure
 
 Data container or Local Data Storage container is used to store data locally for both the application and the user. This directory is divided into a number of subdirectories that the app can use to sort and organize its data. It is may be used for caching information, offline storing information etc.
@@ -39,6 +57,24 @@ Commonly used directories of the data container:
 | Library | This is the top-level directory for any files that are not user data files.<br>**Application Support**. This directory is used to store all app data files except those associated with the user's documents. Sometimes it may also be used to store a modifiable copy of resources contained initially in the app's bundle.<br>**Caches**. This directory is used to write any app-specific support files that the application can recreate easily. The data in this directory is mostly the cache for the analytics that can be sent when required and also the server’s responses for delivering quick responses to the user’s queries.This directory also stores the screenshot of the application in the Snapshots directory when it moves to the background in order to improve user experience.<br>**Preferences**. This directory contains app-specific preference files. The main file in this directory is the file named .plist which is used by the developers to store information using NSUserDefaults class.<br>The contents of the Library directory (with the exception of the Caches subdirectory) are backed up by iTunes and iCloud. |
 | tmp | This directory is used to write temporary files that do not need to persist between launches of app. The app should remove files from this directory when they are no longer needed; however, the system may purge this directory when the app is not running.<br> The contents of this directory are not backed up by iTunes or iCloud. |
 | Storekit | This directory is important only for business perspective. It provides the access to the following:<br>**> In-App Purchase**. Offers and promotes in-app purchases for content and services.<br>**> Apple Music**. Checks a user's Apple Music capabilities and offers a subscription.<br>**> Recommendations and reviews**. Provide recommendations for third-party content and enable users to rate and review your app. |
+
+To find out where the data container is located, you can override the implementation of the [application(_:didFinishLaunchingWithOptions:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622921-application) in the `AppDelegate` class as shown in the following example:
+
+```swift
+func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    print(NSHomeDirectory())
+
+    return true
+}
+```
+
+or using Frida:
+
+```javascript
+ObjC.classes.NSProcessInfo.processInfo().environment().objectForKey_("HOME").toString();
+```
+
+You should see a path like `/var/mobile/Containers/Data/Application/<UUID>`.
 
 # iCloud container
 
