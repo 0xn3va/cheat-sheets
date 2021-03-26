@@ -2,11 +2,15 @@
 
 Cross-origin resource sharing (CORS) is a browser mechanism which enables controlled access to resources located outside of a given domain. It extends and adds flexibility to the same-origin policy (SOP).
 
-> The same-origin policy is a restrictive cross-origin specification that limits the ability for a website to interact with resources outside of the source domain. 
+{% hint style="info" %}
+The same-origin policy is a restrictive cross-origin specification that limits the ability for a website to interact with resources outside of the source domain
+{% endhint %}
 
 The CORS standard works by adding new HTTP headers that let servers describe which origins are permitted to read that information from a web browser. A web application executes a cross-origin HTTP request when it requests a resource that has a different origin from its own.
 
-> Origin is the triple {scheme, host, port}.
+{% hint style="info" %}
+Origin is the triple: (scheme, host, port)
+{% endhint %}
 
 For HTTP request methods that can cause side-effects on server data, the specification mandates that browsers preflight the request, soliciting supported methods from the server with the HTTP `OPTIONS` request method, and then, upon approval from the server, sending the actual request. 
 
@@ -49,7 +53,9 @@ Credentialed requests allow to send HTTP cookies and HTTP Authentication informa
 
 When responding to a credentialed request, the server must specify an origin in the value of the `Access-Control-Allow-Origin` header, instead of specifying the `'*'` wildcard.
 
-> Note: Cookies set in CORS responses are subject to normal third-party cookie policies.
+{% hint style="info" %}
+Cookies set in CORS responses are subject to normal third-party cookie policies.
+{% endhint %}
 
 ## The HTTP request headers
 
@@ -64,9 +70,11 @@ Origin: <origin>
 The `Origin` header indicates the origin of the cross-site access request or preflight request. The `origin` parameter is a URI indicating the server from which the request initiated. It does not include any path information, but only
  the server name.
 
-> Note: The origin value can be null, or a URI.
+{% hint style="info" %}
+The origin value can be null, or a URI.
 
-> Note: In any access control request, the `Origin` header is always sent.
+In any access control request, the `Origin` header is always sent.
+{% endhint %}
 
 ### Access-Control-Request-Method
 
@@ -253,7 +261,7 @@ In Safari, `http://foo.com%60.bar.net/` is a valid URL. If the CORS request orig
 Origin: http://foo.com`.bar.net/
 ``` 
 
- and a site chooses to parse this header, it will potentially think that the hostname is `foo.com` and reflect it, letting us exploit Safari users even though the site is using a whitelist of trusted hostnames.
+and a site chooses to parse this header, it will potentially think that the hostname is `foo.com` and reflect it, letting us exploit Safari users even though the site is using a whitelist of trusted hostnames.
 
 Chrome and Firefox supported the `_` character in subdomains. This allow to use `_` instead of `` ` `` to exploit Firefox and Chrome users.
 
@@ -358,13 +366,13 @@ Access-Control-Allow-Credentials: true
 
 In this situation, an attacker who is in a position to intercept a victim user's traffic can exploit the CORS configuration to compromise the victim's interaction with the application. This attack involves the following steps:
 
-- The victim user makes any plain HTTP request.
-- The attacker injects a redirection to: `http://trusted-subdomain.vulnerable-website.com`
-- The victim's browser follows the redirect.
-- The attacker intercepts the plain HTTP request, and returns a spoofed response containing a CORS request to: `https://vulnerable-website.com`
-- The victim's browser makes the CORS request, including the origin: `http://trusted-subdomain.vulnerable-website.com`
-- The application allows the request because this is a whitelisted origin. The requested sensitive data is returned in the response.
-- The attacker's spoofed page can read the sensitive data and transmit it to any domain under the attacker's control.
+1. The victim user makes any plain HTTP request.
+2. The attacker injects a redirection to: `http://trusted-subdomain.vulnerable-website.com`
+3. The victim's browser follows the redirect.
+4. The attacker intercepts the plain HTTP request, and returns a spoofed response containing a CORS request to: `https://vulnerable-website.com`
+5. The victim's browser makes the CORS request, including the origin: `http://trusted-subdomain.vulnerable-website.com`
+6. The application allows the request because this is a whitelisted origin. The requested sensitive data is returned in the response.
+7. The attacker's spoofed page can read the sensitive data and transmit it to any domain under the attacker's control.
 
 This attack is effective even if the vulnerable website is otherwise robust in its usage of HTTPS, with no HTTP endpoint and all cookies flagged as secure.
 
