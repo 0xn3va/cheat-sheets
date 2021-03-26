@@ -130,7 +130,7 @@ The `nonce` claim is used to associate a client session with an ID token, and to
 2. The client use a cryptographic hash of the value as the nonce parameter and sends this as an authentication request parameter.
 3. When ID token contains the nonce claim, the client pulls and removes the random value from persistent storage (in this case from cookie), hashes this value, and compares with the nonce claim in the ID token. If they do not match, the client refuses to establish identity.
 
-See also [Nonce Implementation Notes](https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes)).
+See also [Nonce Implementation Notes](https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes).
 
 ### Token endpoint
 
@@ -272,7 +272,7 @@ The [hybrid flow](https://openid.net/specs/openid-connect-core-1_0.html#HybridFl
 2. Authorization server [authenticates the end-user](https://openid.net/specs/openid-connect-core-1_0.html#HybridAuthenticates) and [obtains end-user consent/authorization](https://openid.net/specs/openid-connect-core-1_0.html#HybridConsent).
 3. Authorization server sends the end-user back to the client with an authorization code and, depending on the response type, one or more additional parameters:
 
-    ``http
+    ```http
     https://application-website.com/callback?
         code=SplxlOBeZQQYbYS6WxSbIA&
         id_token=eyJ0 ... NiJ9.eyJ1c ... I6IjIifX0.DeWt4Qu ... ZXso&
@@ -316,7 +316,7 @@ The [hybrid flow](https://openid.net/specs/openid-connect-core-1_0.html#HybridFl
 
 # Security issues in the OAuth2.0 protocol
 
-{% embed url="/Web%20Application/OAuth%202.0%20Vulnerabilities/README.md" %}
+{% embed url="/cheat-sheets/web-application/oauth-2.0-vulnerabilities" %}
 
 # Security issues in the Relying party
 
@@ -362,7 +362,9 @@ Content-Length: 132
 }
 ```
 
-The `rel` parameter should have a static value of "http://openid.net/specs/connect/1.0/issuer". `resource` should contain a valid URL in one of the following forms:
+The `rel` parameter should have a static value of `http://openid.net/specs/connect/1.0/issuer`.
+
+The `resource` should contain a valid URL in one of the following forms:
 - `http(s)://host/user`
 - `acct://user@host`
 
@@ -370,7 +372,7 @@ The `rel` parameter should have a static value of "http://openid.net/specs/conne
 
 The UserInfo endpoint should support the use of Cross-origin resource sharing according to the [specification](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo).
 
-{% embed url="/Web%20Application/CORS%20Misconfiguration/README.md" %}
+{% embed url="/cheat-sheets/web-application/cors-misconfiguration" %}
 
 ## SSRF via dynamic client registration
 
