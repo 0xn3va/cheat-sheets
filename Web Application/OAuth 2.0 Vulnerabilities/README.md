@@ -329,7 +329,7 @@ If the user have approved the client earlier, the server might just redirect the
 
 {% embed url="https://nvd.nist.gov/vuln/detail/CVE-2021-27582" %}
 
-{% embed url="/Framework/Spring/mass-assignment.md" %}
+{% embed url="/cheat-sheets/framework/spring/mass-assignment" %}
 
 ## Scope upgrade: Authorization Code Grant
 
