@@ -316,7 +316,7 @@ The [hybrid flow](https://openid.net/specs/openid-connect-core-1_0.html#HybridFl
 
 # Security issues in the OAuth2.0 protocol
 
-{% embed url="/cheat-sheets/web-application/oauth-2.0-vulnerabilities" %}
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/oauth-2.0-vulnerabilities" %}
 
 # Security issues in the Relying party
 
@@ -372,7 +372,7 @@ The `resource` should contain a valid URL in one of the following forms:
 
 The UserInfo endpoint should support the use of Cross-origin resource sharing according to the [specification](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo).
 
-{% embed url="/cheat-sheets/web-application/cors-misconfiguration" %}
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/cors-misconfiguration" %}
 
 ## SSRF via dynamic client registration
 
