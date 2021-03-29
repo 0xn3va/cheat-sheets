@@ -318,7 +318,11 @@ The [hybrid flow](https://openid.net/specs/openid-connect-core-1_0.html#HybridFl
 
 {% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/oauth-2.0-vulnerabilities" %}
 
-# Security issues in the Relying party
+## Security issues with JSON Web Token
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/json-web-token-vulnerabilities" %}
+
+# Security issues in the relying party
 
 ## Improper handling of nonce claim
 
