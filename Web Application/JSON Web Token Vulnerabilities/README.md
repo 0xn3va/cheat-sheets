@@ -6,8 +6,8 @@ A JWT is represented as a sequence of URL-safe parts (JWT claims sets) separated
 
 {% hint style="info" %}
 Base64url algorithm is the base64 algorithm which has the following replacements:
-- `+` &#129042; `-`
-- `/` &#129042; `_`
+- `+` to `-`
+- `/` to `_`
 
 and there is no standard base64 padding, which usually consists of the `=` signs.
 {% endhint %}
@@ -31,7 +31,7 @@ The following Claim Names are registered in the IANA "JSON Web Token Claims" reg
 |: --- : |: --- : |: --- : | : --- |
 | iss | Issuer | String or URI | The "iss" claim identifies the principal that issued the JWT. |
 | sub | Subject | String or URI | The "sub" claim identifies the principal that is the subject of the JWT. |
-| aud | Audience | Array of strings (String or URI)<br>/<br>String or URI | The "aud" claim identifies the recipients that the JWT is intended for. |
+| aud | Audience | Array of strings (String or URI)<br>String or URI | The "aud" claim identifies the recipients that the JWT is intended for. |
 | exp | Expiration Time | NumericDate | The "exp" claim identifies the expiration time on or after which the JWT must not be accepted for processing. |
 | nbf | Not Before | NumericDate | The "nbf" claim identifies the time before which the JWT must not be accepted for processing. |
 | iat | Issued At | NumericDate | The "iat" claim identifies the time at which the JWT was issued. |
@@ -63,7 +63,7 @@ There are two closely related serializations for JWS which both share the same c
 
 {% hint style="info" %}
 The JWT is a JWS using the JWS compact serialization.
-{% endinfo %}
+{% endhint %}
 
 A JWS represents these logical values:
 
@@ -111,7 +111,7 @@ There are two closely related serializations for JWE which both share the same c
 
 {% hint style="info" %}
 The JWT is a JWE using the JWE compact serialization.
-{% endinfo %}
+{% endhint %}
 
 A JWE represents these logical values:
 
@@ -238,11 +238,12 @@ $ hashcat -a0 -m 16500 jwt.txt wordlist.txt
 ```
 
 References:
-- [Report: &#91;smena.samokat.ru%&#93; Predictable JWT secret](https://hackerone.com/reports/896649)
+- [Report: &#91;smena.samokat.ru&#93; Predictable JWT secret](https://hackerone.com/reports/896649)
 
 ## Using the same keys for different algorithms
 
 If the same keys is used for asymmetric and symmetric algorithms, you can use a public RSA key as an HMAC secret key for signing tampered JWT token. In this case, exploitation consists of the following steps:
+
 1. An attacker grabs the public RSA key.
 2. The attacker sets the "alg" value to `HS256`.
 3. The attacker signs the token with the public RSA key as an HMAC secret key.
