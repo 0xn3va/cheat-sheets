@@ -89,6 +89,7 @@
     - [meta](Web%20Application/HTML%20Injection/meta.md)
     - [target attribute](Web%20Application/HTML%20Injection/target.md)
 - [HTTP Request Smuggling](Web%20Application/HTTP%20Request%20Smuggling/README.md)
+- [JSON Web Token Vulnerabilities](Web%20Application/JSON%20Web%20Token%20Vulnerabilities/README.md)
 - [OAuth 2.0 Vulnerabilities](Web%20Application/OAuth%202.0%20Vulnerabilities/README.md)
     - [OpenID Connect Vulnerabilities](Web%20Application/OAuth%202.0%20Vulnerabilities/openid-connect.md)
 - [Race Condition](Web%20Application/Race%20Condition/README.md)
