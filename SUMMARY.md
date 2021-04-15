@@ -68,6 +68,7 @@
     - [Write-ups](Resources/Researching/write-ups.md)
 - Software
     - [Component Analysis](Resources/Software/component-analysis.md)
+    - [Docker Analysis](Resources/Software/docker-analysis.md)
     - [Dynamic Analysis](Resources/Software/dynamic-analysis.md)
     - [Fuzzing](Resources/Software/fuzzing.md)
     - [Reverse Engineering](Resources/Software/reverse-engineering.md)

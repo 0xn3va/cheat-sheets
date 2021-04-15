@@ -255,11 +255,17 @@ References:
 
 {% embed url="https://www.rfk.id.au/blog/entry/security-bugs-ssrf-via-request-splitting/" %}
 
-# Referer header
+# HTTP headers
 
-Some applications employ server-side analytics software that tracks visitors. This software often logs the `Referer` header in requests, since this is of particular interest for tracking incoming links.
+Many applications use in their flows IP addresses/domains, which they received directly from users in different HTTP headers, such as the `X-Forwarded-For` or `Client-IP` headers. Such application functionality can lead to a blind SSRF vulnerability if the header values are not properly validated.  
 
-Often the analytics software will actually visit any third-party URL that appears in the `Referer` header. This is typically done to analyze the contents of referring sites, including the anchor text that is used in the incoming links. As a result, the `Referer` header often represents fruitful attack surface for SSRF vulnerabilities.
+This is where the [param-miner](https://github.com/PortSwigger/param-miner) can be useful for searching the HTTP headers.
+
+## Referer header
+
+Also notice the `Referer` header, which is used by server-side analytics software to track visitors. Such software often logs the `Referer` header from requests, since this allows to track incoming links.
+
+The analytics software will actually visit any third-party URL that appears in the `Referer` header. This is typically done to analyze the contents of referring sites, including the anchor text that is used in the incoming links. As a result, the `Referer` header often represents fruitful attack surface for SSRF vulnerabilities.
 
 # References
 
