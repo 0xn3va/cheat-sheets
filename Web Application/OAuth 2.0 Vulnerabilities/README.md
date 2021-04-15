@@ -243,6 +243,91 @@ The application, when processing the request, redirects a victim to the attacker
 
 # Security issues in the authorization server
 
+## Abusing API
+
+If the `access_token` allows making requests to the API, it is worth checking whether it is possible to abuse this. Sometimes the granted rights to `access_token` allows you to release new tokens with increased privileges or get access to additional functionality available only with session token.
+
+## Abusing accounts with non-confirmed email
+
+The authorization server can allow to use accounts with non-confirmed email for granting access to protected resources. As a result, a third-party application will trust the received data.
+
+{% embed url="https://gitlab.com/gitlab-org/gitlab/-/issues/37038" %}
+
+## Assignment of accounts based on email address
+
+Applications often allow multiple authentication methods: using a login with a password and using a third-party service such as github or google. There are several ways to attack this:
+- If the application does not require email verification on account creation, try creating an account with the victim's email address. Sometimes, when the victim then tries to register or log-in using the third-party service, the application performs a search, sees that the email is already registered and associates the third-party service account with the account created by the attacker. In this case, the attacker will have access to the victim's account.
+- If the third-party service does not require email verification on account creation, try creating an account with the victim's email address. The same issue as above could exist, but you would be attacking it from the other direction and getting access to the victim's account for an account takeover.
+
+## Bypass redirect_uri validation via mass assignment
+
+{% embed url="https://nvd.nist.gov/vuln/detail/CVE-2021-27582" %}
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/framework/spring/mass-assignment" %}
+
+## CSRF authorization server
+
+The CSRF vulnerability in doorkeeper allowed attackers to silently install their applications on DigitalOcean to victims and transfer `access_token` to a controlled server. Details of the attack can be viewed [here](https://habr.com/ru/post/246025/) (in Russian) or [here](http://homakov.blogspot.com/2014/12/blatant-csrf-in-doorkeeper-most-popular.html).
+
+## redirect_uri session poisoning
+
+If the authorization request (step 3 in the authorization code flow) does not contain any parameters about the client being authorized, the authorization server may take them from the user's session. In this case the authorization request may look like this:
+
+```http
+POST /auth HTTP/1.1
+Host: auth-server.com
+Content-Type: application/json
+Cookie: session_id=Ja2upepCYz5IhSdSIUn1lyi2Ylir3afn
+
+{
+    "scope": "read:email",
+    "authorize": "Authorize"
+}
+```
+
+An attack based on this behavior would look like this:
+1. The victim visits a specially crafted page (just like a typical XSS/CSRF attack scenario).
+2. The page redirects to the OAuth authorization page with a "trusted" `client_id`.
+3. The page sends a hidden cross-domain request to the OAuth authorization page with an "untrusted" `client_id`, which poisons the session.
+4. The victim approves the first page and, since the session contains the updated value, the victim will be redirected to the `redirect_uri` of the "untrusted" client.
+
+In many real systems, third-party users can register their own clients, so this vulnerability may allow them to register an arbitrary `redirect_uri` and leak a token to it.
+
+If the user have approved the client earlier, the server might just redirect the user without asking for confirmation. The OpenID Connect specification provides a `prompt=consent` parameter, which you can append to the URL of the authorization request to potentially bypass this problem. If the server follows OpenID Connection specification, it should ask the users for confirmation of their consent even if they have previously granted it. Without confirmation, the exploitation is harder but still possible, depending on the particular OAuth server implementation.
+
+## Scope upgrade: Authorization Code Grant
+
+With the Authorization Code Grant type, the user's data is requested and sent via secure server-to-server communication, which a third-party attacker is typically not able to manipulate directly. However, it may still be possible to achieve the same result by registering their own client application with the authorization service.
+
+For example, let's say the attacker's malicious client application initially requested access to the user's email address using the `read:email` scope. After the user approves this request, the malicious client application receives an authorization code. As the attacker controls their client application, they can add another scope parameter to the code exchange request containing the additional profile scope:
+
+```http
+POST /oauth/access_token HTTP/1.1
+Host: auth-server.com
+Contetn-Type: application/json
+Content-Length: 191
+
+{
+    "client_id": "application_client_id",
+    "client_secret": "application_client_secret",
+    "grant_type": "authorization_code",
+    "code": "a68YhewbiYl93TR89hdjYwqP0",
+    "scope": "read:email%20read:user"
+}
+```
+
+If the server does not validate this against the scope from the initial authorization request, it will generate an `access_token` using the new scope and send this to the attacker's client application.
+
+## Scope upgrade: Implicit Grant
+
+For the Implicit Grant type, the `access_token` is sent via the browser, which means an attacker can steal tokens associated with innocent client applications and use them directly. Once they have stolen an `access_token`, they can send a normal browser-based requests to the authorization service's endpoints, manually adding a new scope parameter in the process.
+
+## Scope upgrade: abusing re-release tokens
+
+Applications often support token re-release functionality. There are several ways to attack this:
+- Try to explicitly pass the scope in the token re-release request. Sometimes this allows you to change the scope for a new token.
+- If the application can act as the OAuth 2.0 provider and you can manage the scope, try to create tokens, change the scope and re-release them. Sometimes the scope of a new token changes.
+
 ## Weak redirect_uri configuration
 
 The `redirect_uri` is very important because sensitive data, such as the `code`, is appended to this URL after authorization. If the `redirect_uri` can be redirected to an attacker controlled server, this means the attacker can potentially takeover a victim's account by using the code themselves.
@@ -298,85 +383,6 @@ There are several weak configurations, depending on the logic handled by the ser
     ```
 
 - Dangerous javascript that handles query parameters and URL fragments.
-
-## redirect_uri session poisoning
-
-If the authorization request (step 3 in the authorization code flow) does not contain any parameters about the client being authorized, the authorization server may take them from the user's session. In this case the authorization request may look like this:
-
-```http
-POST /auth HTTP/1.1
-Host: auth-server.com
-Content-Type: application/json
-Cookie: session_id=Ja2upepCYz5IhSdSIUn1lyi2Ylir3afn
-
-{
-    "scope": "read:email",
-    "authorize": "Authorize"
-}
-```
-
-An attack based on this behavior would look like this:
-1. The victim visits a specially crafted page (just like a typical XSS/CSRF attack scenario).
-2. The page redirects to the OAuth authorization page with a "trusted" `client_id`.
-3. The page sends a hidden cross-domain request to the OAuth authorization page with an "untrusted" `client_id`, which poisons the session.
-4. The victim approves the first page and, since the session contains the updated value, the victim will be redirected to the `redirect_uri` of the "untrusted" client.
-
-In many real systems, third-party users can register their own clients, so this vulnerability may allow them to register an arbitrary `redirect_uri` and leak a token to it.
-
-If the user have approved the client earlier, the server might just redirect the user without asking for confirmation. The OpenID Connect specification provides a `prompt=consent` parameter, which you can append to the URL of the authorization request to potentially bypass this problem. If the server follows OpenID Connection specification, it should ask the users for confirmation of their consent even if they have previously granted it. Without confirmation, the exploitation is harder but still possible, depending on the particular OAuth server implementation.
-
-## Bypass redirect_uri validation via mass assignment
-
-{% embed url="https://nvd.nist.gov/vuln/detail/CVE-2021-27582" %}
-
-{% embed url="https://0xn3va.gitbook.io/cheat-sheets/framework/spring/mass-assignment" %}
-
-## Scope upgrade: Authorization Code Grant
-
-With the Authorization Code Grant type, the user's data is requested and sent via secure server-to-server communication, which a third-party attacker is typically not able to manipulate directly. However, it may still be possible to achieve the same result by registering their own client application with the authorization service.
-
-For example, let's say the attacker's malicious client application initially requested access to the user's email address using the `read:email` scope. After the user approves this request, the malicious client application receives an authorization code. As the attacker controls their client application, they can add another scope parameter to the code exchange request containing the additional profile scope:
-
-```http
-POST /oauth/access_token HTTP/1.1
-Host: auth-server.com
-Contetn-Type: application/json
-Content-Length: 191
-
-{
-    "client_id": "application_client_id",
-    "client_secret": "application_client_secret",
-    "grant_type": "authorization_code",
-    "code": "a68YhewbiYl93TR89hdjYwqP0",
-    "scope": "read:email%20read:user"
-}
-```
-
-If the server does not validate this against the scope from the initial authorization request, it will generate an `access_token` using the new scope and send this to the attacker's client application.
-
-## Scope upgrade: Implicit Grant
-
-For the Implicit Grant type, the `access_token` is sent via the browser, which means an attacker can steal tokens associated with innocent client applications and use them directly. Once they have stolen an `access_token`, they can send a normal browser-based requests to the authorization service's endpoints, manually adding a new scope parameter in the process.
-
-## Scope upgrade: abusing re-release tokens
-
-Applications often support token re-release functionality. There are several ways to attack this:
-- Try to explicitly pass the scope in the token re-release request. Sometimes this allows you to change the scope for a new token.
-- If the application can act as the OAuth 2.0 provider and you can manage the scope, try to create tokens, change the scope and re-release them. Sometimes the scope of a new token changes.
-
-## Assignment of accounts based on email address
-
-Applications often allow multiple authentication methods: using a login with a password and using a third-party service such as github or google. There are several ways to attack this:
-- If the application does not require email verification on account creation, try creating an account with the victim's email address. Sometimes, when the victim then tries to register or log-in using the third-party service, the application performs a search, sees that the email is already registered and associates the third-party service account with the account created by the attacker. In this case, the attacker will have access to the victim's account.
-- If the third-party service does not require email verification on account creation, try creating an account with the victim's email address. The same issue as above could exist, but you would be attacking it from the other direction and getting access to the victim's account for an account takeover.
-
-## Abusing API
-
-If the `access_token` allows making requests to the API, it is worth checking whether it is possible to abuse this. Sometimes the granted rights to `access_token` allows you to release new tokens with increased privileges or get access to additional functionality available only with session token.
-
-## CSRF authorization server
-
-The CSRF vulnerability in doorkeeper allowed attackers to silently install their applications on DigitalOcean to victims and transfer `access_token` to a controlled server. Details of the attack can be viewed [here](https://habr.com/ru/post/246025/) (in Russian) or [here](http://homakov.blogspot.com/2014/12/blatant-csrf-in-doorkeeper-most-popular.html).
 
 # References
 
