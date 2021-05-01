@@ -18,3 +18,11 @@
 # Python
 
 - [pythonfuzz](https://gitlab.com/gitlab-org/security-products/analyzers/fuzzers/pythonfuzz) - a coverage guided fuzzer for testing python packages.
+
+# TCP/UDP
+
+- [Fuzzotron](https://github.com/denandz/fuzzotron) - a simple network fuzzer supporting TCP, UDP and multithreading. 
+
+# Web
+
+- [ffuf - Fuzz Faster U Fool](https://github.com/ffuf/ffuf) - fast web fuzzer written in Go.

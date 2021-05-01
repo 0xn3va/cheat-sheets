@@ -177,6 +177,7 @@ References:
 - [Report: Confidential data of users and limited metadata of programs and reports accessible via GraphQL](https://hackerone.com/reports/489146)
 - [Report: Insufficient Type Check leading to Developer ability to delete Project, Repository, Group, ...](https://gitlab.com/gitlab-org/gitlab/-/issues/239348)
 - [Report: Insufficient Type Check on GraphQL leading to Maintainer delete repository](https://gitlab.com/gitlab-org/gitlab/-/issues/215703)
+- Tool: [AutoGraphQL](https://graphql-dashboard.herokuapp.com/) + [How to use guide](https://www.youtube.com/watch?v=JJmufWfVvyU)
 
 ## Bypass rate limits
 
