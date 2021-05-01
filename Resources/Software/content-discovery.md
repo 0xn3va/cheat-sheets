@@ -1,0 +1,2 @@
+- [dirsearch](https://github.com/maurosoria/dirsearch) - Web path scanner.
+- [Kiterunner](https://github.com/assetnote/kiterunner) - Contextual Content Discovery Tool.
