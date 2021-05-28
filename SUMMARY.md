@@ -43,7 +43,6 @@
     - [Socket](Linux/Overview/socket.md)
     - [User space vs kernel space](Linux/Overview/user-kernel-space.md)
 - [Bash tips](Linux/bash-tips.md)
-- [Console commands](Linux/console-commands.md)
 
 ## iOS Application
 
