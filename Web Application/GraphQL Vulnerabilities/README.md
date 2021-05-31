@@ -167,6 +167,10 @@ You can also use various GraphQL IDEs or GraphQL Voyager for introspection.
 
 {% embed url="https://github.com/APIs-guru/graphql-voyager" %}
 
+If developers forbided introspection of their applications you can try to obtain the schema with the `clairvoyance`.
+
+{% embed url="https://github.com/nikitastupin/clairvoyance" %}
+
 # Security issues
 
 ## Broken access control
