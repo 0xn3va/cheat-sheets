@@ -3,58 +3,64 @@
 ## Android Application
 
 - Overview
-    - [Application data & files](Mobile%20Application/Android/Overview/app-data-files.md)
-    - [Application package](Mobile%20Application/Android/Overview/app-package.md)
-    - [Application sandbox](Mobile%20Application/Android/Overview/app-sandbox.md)
-    - [Application signing](Mobile%20Application/Android/Overview/app-signing.md)
+    - [Application Data & Files](Mobile%20Application/Android/Overview/app-data-files.md)
+    - [Application Package](Mobile%20Application/Android/Overview/app-package.md)
+    - [Application Sandbox](Mobile%20Application/Android/Overview/app-sandbox.md)
+    - [Application Signing](Mobile%20Application/Android/Overview/app-signing.md)
     - [Deployment](Mobile%20Application/Android/Overview/deployment.md)
     - [Package Manager](Mobile%20Application/Android/Overview/package-manager.md)
+
+## Cloud
+
+- AWS
+    - [Amazon Cognito](Cloud/AWS/amazon-cognito.md)
+    - [Amazon S3](Cloud/AWS/s3.md)
 
 ## Container
 
 - Overview
-    - [Container basics](Container/Overview/basics.md)
-    - [Docker engine](Container/Overview/docker-engine.md)
+    - [Container Basics](Container/Overview/basics.md)
+    - [Docker Engine](Container/Overview/docker-engine.md)
 - Escaping
-    - [Exposed Docker socket](Container/Escaping/exposed-docker-socket.md)
-    - [Excessive capabilities](Container/Escaping/excessive-capabilities.md)
-    - [Sensitive mounts](Container/Escaping/sensitive-mounts.md)
+    - [Exposed Docker Socket](Container/Escaping/exposed-docker-socket.md)
+    - [Excessive Capabilities](Container/Escaping/excessive-capabilities.md)
+    - [Sensitive Mounts](Container/Escaping/sensitive-mounts.md)
 
 ## Framework
 
 - Spring
     - [Overview](Framework/Spring/overview.md)
-    - [Mass assignment](Framework/Spring/mass-assignment.md)
+    - [Mass Assignment](Framework/Spring/mass-assignment.md)
     - [Spring Boot Actuators](Framework/Spring/spring-boot-actuators.md)
-    - [Spring Data Redis insecure deserialization](Framework/Spring/spring-data-redis-insecure-deserialization.md)
-    - [Spring view manipulation](Framework/Spring/view-manipulation.md)
+    - [Spring Data Redis Insecure Deserialization](Framework/Spring/spring-data-redis-insecure-deserialization.md)
+    - [Spring View Manipulation](Framework/Spring/view-manipulation.md)
 
 ## Linux
 
 - [Overview](Linux/Overview/README.md)
     - [Philosophy](Linux/Overview/philosophy.md)
     - [File](Linux/Overview/file.md)
-    - [File descriptor](Linux/Overview/file-descriptor.md)
-    - [I/O redirection](Linux/Overview/io-redirection.md)
+    - [File Descriptor](Linux/Overview/file-descriptor.md)
+    - [I/O Redirection](Linux/Overview/io-redirection.md)
     - [Process](Linux/Overview/process.md)
-    - [Inter process communication](Linux/Overview/inter-process-communication.md)
+    - [Inter Process Communication](Linux/Overview/inter-process-communication.md)
     - [Shell](Linux/Overview/shell.md)
     - [Signals](Linux/Overview/signals.md)
     - [Socket](Linux/Overview/socket.md)
-    - [User space vs kernel space](Linux/Overview/user-kernel-space.md)
-- [Bash tips](Linux/bash-tips.md)
+    - [User Space vs Kernel Space](Linux/Overview/user-kernel-space.md)
+- [Bash Tips](Linux/bash-tips.md)
 
 ## iOS Application
 
 - Overview
-    - [Application data & files](Mobile%20Application/iOS/Overview/app-data-files.md)
-    - [Application package](Mobile%20Application/iOS/Overview/app-package.md)
-    - [Application sandbox](Mobile%20Application/iOS/Overview/app-sandbox.md)
-    - [Application signing](Mobile%20Application/iOS/Overview/app-signing.md)
+    - [Application Data & Files](Mobile%20Application/iOS/Overview/app-data-files.md)
+    - [Application Package](Mobile%20Application/iOS/Overview/app-package.md)
+    - [Application Sandbox](Mobile%20Application/iOS/Overview/app-sandbox.md)
+    - [Application Signing](Mobile%20Application/iOS/Overview/app-signing.md)
     - [Deployment](Mobile%20Application/iOS/Overview/deployment.md)
 - Getting Started
-    - [IPA patching](Mobile%20Application/iOS/Getting%20Started/ipa-patching.md)
-    - [Source code patching](Mobile%20Application/iOS/Getting%20Started/source-patching.md)
+    - [IPA Patching](Mobile%20Application/iOS/Getting%20Started/ipa-patching.md)
+    - [Source Code Patching](Mobile%20Application/iOS/Getting%20Started/source-patching.md)
     - [Testing with Objection](Mobile%20Application/iOS/Getting%20Started/objection.md)
 
 ## Resources
@@ -66,6 +72,8 @@
     - [Web Application](Resources/Researching/web-application.md)
     - [Write-ups](Resources/Researching/write-ups.md)
 - Software
+    - [AWS Tools](Resources/Software/aws-tools.md)
+    - [Azure Tools](Resources/Software/azure-tools.md)
     - [Component Analysis](Resources/Software/component-analysis.md)
     - [Docker Analysis](Resources/Software/docker-analysis.md)
     - [Dynamic Analysis](Resources/Software/dynamic-analysis.md)
