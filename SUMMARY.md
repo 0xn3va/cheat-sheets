@@ -91,6 +91,7 @@
 - [Content Security Policy](Web%20Application/Content%20Security%20Policy/README.md)
 - [Cookie Security](Web%20Application/Cookie%20Security/README.md)
 - [CORS Misconfiguration](Web%20Application/CORS%20Misconfiguration/README.md)
+- [File Upload Vulnerabilities](Web%20Application/File%20Upload%20Vulnerabilities/README.md)
 - [GraphQL Vulnerabilities](Web%20Application/GraphQL%20Vulnerabilities/README.md)
 - HTML Injection
     - [base](Web%20Application/HTML%20Injection/base.md)
