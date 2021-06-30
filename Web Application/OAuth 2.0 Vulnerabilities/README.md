@@ -269,6 +269,20 @@ Applications often allow multiple authentication methods: using a login with a p
 
 The CSRF vulnerability in doorkeeper allowed attackers to silently install their applications on DigitalOcean to victims and transfer `access_token` to a controlled server. Details of the attack can be viewed [here](https://habr.com/ru/post/246025/) (in Russian) or [here](http://homakov.blogspot.com/2014/12/blatant-csrf-in-doorkeeper-most-popular.html).
 
+## Misconfiguration acr or amr
+
+The authorization server may accept `acr_values` or `amr_values` parameters and use them to process the authentication request. 
+
+`amr_values` (or authentication method reference values) specifies authentication methods used in the authentication. For instance, values might indicate that both password and OTP authentication methods were used.     
+
+`acr_values` (or requested authentication context class reference values) specifies a set of business rules that authentications are being requested to satisfy. These rules can often be satisfied by using a number of different specific authentication methods, either singly or in combination.
+
+In other words, you can set authentication methods via these parameters. If it is configured incorrectly, it may lead to the possibility of bypassing authentication. For example, if a client sends `amr_values=pwd+otp`, you can try to bypass two-factor authentication by passing `amr_values=pwd`.
+
+References:
+- [RFC8176: Authentication Method Reference Values](https://datatracker.ietf.org/doc/html/rfc8176)
+- [Bypassing 2FA using OpenID Misconfiguration](https://youst.in/posts/bypassing-2fa-using-openid-misconfiguration/)
+
 ## redirect_uri session poisoning
 
 If the authorization request (step 3 in the authorization code flow) does not contain any parameters about the client being authorized, the authorization server may take them from the user's session. In this case the authorization request may look like this:
