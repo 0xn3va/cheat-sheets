@@ -226,6 +226,10 @@ make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms. 0 IN A 127.0.0.1
 
 See more [1u.ms](http://1u.ms)
 
+# Adobe ColdFusion
+
+{% embed url="https://hoyahaxa.blogspot.com/2021/04/ssrf-in-coldfusioncfml-tags-and.html" %}
+
 # FFmpeg 
 
 - [Viral Video Exploiting Ssrf In Video Converters](https://github.com/0xn3va/cheat-sheets/blob/master/Web%20Application/Server%20Side%20Request%20Forgery/materials/us-16-Ermishkin-Viral-Video-Exploiting-Ssrf-In-Video-Converters.pdf)
