@@ -30,7 +30,7 @@ The [ARNs](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifier
 
 ![](img/arn-format.png)
 
-The `execute-api` ARN format packs the __API ID, API stage, HTTP verb, and the API resource__ (the URL path) all into the last `resource` part of the ARN. They are separated by slashes, as if they were forming a single logical path in an imaginary file system.
+The `execute-api` ARN format packs the _API ID, API stage, HTTP verb, and the API resource_ (the URL path) all into the last `resource` part of the ARN. They are separated by slashes, as if they were forming a single logical path in an imaginary file system.
 
 
 The [documentation](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html) claim that the API ID, stage name and HTTP verb can be easily replaced by `*` to mean any value for that part of the resource alone:
@@ -38,7 +38,7 @@ The [documentation](https://docs.aws.amazon.com/apigateway/latest/developerguide
 ![](img/lambda-auth-resource-format-2.png)
 
 {% hint style="info" %}
-Wildcard `*` is greedy and expands as much as possible inside each of the colon-separated parts of an ARN (it is the equivalent of ".*" in POSIX regular expressions). The expansion will not stop at the slashes - any `*` is free to expand its matching into the entire last part of the [execute-api ARN](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html).
+Wildcard `*` is greedy and expands as much as possible inside each of the colon-separated parts of an ARN (it is the equivalent of `.*` in POSIX regular expressions). The expansion will not stop at the slashes - any `*` is free to expand its matching into the entire last part of the [execute-api ARN](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html).
 
 Wildcard also matches the empty string.
 {% endhint %}
