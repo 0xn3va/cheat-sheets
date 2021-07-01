@@ -41,11 +41,11 @@ The [documentation](https://docs.aws.amazon.com/apigateway/latest/developerguide
 Wildcard `*` is greedy and expands as much as possible inside each of the colon-separated parts of an ARN (it is the equivalent of ".*" in POSIX regular expressions). The expansion will not stop at the slashes - any `*` is free to expand its matching into the entire last part of the [execute-api ARN](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html).
 
 Wildcard also matches the empty string.
-{% endinfo %}
+{% endhint %}
 
 {% hint style="info" %}
 Each AWS service decides whether matching the resource part of ARNs is case sensitive or case insensitive, see [link](https://acloud.guru/forums/aws-certified-solutions-architect-associate/discussion/-KGQ_3oKHuxKEqAv5EPw/key-names-case-sensitive-or-insensitive-?answer=-KO0jdWjDzmwUANNtSz6).
-{% endinfo %}
+{% endhint %}
 
 # Security issues
 
