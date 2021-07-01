@@ -23,3 +23,7 @@ Identity pool ID allows you to fetch temporary AWS credentials that may have ext
 Identity pool IDs can be stored client-side, for example within JavaScript, or returned in a response.
 
 {% embed url="https://blog.appsecco.com/exploiting-weak-configurations-in-amazon-cognito-in-aws-471ce761963" %}
+
+# References
+
+- [Whitepaper: Internet-Scale analysis of AWS Cognito Security](https://andresriancho.com/wp-content/uploads/2019/06/whitepaper-internet-scale-analysis-of-aws-cognito-security.pdf)
