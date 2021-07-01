@@ -13,6 +13,7 @@
 ## Cloud
 
 - AWS
+    - [Amazon API Gateway](Cloud/AWS/api-gateway.md)
     - [Amazon Cognito](Cloud/AWS/amazon-cognito.md)
     - [Amazon S3](Cloud/AWS/s3.md)
 
