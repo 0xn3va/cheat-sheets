@@ -1,2 +1,3 @@
 - [dirsearch](https://github.com/maurosoria/dirsearch) - Web path scanner.
 - [Kiterunner](https://github.com/assetnote/kiterunner) - Contextual Content Discovery Tool.
+- [feroxbuster](https://github.com/epi052/feroxbuster) - A fast, simple, recursive content discovery tool written in Rust.
