@@ -47,6 +47,17 @@ Try to use different kinds of path as a filename:
 
 Try to exploit command injection or sqli via filename, for example `a$(whoami)z.png`, ```a`whoami`z.png``` or `a';select+sleep(10);--z.png`
 
+## SSRF via filename
+
+Try to send URL as filename to get blind SSRF, for example `filename=https://172.17.0.1/internal/file`. You can also try to change `type="file"` to `type="url"` within a request.
+
+## DoS via large filename
+
+Try to upload a file with large name, sometimes it leads to DoS.
+
+References:
+- [Report: profile-picture name parameter with large value lead to DoS for other users and programs on the platform](https://hackerone.com/reports/764434)
+
 # Bypass restrictions
 
 ## Content-Type
@@ -54,7 +65,8 @@ Try to exploit command injection or sqli via filename, for example `a$(whoami)z.
 Try to change a Content-Type value:
 - Allowed MIME-type + disallowed extension
 - Disallowed MIME-type + allowed extension
-- Remove Content-Type.
+- Remove Content-Type
+- Send Content-Type twice within request with allowed and disallowed MIME-types
 
 ## Magic bytes
 
@@ -68,11 +80,13 @@ References:
 Try to change a file extension:
 - Less-common extension, such as `.phtml`
 - Double extension, such as `.jpg.svg` or `.svg.jpg`
-- Extension with a delimeter, such as `\n`, `\t`, `\r`, `\0`, etc. For example, `file.png%00.svg` or `file.png\x0d\x0a.svg`
+- Extension with a delimeter, such as `\n`, `\t`, `\r`, `\0`, `#`, etc. For example, `file.png%00.svg` or `file.png\x0d\x0a.svg`
 - Empty extension, for example `file.`
 - Extension with varied capitalization, such as `.sVG`
 - Try to cut allowed extension with max filename length.
 - Empty filename, for example `.svg`
+- Right-to-left override, for example `file.%E2%80%AEphp.jpg`, see [Report: RTL override symbol not stripped from file names](https://hackerone.com/reports/298)
+- Send filename twice within request with allowed and disallowed extensions, for example `filename="file.png";filename="file.svg"`
 
 ## Invalid regex
 
@@ -112,10 +126,6 @@ References:
 
 {% embed url="https://github.com/barrracud4/image-upload-exploits" %}
 
-### SVG
-
-{% embed url="https://github.com/allanlw/svg-cheatsheet" %}
-
 ## FFmpeg
 
 {% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/server-side-request-forgery#ffmpeg" %}
@@ -130,15 +140,61 @@ References:
 
 # Configuration files
 
-Some servers/frameworks work with configuration files at runtime to define various settings and restrictions. The most famous examples are the the Apache httpd/Tomcat `.htaccess` and the ASP.NET/IIS `web.config` files. You can check your server/framework and try to upload particular config to bypass some security measures.
+Some servers/frameworks work with configuration files at runtime to define various settings and restrictions. The most famous examples are the the Apache httpd/Tomcat `.htaccess` and the ASP.NET/IIS `web.config` files. You can check your server/framework and try to upload particular config to bypass some security measures or even execute code.
 
 References:
 - [Writeup: Bypass file upload filter with .htaccess](https://thibaud-robin.fr/articles/bypass-filter-upload/)
 - [HTSHELLS - Self contained web shells and other attacks via .htaccess files](https://github.com/wireghoul/htshells)
 - [Upload a web.config File for Fun & Profit](https://soroush.secproject.com/blog/2014/07/upload-a-web-config-file-for-fun-profit/)
 
+# Potentially dangerous files
+
+## ASP
+
+Try to upload on an IIS server files with the `asp`, `ashx`, `asmx`, `asa`, `aspx`, `cer` or `xamlx` extensions to get RCE.
+
+References:
+- [PayloadsAllTheThings: Examples of insecure ASP files](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Upload%20Insecure%20Files/Extension%20ASP)
+
+## Adobe ColdFusion
+
+Try to upload ColdFusion files with the `cfm`, `cfml`, `cfc` or `dbm` extensions to get RCE.
+
+### Adobe ColdFusion SSRF
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/server-side-request-forgery#adobe-coldfusion" %}
+
+## JSP
+
+Try to upload JSP files with the `jsp`, `jspx`, `jsw`, `jsv`, or `jspf` extensions to get RCE.
+
+## Perl
+
+Try to upload perl files with the `pl`, `pm`, `cgi`, or `lib` extensions to get RCE.
+
+## SVG
+
+{% embed url="https://github.com/allanlw/svg-cheatsheet" %}
+
+## XML
+
+Try to upload valid XML file with external entities to get XXE.
+
+References:
+- [Report: Uploaded XLF files result in External Entity Execution](https://hackerone.com/reports/232614)
+- [Report: XXE at ecjobs.starbucks.com.cn/retail/hxpublic_v6/hxdynamicpage6.aspx](https://hackerone.com/reports/500515)
+- [Writeup: My first XML External Entity (XXE) attack with .gpx file](https://medium.com/@valeriyshevchenko/my-first-xml-external-entity-xxe-attack-with-gpx-file-5ca78da9ae98)
+
+# SSRF via HTTP range requests
+
+If an application download a file from a user-provided link with [HTTP range requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests) you can try to redirect the request one of the chunks to an internal server.
+
+References:
+- [Writeup: Vimeo upload function SSRF](https://medium.com/@dPhoeniixx/vimeo-upload-function-ssrf-7466d8630437)
+
 # References
 
 - [Zip Slip Vulnerability](https://snyk.io/research/zip-slip-vulnerability)
 - [SecurityTips: File upload bugs](https://github.com/hackerscrolls/SecurityTips/blob/master/MindMaps/File_upload_bugs.png)
 - [File Upload Vulnerability Tricks And Checklist](https://www.onsecurity.io/blog/file-upload-checklist/)
+- [Slides: File Upload by @0xAwali](https://docs.google.com/presentation/d/1-YwXl9rhzSvvqVvE_bMZo2ab-0O5wRNTnzoihB9x6jI/mobilepresent?slide=id.ga2ef157b83_0_156)

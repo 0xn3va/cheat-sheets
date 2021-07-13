@@ -97,20 +97,9 @@ References:
 
 - [Write up: Password Reset link hijacking via Host Header Poisoning](https://hackerone.com/reports/226659)
 
-# OAuth
+# OAuth 2.0
 
-## Host header poisoning
-
-Poisoning the `Host` header can lead to account takeover not only during password recovery, but also OAuth authentication. Sometimes you can affect `redirect_uri` by poisoning the `Host` header. As a result, when the victim exchanges the authorization code for access token, he / she will send a request with this token to your domain. Example of vulnerable request:
-
-```http
-GET /twitter/login HTTP/1.1
-Host: attacker-website.com/vulnerable-website.com
-```
-
-References:
-
-- [Write up: Account Takeover in Periscope TV](https://hackerone.com/reports/317476) 
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/oauth-2.0-vulnerabilities" %}
 
 # Third-party sign-in or sign-up
 

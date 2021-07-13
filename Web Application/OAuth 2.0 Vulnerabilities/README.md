@@ -269,6 +269,18 @@ Applications often allow multiple authentication methods: using a login with a p
 
 The CSRF vulnerability in doorkeeper allowed attackers to silently install their applications on DigitalOcean to victims and transfer `access_token` to a controlled server. Details of the attack can be viewed [here](https://habr.com/ru/post/246025/) (in Russian) or [here](http://homakov.blogspot.com/2014/12/blatant-csrf-in-doorkeeper-most-popular.html).
 
+## Host header poisoning
+
+Poisoning the `Host` header can lead to account takeover not only during password recovery but also OAuth authentication. Sometimes you can affect `redirect_uri` by poisoning the `Host` header. As a result, when the victim exchanges the authorization code for access token, he / she will send a request with this token to your domain. Example of vulnerable request:
+
+```http
+GET /twitter/login HTTP/1.1
+Host: attacker-website.com/vulnerable-website.com
+```
+
+References:
+- [Write up: Account Takeover in Periscope TV](https://hackerone.com/reports/317476) 
+
 ## Misconfiguration acr or amr
 
 The authorization server may accept `acr_values` or `amr_values` parameters and use them to process the authentication request. 
@@ -300,6 +312,7 @@ Cookie: session_id=Ja2upepCYz5IhSdSIUn1lyi2Ylir3afn
 ```
 
 An attack based on this behavior would look like this:
+
 1. The victim visits a specially crafted page (just like a typical XSS/CSRF attack scenario).
 2. The page redirects to the OAuth authorization page with a "trusted" `client_id`.
 3. The page sends a hidden cross-domain request to the OAuth authorization page with an "untrusted" `client_id`, which poisons the session.
