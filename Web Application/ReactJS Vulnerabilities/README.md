@@ -1,0 +1,175 @@
+# ReactJS overview
+
+[ReactJS](https://reactjs.org/) is a JavaScript library for building user interfaces.
+
+## Components and props
+
+[Components](https://reactjs.org/docs/components-and-props.html) are the basic building block of ReactJS. Conceptually, they are like JavaScript functions. They accept arbitrary inputs `props` and return React elements describing what should appear on the screen.
+
+The simplest way to define a component is to write a JavaScript function:
+
+```javascript
+function Welcome(props) {
+    return <h1>Hello, {props.name}</h1>;
+}
+```
+
+This function is a valid React component because it accepts a single `props` (which stands for properties) object argument with data and returns a React element. Such components are called `function components` because they are literally JavaScript functions.
+
+Another way to define a component is to use an ES6 class:
+
+```javascript
+class Welcome extends React.Component {
+    render() {
+        return <h1>Hello, {this.props.name}</h1>;
+    }
+}
+```
+
+The above two components are equivalent from React's point of view.
+
+## JSX
+
+React components use [JSX](https://jsx.github.io/), a syntax extension to JavaScript. During the build process, the JSX code is transpiled to regular JavaScript (ES5) code.
+
+The following two examples are equivalent:
+
+```javascript
+// JSX
+const element = (
+    <h1 className="greeting">
+    Hello, world!
+    </h1>
+);
+
+// Transpiled to createElement() call
+const element = React.createElement(
+  'h1',
+  {className: 'greeting'},
+  'Hello, world!'
+);
+```
+
+## Elements
+
+New React elements are created from component classes using the `createElement` function:
+
+```javascript
+React.createElement(
+  type,
+  [props],
+  [...children]
+)
+```
+
+This function takes three arguments:
+- `type` can be either a tag name string (such as `div` or `span`), or a component class.
+- `props` contains a list of attributes passed to the new element.
+- `children` contains the child node(s) of the new element (which are additional React components).
+
+## Safe by design
+
+ReactJS implements security controls by design, for example, string variables in views are escaped automatically.
+
+# Security issues
+
+## Controlling element type
+
+The `createElement` function accepts a string in the `type` argument. If the string is controlled by a user it would be possible to create an arbitrary React component:
+
+```javascript
+// Dynamically create an element from a string stored in the backend
+// stored_value is a user-controlled string
+element_name = stored_value;
+React.createElement(element_name, null);
+```
+
+However, this would result only in a plain, attribute-less HTML element (pretty useless).
+
+## Injecting props
+
+The `createElement` function accepts a list of attributes in the `props` argument. If the list is controlled by a user it would be possible to inject arbitrary props into the new element:
+
+```javascript
+// Parse user-supplied JSON and pass the resulting object as props
+// stored_value is a user-controlled JSON string with attributes
+props = JSON.parse(stored_value);
+React.createElement("span", props);
+```
+
+You can use the following payload to set the `dangerouslySetInnerHTML` attribute:
+
+```javascript
+{"dangerouslySetInnerHTML" : { "__html": "<img src=x/ onerror=’alert(localStorage.access_token)’>" }}
+```
+
+## Explicitly setting dangerouslySetInnerHTML
+
+If a user-supplied data is used to set the `dangerouslySetInnerHTML` attribute you can insert arbitrary JavaScript code:
+
+```javascript
+<div dangerouslySetInnerHTML={user_supplied} />
+```
+
+## Explicitly setting href
+
+If a user-supplied data is used to set the `href` attribute you can insert a `javascript:` URL:
+
+```javascript
+<a href={user_supplied}>Link</a>
+```
+
+Some other attributes such as `formaction` in HTML5 buttons or HTML5 imports also can be vulnerable:
+
+```javascript
+// HTML5 button
+<button form="name" formaction={user_supplied}/>
+// HTML5 import
+<link rel="import" href={user_supplied}>
+```
+
+## Abusing server-side rendering
+
+If a user-controlled data is passed to code that relies on user generated content and input without proper sanitization you can inject arbitrary JavaScript code.
+
+For example, the official [Redux](https://redux.js.org/) code sample for SSR was vulnerable to XSS ([the sample was fixed](https://redux.js.org/usage/server-rendering#inject-initial-component-html-and-state)):
+
+```javascript
+function renderFullPage(html, preloadedState) {
+  return `
+    <!doctype html>
+    <html>
+      <head>
+        <title>Redux Universal Example</title>
+      </head>
+      <body>
+        <div id="root">${html}</div>
+        <script>
+          window.__PRELOADED_STATE__ = ${JSON.stringify(preloadedState)}
+        </script>
+        <script src="/static/bundle.js"></script>
+      </body>
+    </html>
+    `
+}
+```
+
+In the above sample, result of the `JSON.stringify` function is assigned to a global variable in a `<script>` tag, this is the vulnerability. If a Redux store has the following value:
+
+```javascript
+{
+    user: {
+        username: "username",
+        bio: "bio</script><script>alert(1)</script>"
+    }
+}
+```
+
+When a browser parses the page and encounters that `<script>` tag, it will continue reading until `</script>`. The browser will not read until the last curly bracket, instead, it will actually finish the script tag after `bio: "as`.
+
+References:
+- [The Most Common XSS Vulnerability in React.js Applications](https://medium.com/node-security/the-most-common-xss-vulnerability-in-react-js-applications-2bdffbcc1fa0)
+
+# References
+
+- [Exploiting Script Injection Flaws in ReactJS Apps](https://medium.com/dailyjs/exploiting-script-injection-flaws-in-reactjs-883fb1fe36c1)
