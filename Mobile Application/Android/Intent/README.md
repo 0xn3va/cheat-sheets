@@ -34,11 +34,11 @@ An intent can carry additional information that does not affect how it is resolv
 
 An intent filter is an expression in an app's manifest file that specifies the type of intents that the component would like to receive. For instance, declaring an intent filter for an activity makes it possible for other apps to directly start the activity with a certain kind of intent. Likewise, an activity without any declared intent filters can be started only with an explicit intent.
 
-Each intent filter is defined by an [<intent-filter>](https://developer.android.com/guide/topics/manifest/intent-filter-element) element in the app's manifest file, nested in the corresponding app component (such as an `<activity>` element). Inside the `<intent-filter>`, the type of intents to accept is specified using one or more of the following three elements:
+Each intent filter is defined by an [%3cintent-filter%3e](https://developer.android.com/guide/topics/manifest/intent-filter-element) element in the app's manifest file, nested in the corresponding app component (such as an `<activity>` element). Inside the `<intent-filter>`, the type of intents to accept is specified using one or more of the following three elements:
 
-- **[<action>](https://developer.android.com/guide/topics/manifest/action-element)** declares the intent action accepted, in the `name` attribute.
-- **[<data>](https://developer.android.com/guide/topics/manifest/data-element)** declares the type of data accepted, using one or more attributes that specify various aspects of the data URI (`scheme`, `host`, `port`, `path`) and MIME type.
-- **[<category>](https://developer.android.com/guide/topics/manifest/category-element)** declares the intent category accepted, in the name attribute.
+- **[%3caction%3e](https://developer.android.com/guide/topics/manifest/action-element)** declares the intent action accepted, in the `name` attribute.
+- **[%3cdata%3e](https://developer.android.com/guide/topics/manifest/data-element)** declares the type of data accepted, using one or more attributes that specify various aspects of the data URI (`scheme`, `host`, `port`, `path`) and MIME type.
+- **[%3ccategory%3e](https://developer.android.com/guide/topics/manifest/category-element)** declares the intent category accepted, in the name attribute.
 
 {% hint style="info" %}
 To receive implicit intents, it is necessary to include the [CATEGORY_DEFAULT](https://developer.android.com/reference/android/content/Intent#CATEGORY_DEFAULT) category in the intent filter. The methods `startActivity()` and `startActivityForResult()` treat all intents as if they declared the `CATEGORY_DEFAULT` category. If this category is not declared in the intent filter, no implicit intents will resolve to an activity.
@@ -106,6 +106,7 @@ try {
 ![](img/intent-filters.png)
 
 An implicit intent is delivered through the system to start another activity as follows:
+
 1. `Activity A` creates an Intent with an action description and passes it to `startActivity()`.
 2. The `Android System` searches for the best activity for the intent by comparing it to intent filters based on three aspects: Action, data (both URI and data type) and category. The [page](https://developer.android.com/guide/components/intents-filters#Resolution) describes how intents are matched to the appropriate components according to the intent filter declaration in an app's manifest file.
 3. When a match is found, the system starts the matching activity (`Activity B`) by invoking its `onCreate()` method and passing it the Intent.
@@ -255,7 +256,7 @@ The standard Android actions such as:
 - `android.media.action.IMAGE_CAPTURE` to create a photo
 - etc.
 
-are used to obtain the URI of a file (document, image, video) selected by the user and to process it in an app (e.g. by sending it to a server). Most Android/Java libraries can't work with `InputStream` returned by Android `ContentResolver` to send data to a server. So, apps very often cache URI data into a file before processing. This can lead to reading/writing of arbitrary files.
+are used to obtain the URI of a file (document, image, video) selected by the user and to process it in an app (e.g. by sending it to a server). Most Android/Java libraries can't work with `InputStream` returned by Android `ContentResolver` to send data to a server. Therefore, apps very often cache URI data into a file before processing. This can lead to reading/writing of arbitrary files.
 
 #### Arbitrary file reading
 
