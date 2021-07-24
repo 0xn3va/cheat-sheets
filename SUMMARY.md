@@ -9,8 +9,10 @@
     - [Application Signing](Mobile%20Application/Android/Overview/app-signing.md)
     - [Deployment](Mobile%20Application/Android/Overview/deployment.md)
     - [Package Manager](Mobile%20Application/Android/Overview/package-manager.md)
-- WebView
+- [Intent Vulnerabilities](Mobile%20Application/Android/Intent/README.md)
+- [WebView Vulnerabilities](Mobile%20Application/Android/WebView/README.md)
     - [WebResourceResponse Vulnerabilities](Mobile%20Application/Android/WebView/web-resource-response-vulnerabilities.md)
+    - [WebSettings Vulnerabilities](Mobile%20Application/Android/WebView/web-settings.md)
 
 ## Cloud
 

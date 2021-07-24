@@ -183,7 +183,25 @@ References:
 - [Report: Insufficient Type Check on GraphQL leading to Maintainer delete repository](https://gitlab.com/gitlab-org/gitlab/-/issues/215703)
 - Tool: [AutoGraphQL](https://graphql-dashboard.herokuapp.com/) + [How to use guide](https://www.youtube.com/watch?v=JJmufWfVvyU)
 
-## Bypass rate limits
+## Bypass of CSRF protection by [@inhibitor181](https://mobile.twitter.com/intigriti/status/1416363312296734720)
+
+Try to change the `Content-Type` header to get CSRF:
+
+```http
+POST /api/graphql HTTP/1.1
+Content-Type: application/json
+
+{"query":"mutation ..."}
+```
+
+```http
+POST /api/graphql HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+query=mutation...
+```
+
+## Bypass of rate limits
 
 The GraphQL specification allows multiple requests to be sent in a single request by batching them together. If the developers did not implement some mechanism to prevent the sending of batch requests, you could potentially bypass the rate limit by sending queries in a single request.
 
