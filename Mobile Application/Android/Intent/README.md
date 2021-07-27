@@ -405,13 +405,13 @@ By itself, starting hidden components does not have much security impact and req
 
 ### Bypass protection
 
-Developers can implement a filtering of received intents and [explicitly set a component to handle the intent](https://developer.android.com/reference/android/content/Intent#setComponent(android.content.ComponentName)) to `null`:
+Developers can implement a filtering of received intents and [explicitly set a component to handle the intent](https://developer.android.com/reference/android/content/Intent#setComponent%28android.content.ComponentName%29) to `null`:
 
 ```java
 intent.setComponent(null);
 ```
 
-In this case, you can bypass the app's explicit intent protection by specifying an unexported component via a [selector](https://developer.android.com/reference/android/content/Intent#setSelector(android.content.Intent)):
+In this case, you can bypass the app's explicit intent protection by specifying an unexported component via a [selector](https://developer.android.com/reference/android/content/Intent#setSelector%28android.content.Intent%29):
 
 ```java
 Intent intent = new Intent();
