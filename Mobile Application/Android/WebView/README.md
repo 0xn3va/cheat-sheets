@@ -51,7 +51,7 @@ However, there are several restrictions:
 - The [Intent.parseUri(stringUri, flags)](https://developer.android.com/reference/android/content/Intent#parseUri%28java.lang.String,%20int%29) ignores the [Intent.FLAG_GRANT_READ_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_READ_URI_PERMISSION) and [Intent.FLAG_GRANT_WRITE_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_WRITE_URI_PERMISSION) flags by default. The parser leaves them only if the [Intent.URI_ALLOW_UNSAFE](https://developer.android.com/reference/android/content/Intent#URI_ALLOW_UNSAFE) flag is set.
 
     ```java
-    startActivity(Intent.parseUri(url, Intent.URI_INTENT_SCHEME | Intent.URI_ALLOW_UNSAFE)
+    startActivity(Intent.parseUri(url, Intent.URI_INTENT_SCHEME | Intent.URI_ALLOW_UNSAFE))
     ```
 
 ## addJavascriptInterface
