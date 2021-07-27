@@ -6,11 +6,11 @@
 
 ## Access to arbitrary components
 
-The Intent class allows developers to convert an intent to a string holding a URI representation of it with the [toUri(flags)](https://developer.android.com/reference/android/content/Intent#toUri(int)) method and create an intent from this URI with the [parseUri(stringUri, flags)](https://developer.android.com/reference/android/content/Intent#parseUri(java.lang.String,%20int)) method. An app can use this to parse a URL with the `intent` scheme into intent and launch an activity while handling the URL within the WebView. If the handling is not implemented correctly, you can access arbitrary components of the app.
+The Intent class allows developers to convert an intent to a string holding a URI representation of it with the [toUri(flags)](https://developer.android.com/reference/android/content/Intent#toUri%28int%29) method and create an intent from this URI with the [parseUri(stringUri, flags)](https://developer.android.com/reference/android/content/Intent#parseUri%28java.lang.String,%20int%29) method. An app can use this to parse a URL with the `intent` scheme into intent and launch an activity while handling the URL within the WebView. If the handling is not implemented correctly, you can access arbitrary components of the app.
 
 {% embed url="https://0xn3va.gitbook.io/cheat-sheets/android-application/intent#access-to-arbitrary-components" %}
 
-Developers can override the [shouldOverrideUrlLoading()](https://developer.android.com/reference/android/webkit/WebViewClient#shouldOverrideUrlLoading(android.webkit.WebView,%20android.webkit.WebResourceRequest)) method of the WebViewClient class to handle all efforts to load a new link within WebView. The example of mishandling might look as follows:
+Developers can override the [shouldOverrideUrlLoading()](https://developer.android.com/reference/android/webkit/WebViewClient#shouldOverrideUrlLoading%28android.webkit.WebView,%20android.webkit.WebResourceRequest%29) method of the WebViewClient class to handle all efforts to load a new link within WebView. The example of mishandling might look as follows:
 
 ```java
 public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -48,7 +48,7 @@ location.href = "intent:#Intent;component=com.victim/.AuthWebViewActivity;S.url=
 However, there are several restrictions:
 
 - Intent embedded `Parcelable` and `Serializable` objects cannot be converted to string and these objects will be ignored.
-- The [Intent.parseUri(stringUri, flags)](https://developer.android.com/reference/android/content/Intent#parseUri(java.lang.String,%20int)) ignores the [Intent.FLAG_GRANT_READ_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_READ_URI_PERMISSION) and [Intent.FLAG_GRANT_WRITE_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_WRITE_URI_PERMISSION) flags by default. The parser leaves them only if the [Intent.URI_ALLOW_UNSAFE](https://developer.android.com/reference/android/content/Intent#URI_ALLOW_UNSAFE) flag is set.
+- The [Intent.parseUri(stringUri, flags)](https://developer.android.com/reference/android/content/Intent#parseUri%28java.lang.String,%20int%29) ignores the [Intent.FLAG_GRANT_READ_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_READ_URI_PERMISSION) and [Intent.FLAG_GRANT_WRITE_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_WRITE_URI_PERMISSION) flags by default. The parser leaves them only if the [Intent.URI_ALLOW_UNSAFE](https://developer.android.com/reference/android/content/Intent#URI_ALLOW_UNSAFE) flag is set.
 
     ```java
     startActivity(Intent.parseUri(url, Intent.URI_INTENT_SCHEME | Intent.URI_ALLOW_UNSAFE)
