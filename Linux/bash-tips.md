@@ -196,3 +196,7 @@ $ tar xf archive.tar.gz
 ```bash
 $ youtube-dl https://youtu.be/somth12asd34
 ```
+
+## Modern Unix
+
+{% embed url="https://github.com/ibraheemdev/modern-unix" %}
