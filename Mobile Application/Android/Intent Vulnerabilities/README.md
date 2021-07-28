@@ -343,7 +343,7 @@ In this case, you can pass a name with path-traversal to the `getFileName()` met
 
 This allows you to bypass the borders of the `/data/data/com.victim/cache/` directory and write the file to the `/data/data/com.victim/lib-main/lib.so`. If the targeted app loads this native library, this leads to arbitrary code execution in the victim's context.
 
-## Access to arbitrary components
+## Access arbitrary components
 
 Since the Intent is `Parcelable`, objects belonging to this class can be passed as extra data to another intent. This can be used to create a proxy component (activity, broadcast receiver or service) that take an embedded intent and pass it to dangerous methods such as `startActivity()` or `sendBroadcast()`. As a result, you can force an app to start an unexported component that can't be started directly from another app, or grant yourself access to app's content providers.
 
@@ -398,10 +398,11 @@ There are no security violations because the app has access to all of its own co
 By itself, starting hidden components does not have much security impact and requires abuse of the functionality of the hidden components:
 - [Oversecured: Access to app protected components: Escalation of attacks via Content Providers](https://blog.oversecured.com/Android-Access-to-app-protected-components/#escalation-of-attacks-via-content-providers)
 - [Oversecured: Access to app protected components: Attacks on Android File Provider](https://blog.oversecured.com/Android-Access-to-app-protected-components/#attacks-on-android-file-provider)
+- [Oversecured: Gaining access to arbitrary* Content Providers](https://blog.oversecured.com/Gaining-access-to-arbitrary-Content-Providers/)
 
-### Access to arbitrary components via WebView
+### Access arbitrary components via WebView
 
-{% embed url="https://0xn3va.gitbook.io/cheat-sheets/android-application/webview#access-to-arbitrary-components" %}
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/android-application/webview-vulnerabilities#access-arbitrary-components" %}
 
 ### Bypass protection
 
@@ -477,8 +478,8 @@ You can intercept card data as follows:
 - `EvilActivity.java`
 
     ```java
-    Log.d("evil", "Number: " + getIntent().getStringExtra("credit_card_number"));
-    Log.d("evil", "Holder: " + getIntent().getStringExtra("holder_name"));
+    Log.d("d", "Number: " + getIntent().getStringExtra("credit_card_number"));
+    Log.d("d", "Holder: " + getIntent().getStringExtra("holder_name"));
     // ...
     ```
 
@@ -512,8 +513,8 @@ Since implicit broadcasts are delivered to each receiver registered on the devic
         public void onReceive(Context context, Intent intent) {
             if ("com.victim.messenger.IN_APP_MESSAGE".equals(intent.getAction())) {
                 // log intercepted data
-                Log.d("evil", "From: " + intent.getStringExtra("from"));
-                Log.d("evil", "Text: " + intent.getStringExtra("text"));
+                Log.d("d", "From: " + intent.getStringExtra("from"));
+                Log.d("d", "Text: " + intent.getStringExtra("text"));
             }
         }
     }
