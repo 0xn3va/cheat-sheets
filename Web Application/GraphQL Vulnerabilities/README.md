@@ -1,4 +1,4 @@
-# GraphQL
+# GraphQL overview
 
 [GraphQL](https://spec.graphql.org/) is a query language designed to build client applications by providing an intuitive and flexible syntax and system for describing their data requirements and interactions. GraphQL uses a declarative approach to fetching data, clients can specify exactly what data they need from the API. As a result, GraphQL provides a single endpoint, which allows clients to get the necessary data, instead of multiple endpoints in the case of a REST API.
 
@@ -6,24 +6,41 @@
 
 ## GraphQL schema
 
-A GraphQL service's collective type system capabilities are referred to as that service's "schema". A schema is defined in terms of the types and directives it supports as well as the root operation types for each kind of operation: query, mutation, and subscription; this determines the place in the type system where those operations begin.
+GraphQL server uses a schema to describe the shape of available data. This schema defines a hierarchy of types with fields that are populated from back-end data stores. The schema also specifies exactly which queries and mutations are available for clients to execute.
 
-In other words, GraphQL schema consists of the following parts:
-- `Resolve-methods` - methods, which implement a functionality of working with data (getting or modifying)
-- `Input and output data types` - description of input and output data for resolve-methods
+Most of the schema types have one or more `fields`. Each field returns data of the `type` specified. Every type definition in a GraphQL schema belongs to one of the following categories:
+- [Scalar](#scalar-types)
+- [Object](#object-types), this includes the three special `root operation types`:
+    - [Query](#query-types)
+    - [Mutation](#mutation-types)
+    - [Subscription](#subscription-types)
+- [Input](#input-types)
+- [Enum](#enum-types)
+- [Union](#union-types)
+- [Interface](#interface-types)
 
-## Root operation types
+### Scalar types
 
-A schema defines the initial root operation type for each kind of operation it supports:
-- query
-- mutation
-- subscription
+Scalar types always resolve to concrete data. GraphQL provides the following default scalar types:
+- `Int` a signed 32‐bit integer
+- `Float` a signed double-precision floating-point value
+- `String` a UTF‐8 character sequence
+- `Boolean` true or false
+- `ID` (serialized as a `String`) a unique identifier that's often used to refetch an object or as the key for a cache. Although it's serialized as a String, an ID is not intended to be human‐readable.
 
-### Query
+These primitive types cover the majority of use cases. However, it is possible to create [custom scalar types](https://graphql.org/learn/schema/#scalar-types).
 
-The query root opertation type is used for fetching/reading data. This type must be provided by a GraphQL schema.
+### Object types
 
-```javascript
+Most of the types in a GraphQL schema are object types. An object type contains a collection of `fields`, each of which has its own `type`. Two object types can include each other as fields.
+
+### Query types
+
+The `Query` type is a special object type that defines all of the top-level entry points for queries that clients execute against a server. Each field of the Query type defines the name and return type of a different entry point.
+
+You can use the Query type to fetch data about users as follows:
+
+```graphql
 /**
  * Requests names of all users
  * You also can request another field, e. g. id or email
@@ -45,9 +62,11 @@ query {
 }
 ```
 
-Notice all fields in the query operation are requested parallelly:
+{% hint style="info" %}
+All fields within the Query operation are requested parallelly.
+{% endhint %}
 
-```javascript
+```graphql
 /**
  * getUserById and getUserByName will be requested parallelly
  */
@@ -57,11 +76,13 @@ query {
 }
 ```
 
-### Mutation
+### Mutation types
 
-The mutation root operation type is used for creating/updating/deleting data. This type is optional.
+The `Mutation` type is similar in structure and purpose to the Query type. Whereas the Query type defines entry points for read operations, the Mutation type defines entry points for `write` operations. This type is optional. Each field of the Mutation type defines the signature and return type of a different entry point.
 
-```javascript
+You can use the Mutation type to create a new user as follows:
+
+```graphql
 /**
  * Create new user
  * Requests id, name and email fields in a response
@@ -75,9 +96,11 @@ mutation {
 }
 ```
 
-Notice fields in the mutation operation are requested sequentially:
+{% hint style="info" %}
+Fields within the Mutation operation are requested sequentially.
+{% endhint %}
 
-```javascript
+```graphql
 /**
  * The operations are invoked in the following sequence:
  *   1. createUser
@@ -89,14 +112,20 @@ mutation {
 }
 ```
 
-### Subscription
+### Subscription types
 
-The subscription root operation type is used for notifying users of any changes, which have occured in a system. This type is optional. It works the following way: a client subscribes on some action and creates a connection with the server (commonly via WebSocket); when this action is occured, the server sends a notification via the created connection.
+The Subscription type is used for notifying users of any changes, which have occured in a system. This type is optional.
 
-```javascript
+The Subscription type works the following way:
+- A client subscribes on some action and creates a connection with the server (commonly via WebSocket).
+- When this action is occured the server sends a notification via the created connection.
+
+You can subscribe to create a new user as follows:
+
+```graphql
 /**
- * When a new User will be created,
- * the server sends the name and email of the new user to a client
+ * When a new user will be created
+ * The server sends the name and email of the new user to a client
  */
 subscription {
   newUser {
@@ -106,70 +135,117 @@ subscription {
 }
 ```
 
-## Introspection
+### Input types
 
-GraphQL defines the introspection schema, which is used to ask a GraphQL for information about what queries it supports. Notice developers can forbid introspection of their applications.
+`Input` types are special object types that allow you to provide hierarchical data as arguments to fields (as opposed to providing only flat scalar arguments). Each field of an input type can be only a scalar, an enum, or another input type.
 
-```javascript
-/**
- * Requests all defined operations
- * The response will contain operations of all types
- * with their name and existing fields
- */
-query {
-  __schema {
-    types {
-      name
-      fields {
-        name
-      }
-    }
-  }
-}
+### Enum types
 
-/**
- * Requests all operations with a specific type
- * Use the following keywords for specifying the type of operation:
- *  - queryType
- *  - mutationType
- *  - subscriptionType
- * The response will contain operations with a specific type,
- * their name and existing fields
- */
-query {
-  __schema {
-    queryType {
-      fields {
-        name
-        args {
-          name
-        }
-      }
-    }
-  }
-}
+The `Enum` is similar to a scalar type, but its legal values are defined in the schema. Enums are most useful in situations where the user must pick from a prescribed list of options.
 
-/**
- * Requests a specific operation
- * The response will contain a specific operation
- * with its name and existing fields
- */
-query {
-  __type(name: "allUsers") {
-    fields {
-      name
-    }
-  }
-}
-```
+### Union types
+
+The `Union` type declares which object types are included in the union. A field can have a union (or a list of that union) as its return type. In this case, it can return any object type that's included in the union.
+
+All of a union's included types must be object types (not scalars, input types, etc.).
+
+### Interface types
+
+An interface specifies a set of fields that multiple object types can include. If an object type implements an interface, it must include all of that interface's fields.
+
+A field can have an interface (or a list of that interface) as its return type. In this case, it can return any object type that implements that interface.
+
+## Introspection schema
+
+GraphQL defines the introspection schema, which is used to ask a GraphQL for information about what queries it supports. You can fetch introspection schema with the following query:
+
+{% embed url="https://gist.github.com/0xn3va/af014586187015db730bcf638a65ddac" %}
 
 You can also use various GraphQL IDEs or GraphQL Voyager for introspection.
 
 {% embed url="https://github.com/APIs-guru/graphql-voyager" %}
 
-If developers forbided introspection of their applications you can try to obtain the schema with the `clairvoyance`.
+
+However, developers can forbid introspection of their applications. In this case, you can try to obtain the schema with the `clairvoyance`.
 
 {% embed url="https://github.com/nikitastupin/clairvoyance" %}
+
+### How to read an introspection schema?
+
+Typically, an introspection schema looks as the following one:
+
+```json
+{
+  "data": {
+    "__schema": {
+      "queryType": {
+        "name": "Query"
+      },
+      "mutationType": {
+        "name": "Mutation"
+      },
+      "subscriptionType": {
+        "name": "Subscription"
+      },
+      "types": [ ... ],
+      "directives": [ ... ]
+    }
+  }
+}
+```
+
+- The `queryType`, `mutationType`, `subscriptionType` define the names of fields that contain list of corresponding queries supported by an application. In other words, if the `queryType` name is `QueryRoot` you can find all supported the Query types inside the element of the `data.__schema.types` list with `QueryRoot` name.
+- The `types` contains all supported variables and queries.
+- The `directives` contains a list of supported [directives](https://graphql.org/learn/queries/#directives).
+
+For example, the following schema defines the `User` object and the `allUsers` query that returns the list of `Users`:
+
+```json
+{
+  "data": {
+    "__schema": {
+      "queryType": {
+        "name": "QueryRoot"
+      },
+      "types": [
+        {
+          "name": "User",
+          "kind": "OBJECT",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR"
+              }
+            }
+          ]
+        },
+        {
+          "name": "QueryRoot",
+          "kind": "OBJECT",
+          "fields": [
+            {
+              "name": "allUsers",
+              "description": "Returns all users.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "User",
+                  "ofType": null
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
 
 # Security issues
 
@@ -285,3 +361,4 @@ References:
 - [GraphQL Specification](https://spec.graphql.org/)
 - [Practical GraphQL attack vectors](https://jondow.eu/practical-graphql-attack-vectors/)
 - [Public GraphQL APIs](https://github.com/APIs-guru/graphql-apis)
+- [Apollo Docs: GraphQL schema basics](https://www.apollographql.com/docs/apollo-server/schema/schema/)
