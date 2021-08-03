@@ -259,7 +259,9 @@ References:
 - [Report: Insufficient Type Check on GraphQL leading to Maintainer delete repository](https://gitlab.com/gitlab-org/gitlab/-/issues/215703)
 - Tool: [AutoGraphQL](https://graphql-dashboard.herokuapp.com/) + [How to use guide](https://www.youtube.com/watch?v=JJmufWfVvyU)
 
-## Bypass of CSRF protection by [@inhibitor181](https://mobile.twitter.com/intigriti/status/1416363312296734720)
+## Bypass of CSRF protection
+
+### Change Content-Type by [@inhibitor181](https://mobile.twitter.com/intigriti/status/1416363312296734720)
 
 Try to change the `Content-Type` header to get CSRF:
 
@@ -276,6 +278,13 @@ Content-Type: application/x-www-form-urlencoded
 
 query=mutation...
 ```
+
+### Change HTTP method
+
+Try to send `GET` requests instead of `POST` ones to get CSRF.
+
+References:
+- [Report: CSRF on /api/graphql allows executing mutations through GET requests](https://hackerone.com/reports/1122408)
 
 ## Bypass of rate limits
 
