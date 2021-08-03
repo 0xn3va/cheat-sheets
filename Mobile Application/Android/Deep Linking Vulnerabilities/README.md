@@ -133,6 +133,7 @@ For example, if an app allows authenticated users to change their email through 
 
 References:
 - [Report: Periscope android app deeplink leads to CSRF in follow action](https://hackerone.com/reports/583987)
+- [Report: CSRF when unlocking lenses leads to lenses being forcefully installed without user interaction](https://hackerone.com/reports/1085336)
 
 # References
 
