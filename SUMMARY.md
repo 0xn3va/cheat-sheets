@@ -12,8 +12,8 @@
 - [Intent Vulnerabilities](Mobile%20Application/Android/Intent%20Vulnerabilities/README.md)
     - [Deep Linking Vulnerabilities](Mobile%20Application/Android/Deep%20Linking%20Vulnerabilities/README.md)
 - [WebView Vulnerabilities](Mobile%20Application/Android/WebView%20Vulnerabilities/README.md)
-    - [WebResourceResponse Vulnerabilities](Mobile%20Application/Android/WebView/web-resource-response-vulnerabilities.md)
-    - [WebSettings Vulnerabilities](Mobile%20Application/Android/WebView/web-settings.md)
+    - [WebResourceResponse Vulnerabilities](Mobile%20Application/Android/WebView%20Vulnerabilities/web-resource-response-vulnerabilities.md)
+    - [WebSettings Vulnerabilities](Mobile%20Application/Android/WebView%20Vulnerabilities/web-settings.md)
 
 ## Cloud
 
