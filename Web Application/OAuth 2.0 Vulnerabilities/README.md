@@ -411,6 +411,9 @@ There are several weak configurations, depending on the logic handled by the ser
 
 - Dangerous javascript that handles query parameters and URL fragments.
 
+References:
+- [Report: Stealing SSO Login Tokens (snappublisher.snapchat.com)](https://hackerone.com/reports/265943)
+
 # References
 
 - [OAuth 2.0 Authorization Framework](https://auth0.com/docs/protocols/oauth2)
