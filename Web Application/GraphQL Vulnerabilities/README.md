@@ -230,11 +230,11 @@ For example, the following schema defines the `User` object and the `allUsers` q
               "description": "Returns all users.",
               "args": [],
               "type": {
-                "kind": "NON_NULL",
                 "name": null,
+                "kind": "LIST",
                 "ofType": {
-                  "kind": "OBJECT",
                   "name": "User",
+                  "kind": "OBJECT",
                   "ofType": null
                 }
               }
