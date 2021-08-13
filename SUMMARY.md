@@ -40,6 +40,9 @@
     - [Spring Boot Actuators](Framework/Spring/spring-boot-actuators.md)
     - [Spring Data Redis Insecure Deserialization](Framework/Spring/spring-data-redis-insecure-deserialization.md)
     - [Spring View Manipulation](Framework/Spring/view-manipulation.md)
+- React
+    - [Overview](Framework/React/overview.md)
+    - [Security Issues](Framework/React/security-issues.md)
 
 ## Linux
 
@@ -111,7 +114,6 @@
 - [OAuth 2.0 Vulnerabilities](Web%20Application/OAuth%202.0%20Vulnerabilities/README.md)
     - [OpenID Connect Vulnerabilities](Web%20Application/OAuth%202.0%20Vulnerabilities/openid-connect.md)
 - [Race Condition](Web%20Application/Race%20Condition/README.md)
-- [ReactJS Vulnerabilities](Web%20Application/ReactJS%20Vulnerabilities/README.md)
 - [Server Side Request Forgery](Web%20Application/Server%20Side%20Request%20Forgery/README.md)
     - [Post Exploitation](Web%20Application/Server%20Side%20Request%20Forgery/post-exploitation.md)
 - [Two-Factor Authentication Vulnerabilities](Web%20Application/Two-Factor%20Authentication%20Vulnerabilities/README.md)
