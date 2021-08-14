@@ -1,3 +1,7 @@
+# Credentials
+
+- [Default Credentials Cheat Sheet](https://github.com/ihebski/DefaultCreds-cheat-sheet) - one place for all the default credentials to assist the Blue/Red teamers activities on finding devices with default password.
+
 # Universal
 
 - [WordList Compendium](https://github.com/Dormidera/WordList-Compendium) - personal compilation of wordlists & dictionaries for everything; users, passwords, directories, files, vulnerabilities, fuzzing, injections, wordlists of tools, etc.
