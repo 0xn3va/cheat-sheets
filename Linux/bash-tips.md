@@ -6,6 +6,19 @@
 
 # Useful commands
 
+## cheat.sh
+
+[cheat.sh](https://github.com/chubin/cheat.sh) provides unified access to the best community driven cheat sheets repositories of the world.
+
+```bash
+# To get a cheat sheet just use the following command
+# Change <command> to command name, for instance, ls, id, curl, etc.
+$ curl cheat.sh/<command>
+
+# Cheat sheet for curl
+$ curl cheat.sh/curl
+```
+
 ## aria2c
 
 [aria2](https://github.com/aria2/aria2) is a lightweight multi-protocol & multi-source, cross platform download utility operated in command-line.
@@ -62,6 +75,18 @@ $ chmod g+s <name>
 # Set sticky bit
 $ chmod o+t <name>
 ```
+
+## curl
+
+[curl](https://github.com/curl/curl) a command line tool and library for transferring data with URL syntax.
+
+Useful operation mode:
+- [-o, --output <file>](https://curl.se/docs/manpage.html#-o) - write output to `file` instead of stdout.
+- [-X, --request <command>](https://curl.se/docs/manpage.html#-X) - specifies a custom request method to use when communicating with the HTTP server.
+- [-H, --header <header/@file>](https://curl.se/docs/manpage.html#-H) - extra header to include in the request when sending HTTP to a server.
+- [-d, --data <data>](https://curl.se/docs/manpage.html#-d) - adds body to the request.
+- [--path-as-is](https://curl.se/docs/manpage.html#--path-as-is) - tell curl to not handle sequences of `/../` or `/./` in the given URL path.
+- [-v, --verbose](https://curl.se/docs/manpage.html#-v) - makes curl verbose during the operation.
 
 ## find
 
