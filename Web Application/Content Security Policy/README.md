@@ -210,6 +210,7 @@ CSP policy could be generated dynamically based on variables that are controlled
 References:
 - [Writeup: CSP Injection - CTFZone 2019 Quals - Shop Task](https://blog.blackfan.ru/2019/12/ctfzone-2019-shop.html)
 - [Writeup: Bypassing CSP with policy injection by @garethheyes](https://portswigger.net/research/bypassing-csp-with-policy-injection)
+- [Writeup: How to Hack Apple ID](https://zemnmez.medium.com/how-to-hack-apple-id-f3cc9b483a41)
 
 ## unsafe-eval
 
@@ -250,6 +251,13 @@ This is a misconfigured CSP policy due to missing `default-src`, allowing use `o
 
 <param name="AllowScriptAccess" value="always"></object>
 ```
+
+## Script gadgets
+
+You can use script gadgets to bypass CSP even if a nonce-based policy is in use, since the gadget is usually allowed to execute JavaScript.
+
+References:
+- [PortSwigger: Hunting nonce-based CSP bypasses with dynamic analysis](https://portswigger.net/research/hunting-nonce-based-csp-bypasses-with-dynamic-analysis)
 
 ## Uploading files
 

@@ -1,0 +1,1 @@
+- [gcp_enum.sh](https://gist.github.com/carnal0wnage/757d19520fcd9764b24ebd1d89481541) - use the gcloud utilities to enumerate as much access as possible from a GCP service account json file.

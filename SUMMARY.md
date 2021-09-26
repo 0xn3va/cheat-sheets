@@ -87,6 +87,7 @@
     - [Docker Analysis](Resources/Software/docker-analysis.md)
     - [Dynamic Analysis](Resources/Software/dynamic-analysis.md)
     - [Fuzzing](Resources/Software/fuzzing.md)
+    - [GCP Tools](Resources/Software/gcp-tools.md)
     - [Reverse Engineering](Resources/Software/reverse-engineering.md)
     - [Static Analysis](Resources/Software/static-analysis.md)
     - [Vulnerability Scanning](Resources/Software/vulnerability-scanning.md)
@@ -96,7 +97,9 @@
 ## Web Application
 
 - [Abusing HTTP hop-by-hop Request Headers](Web%20Application/Abusing%20HTTP%20hop-by-hop%20Request%20Headers/README.md)
-- [Account Takeover](Web%20Application/Account%20Takeover/README.md)
+- [Broken Authentication](Web%20Application/Broken%20Authentication/README.md)
+- [Command Injection](Web%20Application/Command%20Injection/README.md)
+    - [Parameters Injection](Web%20Application/Command%20Injection/parameters-injection.md)
 - [Content Security Policy](Web%20Application/Content%20Security%20Policy/README.md)
 - [Cookie Security](Web%20Application/Cookie%20Security/README.md)
 - [CORS Misconfiguration](Web%20Application/CORS%20Misconfiguration/README.md)
