@@ -1,4 +1,33 @@
-Account takeover allows you to take full control on the user's account.
+# Adding or changing email addresses
+
+If the operations of adding a new email address or changing an existing one do not require password confirmation, session hijacking, XSS or CSRF can lead to account takeover.
+
+# Default credentials
+
+Try to login with default credentials into admin panels, third-party services, middleware, and etc.
+
+You can use the following lists:
+- [Default Credentials Cheat Sheet](https://github.com/ihebski/DefaultCreds-cheat-sheet)
+- [SecLists Default Credentials](https://github.com/danielmiessler/SecLists/tree/master/Passwords/Default-Credentials)
+
+# Credential stuffing
+
+[Credential stuffing](https://owasp.org/www-community/attacks/Credential_stuffing) is a search for leaked usernames and passwords for use in popular online services, as most users are "comfortable" using the same password everywhere.
+
+You can use the following lists:
+- [PWDB - New generation of Password Mass-Analysis](https://github.com/ignis-sec/Pwdb-Public)
+- [SecLists](https://github.com/danielmiessler/SecLists)
+- [Probable Wordlists - Version 2.0](https://github.com/berzerk0/Probable-Wordlists)
+
+Resources:
+- [Writeup: Credential stuffing in Bug bounty hunting](https://krevetk0.medium.com/credential-stuffing-in-bug-bounty-hunting-7168dc1d3153)
+- Zeronights 2021: Valeriy Shevchenko – Fantastic bugs and where to find them
+    - [Video](https://www.youtube.com/watch?v=5rDGNm3DJfU)
+    - [Slides](https://zeronights.ru/wp-content/uploads/2021/09/valeri_shevchenko_fantastic_b%CC%B6e%CC%B6a%CC%B6s%CC%B6t%CC%B6s%CC%B6_bugs_and_where_to_find_them_1.pdf)
+
+# OAuth 2.0
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/oauth-2.0-vulnerabilities" %}
 
 # Password recovery
 
@@ -18,6 +47,17 @@ Content-Length: 57
 ```
 
 an application will send the same recovery link to two email addresses.
+
+If an app accepts form data, try the following payloads:
+
+```http
+email=victim@website.com&attacker@website.com
+email=victim@website.com,attacker@website.com
+email=victim@website.com|attacker@website.com
+email=victim@website.com%20attacker@website.com
+email=victim@website.com%09attacker@website.com
+...
+```
 
 ## Host header poisoning
 
@@ -97,10 +137,6 @@ References:
 
 - [Write up: Password Reset link hijacking via Host Header Poisoning](https://hackerone.com/reports/226659)
 
-# OAuth 2.0
-
-{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/oauth-2.0-vulnerabilities" %}
-
 # Third-party sign-in or sign-up
 
 Applications that implement third party sign-in or sign-up often identify users based on the attached email address that the third party application sends. In such cases, you can try sign-in or sign-up with two different third-party applications that are linked to the same email address. Sometimes these two accounts can be joined and you will have access to the victim's account by sign-in or sign-up with your third-party application account.
@@ -114,7 +150,3 @@ For example, suppose a victim sign-in or sign-up to `vulnerable-website.com` wit
 References:
 
 - [Write up: account takeover https://teamplay.qiwi.com](https://hackerone.com/reports/439207)
-
-# Adding or changing email addresses
-
-If the operations of adding a new email address or changing an existing one do not require password confirmation, session hijacking, XSS or CSRF can lead to account takeover.
