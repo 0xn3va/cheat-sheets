@@ -1,5 +1,6 @@
 structure:
   readme: INTRODUCTION.md
   summary: SUMMARY.md
+
 redirects:  
-  cheat-sheets/web-application/account-takeover: ./Web\ Application/Broken\ Authentication/README.md
+  web-application/account-takeover: ./Web\ Application/Broken\ Authentication/README.md
