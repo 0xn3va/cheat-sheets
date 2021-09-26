@@ -165,7 +165,6 @@ You can also use various GraphQL IDEs or GraphQL Voyager for introspection.
 
 {% embed url="https://github.com/APIs-guru/graphql-voyager" %}
 
-
 However, developers can forbid introspection of their applications. In this case, you can try to obtain the schema with the `clairvoyance`.
 
 {% embed url="https://github.com/nikitastupin/clairvoyance" %}
@@ -249,6 +248,63 @@ For example, the following schema defines the `User` object and the `allUsers` q
 
 # Security issues
 
+## Abuse GraphQL as an API gateway
+
+GraphQL resolvers can be implemented as a REST API gateway and use the provided parameters to craft and send requests to the API. It the parameters are not validated properly resolvers can be vulnerable to SSRF.
+
+Suppose, the GrapghQL scheme contains a query that provide information about an user by ID:
+
+```graphql
+type Query {
+    userByID(id: ID!):User
+}
+
+type User {
+    id: ID!
+    name: String!
+    friends: [User!]!
+}
+```
+
+The resolver can look like this (pseudocode):
+
+```python
+results = client.get('https://api.website.internal/users/{id}')
+return result.data
+```
+
+In this case, you can send request with the following queries:
+
+```graphql
+{
+    firstFriend: userByID(id: "1337/friends/1"){
+        id
+        name
+    }
+    secondFriend: userByID(id: "1337/friends/2"){
+        id
+        name
+    }
+}
+```
+
+This results in the following GET requests:
+
+```http
+https://api.website.internal/users/1337/friends/1
+https://api.website.internal/users/1337/friends/2
+```
+
+This is possible since the ID Scalar should be [serialized as a string](https://spec.graphql.org/June2018/#sec-ID) and "1337/friends/1" is a valid string.
+
+## Abuse GraphQL engine
+
+GraphQL engines are used to implement GraphQL API. The engines can have vulnerabilities or be misconfigured.
+
+In order to determine which engine is used you can use the `graphw00f`.
+
+{% embed url="https://github.com/dolevf/graphw00f" %}
+
 ## Broken access control
 
 GraphQL does not define any access control by design. Developers implement an access contol inside resolve-methods and a business logic code. So try to bypass access control checks with the techniques used in the case of the REST API.
@@ -290,7 +346,7 @@ References:
 
 The GraphQL specification allows multiple requests to be sent in a single request by batching them together. If the developers did not implement some mechanism to prevent the sending of batch requests, you could potentially bypass the rate limit by sending queries in a single request.
 
-```javascript
+```graphql
 mutation { login(input: { user:"a", password:"password" }) { success } }
 mutation { login(input: { user:"b", password:"password" }) { success } }
 ....
@@ -301,7 +357,7 @@ mutation { login(input: { user:"z", password:"password" }) { success } }
 
 By default GraphQL does not restrict length of queries. The GraphQL queries can be nested one inside the other and create cascading requests to the database. As a result, nested queries can be performed in order to cause a denial of service attack:
 
-```javascript
+```graphql
 query {
   posts {
     title
@@ -334,11 +390,15 @@ query {
 }
 ```
 
+## Excessive errors
+
+GraphQL has a [nice and expressive way of returning errors](https://spec.graphql.org/June2018/#sec-Errors). However, error messages can be too informative. Try to cause errors, for instance by fuzzing parameters, error messages can reveal details about the error, actual paths on the system, chunks of code or queries, etc.
+
 ## GraphQL injection
 
-Even though GraphQL is strongly typed, SQL and NoSQL injections are still possible since GraphQL is just a layer between the client and the database.
+Even though GraphQL is strongly typed, SQL, NoSQL and Command injections are still possible since GraphQL is just a layer between a client and backend.
 
-```javascript
+```graphql
 mutation { 
     login(input: {
         user: "admin", 
