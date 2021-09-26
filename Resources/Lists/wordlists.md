@@ -1,6 +1,7 @@
 # Credentials
 
 - [Default Credentials Cheat Sheet](https://github.com/ihebski/DefaultCreds-cheat-sheet) - one place for all the default credentials to assist the Blue/Red teamers activities on finding devices with default password.
+- [PWDB - New generation of Password Mass-Analysis](https://github.com/ignis-sec/Pwdb-Public) - a collection of all the data extracted from 1 billion credential leaks from the Internet.
 
 # Universal
 
