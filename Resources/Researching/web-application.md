@@ -11,3 +11,8 @@
 # Reverse proxy & simple server
 
 - [Reproxy](https://github.com/umputun/reproxy) - a simple edge HTTP(s) server / reverse proxy supporting various providers (docker, static, file).
+
+# Upload & download
+
+- [httpsweet](https://github.com/eloypgz/httpsweet) - an HTTP server to easily download and upload files.
+- [QueenSono](https://github.com/ariary/QueenSono) - Golang binary for data exfiltration with ICMP protocol.
