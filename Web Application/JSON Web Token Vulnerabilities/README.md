@@ -333,6 +333,8 @@ References:
 
 {% embed url="https://github.com/ticarpi/jwt_tool" %}
 
+{% embed url="https://github.com/hahwul/jwt-hack" %}
+
 # References
 
 - [RFC7519: JSON Web Token (JWT)](https://tools.ietf.org/html/rfc7519)
