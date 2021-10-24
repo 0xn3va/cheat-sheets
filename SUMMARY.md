@@ -1,5 +1,7 @@
 # Summary
 
+- [cheat-sheets](INTRODUCTION.md)
+
 ## Android Application
 
 - Overview
