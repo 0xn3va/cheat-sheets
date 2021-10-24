@@ -1,6 +1,6 @@
 # Summary
 
-- [cheat-sheets](INTRODUCTION.md)
+- [Application Security Cheat Sheet](INTRODUCTION.md)
 
 ## Android Application
 
