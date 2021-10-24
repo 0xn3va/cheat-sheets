@@ -1,3 +1,5 @@
+# Spring Boot actuators overview
+
 Spring Boot includes a number of additional features called [actuators](https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html) to help monitor and control your application when you push it to production. Actuators allow you to control and monitor your application using either HTTP or JMX endpoints. Auditing, health and metrics gathering can also open a hidden door to the server if the application has been misconfigured.
 
 Spring Boot includes a number of built-in [endpoints](https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html#production-ready-endpoints) ([endpoints](https://docs.spring.io/spring-boot/docs/1.5.x/reference/html/production-ready-endpoints.html) for Spring Boot 1.x) and lets you add your own. For example, the `health` endpoint provides basic application health information.
