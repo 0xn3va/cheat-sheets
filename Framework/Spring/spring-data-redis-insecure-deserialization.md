@@ -1,8 +1,14 @@
-Spring Data Redis, part of the larger Spring Data family, provides easy configuration and access to Redis from Spring applications.
+# Spring Data Redis overview
 
-Spring Data Redis first serializes data before writing data to Redis. By default, Java native serialization is used for serialization, more see [here](https://github.com/spring-projects/spring-data-redis/blob/master/src/main/asciidoc/reference/redis.adoc#serializers). When Spring Data Redis retrieves data from Redis, the stored bytecode is deserialized, and the target class is not checked or filtered during deserialization, which can lead to remote code execution.
+Spring Data Redis, part of the larger Spring Data family, provides easy configuration and access to Redis from Spring applications. Spring Data Redis first serializes data before writing data to Redis. By default, Java native serialization is used for serialization.
 
-# Exploitation
+{% embed url="https://github.com/spring-projects/spring-data-redis/blob/master/src/main/asciidoc/reference/redis.adoc#serializers" %}
+
+# Insecure deserialization
+
+When Spring Data Redis retrieves data from Redis, the stored bytecode is deserialized. Since the target class is not checked or filtered during deserialization it can lead to remote code execution.
+
+Example of exploitation:
 
 1. Generate payload with [ysoserial](https://github.com/frohoff/ysoserial)
 2. Write the generated payload in Redis:

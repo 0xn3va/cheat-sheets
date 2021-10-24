@@ -126,6 +126,11 @@ References:
 
 {% embed url="https://github.com/barrracud4/image-upload-exploits" %}
 
+Resources:
+- Zeronights 2021: Emil Lerner – HotPics
+    - [Video](https://www.youtube.com/watch?v=BQVoHLfAc8A)
+    - [Slides](https://zeronights.ru/wp-content/uploads/2021/09/lerner_1.pdf)
+
 ## FFmpeg
 
 {% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/server-side-request-forgery#ffmpeg" %}

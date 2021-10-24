@@ -30,6 +30,7 @@
 - Escaping
     - [Exposed Docker Socket](Container/Escaping/exposed-docker-socket.md)
     - [Excessive Capabilities](Container/Escaping/excessive-capabilities.md)
+    - [Host Networking Driver](Container/Escaping/host-networking-driver.md)
     - [Sensitive Mounts](Container/Escaping/sensitive-mounts.md)
 
 ## Framework
@@ -37,6 +38,7 @@
 - Spring
     - [Overview](Framework/Spring/overview.md)
     - [Mass Assignment](Framework/Spring/mass-assignment.md)
+    - [SpEL Injection](Framework/Spring/spel-injection.md)
     - [Spring Boot Actuators](Framework/Spring/spring-boot-actuators.md)
     - [Spring Data Redis Insecure Deserialization](Framework/Spring/spring-data-redis-insecure-deserialization.md)
     - [Spring View Manipulation](Framework/Spring/view-manipulation.md)
@@ -98,6 +100,7 @@
 
 - [Abusing HTTP hop-by-hop Request Headers](Web%20Application/Abusing%20HTTP%20hop-by-hop%20Request%20Headers/README.md)
 - [Broken Authentication](Web%20Application/Broken%20Authentication/README.md)
+    - [Two-Factor Authentication Vulnerabilities](Web%20Application/Broken%20Authentication/two-factor-authentication-vulnerabilities.md)
 - [Command Injection](Web%20Application/Command%20Injection/README.md)
     - [Parameters Injection](Web%20Application/Command%20Injection/parameters-injection.md)
 - [Content Security Policy](Web%20Application/Content%20Security%20Policy/README.md)
@@ -112,6 +115,7 @@
     - [target attribute](Web%20Application/HTML%20Injection/target.md)
 - [HTTP Header Security](Web%20Application/HTTP%20Headers%20Security/README.md)
 - [HTTP Request Smuggling](Web%20Application/HTTP%20Request%20Smuggling/README.md)
+- [Improper Rate Limits](Web%20Application/Improper%20Rate%20Limits/README.md)
 - [JavaScript Prototype Pollution](Web%20Application/JavaScript%20Prototype%20Pollution/README.md)
 - [JSON Web Token Vulnerabilities](Web%20Application/JSON%20Web%20Token%20Vulnerabilities/README.md)
 - [OAuth 2.0 Vulnerabilities](Web%20Application/OAuth%202.0%20Vulnerabilities/README.md)
@@ -119,5 +123,4 @@
 - [Race Condition](Web%20Application/Race%20Condition/README.md)
 - [Server Side Request Forgery](Web%20Application/Server%20Side%20Request%20Forgery/README.md)
     - [Post Exploitation](Web%20Application/Server%20Side%20Request%20Forgery/post-exploitation.md)
-- [Two-Factor Authentication Vulnerabilities](Web%20Application/Two-Factor%20Authentication%20Vulnerabilities/README.md)
 - [Web Cache Poisoning](Web%20Application/Web%20Cache%20Poisoning/README.md)

