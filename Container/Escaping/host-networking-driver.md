@@ -2,6 +2,7 @@ If a container was configured with the Docker [host networking driver (--network
 
 For instance, you can use this to sniff and even spoof traffic between host and metadata instance.
 
-# References
+References:
 
 - [Writeup: How to contact Google SRE: Dropping a shell in cloud SQL](https://offensi.com/2020/08/18/how-to-contact-google-sre-dropping-a-shell-in-cloud-sql/)
+- [Metadata service MITM allows root privilege escalation (EKS / GKE)](https://blog.champtar.fr/Metadata_MITM_root_EKS_GKE/)

