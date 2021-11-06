@@ -5,6 +5,16 @@ The Docker daemon can listen for [Docker Engine API](https://docs.docker.com/eng
 
 By default, Docker runs through a non-networked UNIX socket, which is created at `/var/run/docker.sock` and requires either root permission or docker group membership.
 
+{% hint style="info" %}
+Additionally, pay attention to the runtime sockets of other high-level runtimes:
+- dockershim: `unix:///var/run/dockershim.sock`
+- containerd: `unix:///run/containerd/containerd.sock`
+- cri-o: `unix:///var/run/crio/crio.sock`
+- frakti: `unix:///var/run/frakti.sock`
+- rktlet: `unix:///var/run/rktlet.sock`
+- ...
+{% endhint %}
+
 A `tcp` socket is used to remotely access the Docker daemon, for which the default setup provides un-encrypted and un-authenticated direct access. It is conventional to use port **2375** for un-encrypted, and port **2376** for encrypted communication with the daemon.
 
 On Systemd-based systems, communication with the Docker daemon can occur over the Systemd socket `fd://`.

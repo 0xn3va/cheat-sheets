@@ -30,10 +30,12 @@
     - [Container Basics](Container/Overview/basics.md)
     - [Docker Engine](Container/Overview/docker-engine.md)
 - Escaping
+    - [CVE List](Container/Escaping/cve-list.md)
     - [Exposed Docker Socket](Container/Escaping/exposed-docker-socket.md)
     - [Excessive Capabilities](Container/Escaping/excessive-capabilities.md)
     - [Host Networking Driver](Container/Escaping/host-networking-driver.md)
     - [Sensitive Mounts](Container/Escaping/sensitive-mounts.md)
+- [Container Analysis Tools](Container/container-analysis-tools.md)
 
 ## Framework
 
