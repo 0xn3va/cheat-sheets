@@ -7,7 +7,7 @@ Android apps are distributed in APK (Android package) archives. The APK file is 
 The APK file has the following structure:
 
 | Name | Type | Description |
-|: --- |: --- :|: --- |
+| --- | --- | --- |
 | META-INF | Directory | This directory contains APK metadata. |
 | META-INF/MANIFEST.MF | File | This file contains various information used by the Java run-time environment when loading the JAR file, such as which is the main class to be run, version of a package, build number, creator of the package, security policies/permissions of Java applets and Java webstart packages, the list of file names in the JAR along with their SHA-256 digests, etc. |
 | META-INF/CERT.RSA or META-INF/CERT.DSA | File | Contains signed content of `CERT.RF` and is used to verify app integrity with the public key. |

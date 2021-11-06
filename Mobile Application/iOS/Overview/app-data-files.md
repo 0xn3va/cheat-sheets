@@ -9,7 +9,7 @@ For security purposes, an iOS app's interactions with the file system are limite
 Bundle directory consists of all the files that come along with the application when installed from Apple's App Store or any other source. Much important information can be obtained about the application from the files in these directories. The main components of the Bundle directory of a native iOS application:
 
 | Name | Type | Description |
-|: --- |: --- :|: --- |
+| --- | --- | --- |
 | _CodeSignature | Directory | This directory contains the CodeResources file, which is used to store the signature of all files in the bundle that are signed. |
 | Application Binary | File | This file contains the application's executable code. The name of this file is the same as that of the name of the .app directory excluding the extension '.app'. |
 | Application Icon | File | These are the icon files of the application. There are multiple icon files (MyAppIcon.png, MyAppIcon@2x.png etc.) for representation of the application on devices with different resolution like iPhone or iPad. |
@@ -51,7 +51,7 @@ Data container or Local Data Storage container is used to store data locally for
 Commonly used directories of the data container:
 
 | Name | Description |
-|: --- |: --- |
+| --- | --- |
 | Documents | <p>This directory is used to store user-generated content. The contents of this directory can be accessed by the user through file sharing; therefore, this directory should only contain files that can be made available to the user.</p><p>The contents of this directory are backed up by iTunes and iCloud.</p> |
 | Documents/Inbox | <p>This directory is used to access files that the app was asked to open by outside entities. Specifically, the Mail program places email attachments associated with app in this directory. Document interaction controllers may also place files in it.</p><p>The app can read and delete files in this directory but cannot create new files or write to existing files.</p><p>The contents of this directory are backed up by iTunes and iCloud.</p> |
 | Library | <p>This is the top-level directory for any files that are not user data files.</p><p>**Application Support**. This directory is used to store all app data files except those associated with the user's documents. Sometimes it may also be used to store a modifiable copy of resources contained initially in the app's bundle.</p><p>**Caches**. This directory is used to write any app-specific support files that the application can recreate easily. The data in this directory is mostly the cache for the analytics that can be sent when required and also the server’s responses for delivering quick responses to the user’s queries.This directory also stores the screenshot of the application in the Snapshots directory when it moves to the background in order to improve user experience.</p><p>**Preferences**. This directory contains app-specific preference files. The main file in this directory is the file named .plist which is used by the developers to store information using NSUserDefaults class.</p><p>The contents of the Library directory (with the exception of the Caches subdirectory) are backed up by iTunes and iCloud.</p> |

@@ -3,7 +3,7 @@ iOS apps are distributed in IPA (iOS App Store Package) archives. The IPA file i
 At a high level, the IPA file has the following structure:
 
 | Name | Type | Description |
-|: --- |: --- :|: --- |
+| --- | --- | --- |
 | Payload | Directory | This directory contains all the application data. |
 | Payload/MyApp.app | Directory | [Bundle directory](/Mobile%20Application/iOS/Overview/app-data-files.md#bundle-container-structure). |
 | Payload/MyApp.app/MyApp | File | This file contains the application's executable code |
