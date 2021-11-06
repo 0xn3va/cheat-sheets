@@ -79,7 +79,7 @@ Example of ad hoc profile plist file:
 The provisioning profile consists of several items, the most important of which are described below.
 
 | Item | Description |
-|: --- :|: --- |
+| --- | --- |
 | App ID | An App ID is a two-part string (`29QTLV4HFP.com.mycompany.myapp`: alpha-numeric characters and App Bundle ID) used to identify one or more apps from a single development team (this can include a `*` wild card to be used for many applications with similar bundle identifiers). |
 | <p>Development Certificates | Development Certificate is a unique security certificate issued by Apple that uniquely identifies you as the developer or publisher of the application. The private key of the distribution certificate is used to sign the application. There are two types of signing certificates:</p><p>**Development certificate** is used for individual developers who are actively debugging and developing an application.</p><p>**Production certificate** is used either a production setting (final build for the App Store) or a QA build that is distributed through Apple's TestFlight Beta or another app test distribution system. These certificates identify you as an App Store Publisher to Apple or as a Test Distributor and can only be used with production provisioning profiles.</p> |
 | Unique Device Identifiers | List of device IDs on which the application can run on. |
