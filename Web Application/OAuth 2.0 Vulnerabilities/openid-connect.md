@@ -39,7 +39,7 @@ The primary extension that OpenID Connect makes to OAuth 2.0 to enable end-users
 The following claims are used within the ID token for all OAuth 2.0 flows used by OpenID Connect (ID tokens may also contain other claims):
 
 | Claim | Optionality | Description |
-|: --- : |: --- : |: --- |
+| --- | --- | --- |
 | iss | Required | Issuer Identifier for the Issuer of the response. The iss value is a case sensitive URL using the `https` scheme that contains scheme, host, and optionally, port number and path components and no query or fragment components. |
 | sub | Required | Subject Identifier. The sub value is a case sensitive ASCII string with a length not exceed 255 characters. A locally unique and never reassigned identifier within the Issuer for the end-user, which is intended to be consumed by the client. |
 | aud | Required | Audience(s) that this ID token is intended for. The aud value is an array of case sensitive strings (or a single case sensitive string when there is one audience). It contains the OAuth 2.0 `client_id` of the Relying Party and may also contain identifiers for other audiences.  |
@@ -56,7 +56,7 @@ The following claims are used within the ID token for all OAuth 2.0 flows used b
 When using the authorization code flow, these additional requirements for the following ID token claims apply:
 
 | Claim | Optionality | Description |
-|: --- : |: --- : |: --- |
+| --- | --- | --- |
 | at_hash | Optional | Access token hash value. |
 
 ### Implicit flow
@@ -64,7 +64,7 @@ When using the authorization code flow, these additional requirements for the fo
 When using the implicit flow, these additional requirements for the following ID token claims apply:
 
 | Claim | Optionality | Description |
-|: --- : |: --- : |: --- |
+| --- | --- | --- |
 | nonce | Required | Use of the nonce claim is required for this flow. |
 | at_hash | Required | Access token hash value; it may not be used when no access token is issued, which is the case for the `response_type=id_token`. |
 
@@ -73,7 +73,7 @@ When using the implicit flow, these additional requirements for the following ID
 When using the hybrid flow, these additional requirements for the following ID token claims apply:
 
 | Claim | Optionality | Description |
-|: --- : |: --- : |: --- |
+| --- | --- | --- |
 | nonce | Required | Use of the nonce claim is required for this flow. |
 | at_hash | Required | Access token hash value; it may not be used when no access token is issued. |
 | c_hash | | Code hash value; it may not be used when no code is issued. |
@@ -96,7 +96,7 @@ The token endpoint is used with every authorization flow.
 OpenID Connect uses the following OAuth 2.0 request parameters:
 
 | Claim | Optionality | Description |
-|: --- : |: --- : |: --- |
+| --- | --- | --- |
 | scope | Required | The scope of the access request. OpenID Connect requests must contain the `openid` scope value. |
 | response_type | Required | OAuth 2.0 response type value that determines the authorization processing flow to be used, including what parameters are returned from the endpoints used. |
 | client_id | Required | OAuth 2.0 client identifier valid at the authorization server. |
@@ -106,7 +106,7 @@ OpenID Connect uses the following OAuth 2.0 request parameters:
 OpenID Connect also uses the additional request parameters:
 
 | Claim | Optionality | Description |
-|: --- : |: --- : |: --- |
+| --- | --- | --- |
 | nonce | Optional | String value used to associate a client session with an ID token, and to mitigate replay attacks. |
 | display | Optional | ASCII string value that specifies how the authorization server displays the authentication and consent user interface pages to the end-user, see [here](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest). |
 | prompt | Optional | Space delimited, case sensitive list of ASCII string values that specifies whether the authorization server prompts the end-user for reauthentication and consent, see [here](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest). |
