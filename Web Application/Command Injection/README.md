@@ -10,6 +10,9 @@ cmd.Start()
 cmdWriter.Write([]byte("os command here\n"))
 cmd.Wait()
 
+// os/exec CommandContext
+exec.CommandContext(ctx, "os command here", "arguments here").Run()
+
 // os/exec Cmd
 cmd := &exec.Cmd {
     Path: "os command here",
@@ -37,12 +40,18 @@ execErr := syscall.Exec(
 ```java
 // java.lang.Runtime exec
 Runtime.getRuntime().exec("os command here");
+java.lang.Runtime.getRuntime().exec("os command here");
 
 // java.lang.Runtime loadLibrary
 Runtime.getRuntime().loadLibrary("path to library here");
+java.lang.Runtime.getRuntime().loadLibrary("path to library here");
 
 // java.lang.ProcessBuilder
 new ProcessBuilder(
+    "os command here", 
+    "arguments here"
+).start();
+new java.lang.ProcessBuilder(
     "os command here", 
     "arguments here"
 ).start();

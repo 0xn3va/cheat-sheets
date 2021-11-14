@@ -80,7 +80,7 @@ References:
 Try to change a file extension:
 - Less-common extension, such as `.phtml`
 - Double extension, such as `.jpg.svg` or `.svg.jpg`
-- Extension with a delimeter, such as `\n`, `\t`, `\r`, `\0`, `#`, etc. For example, `file.png%00.svg` or `file.png\x0d\x0a.svg`
+- Extension with a delimeter, such as `%0a`, `%09`, `%0d`, `%00`, `#`, etc. For example, `file.png%00.svg` or `file.png\x0d\x0a.svg`
 - Empty extension, for example `file.`
 - Extension with varied capitalization, such as `.sVG`
 - Try to cut allowed extension with max filename length.

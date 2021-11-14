@@ -28,10 +28,10 @@ There are three classes of JWT claim names:
 The following Claim Names are registered in the IANA "JSON Web Token Claims" registry.  None of the claims defined below are intended to be mandatory to use or implement in all cases, but rather they provide a starting point for a set of useful, interoperable claims.Applications using JWTs should define which specific claims they use and when they are required or optional.
 
 | Claim | Definition | Type | Description |
-|: --- : |: --- : |: --- : | : --- |
+| ---  | ---  | --- | --- |
 | iss | Issuer | String or URI | The "iss" claim identifies the principal that issued the JWT. |
 | sub | Subject | String or URI | The "sub" claim identifies the principal that is the subject of the JWT. |
-| aud | Audience | Array of strings (String or URI)<br>String or URI | The "aud" claim identifies the recipients that the JWT is intended for. |
+| aud | Audience | <p>Array of strings (String or URI)</p><p>String or URI</p> | The "aud" claim identifies the recipients that the JWT is intended for. |
 | exp | Expiration Time | NumericDate | The "exp" claim identifies the expiration time on or after which the JWT must not be accepted for processing. |
 | nbf | Not Before | NumericDate | The "nbf" claim identifies the time before which the JWT must not be accepted for processing. |
 | iat | Issued At | NumericDate | The "iat" claim identifies the time at which the JWT was issued. |
@@ -80,7 +80,7 @@ For a JWS, the members of the JSON object(s) representing the JOSE header descri
 JWS defines the following registered header parameter names:
 
 | Parameter | Definition | Type | Description |
-|: --- : |: --- : |: --- : | : --- |
+| --- | --- | --- | --- |
 | alg | Algorithm | String or URI | The "alg" header parameter identifies the cryptographic algorithm used to secure the JWS. You can find a list of possible values in the [JWA](https://tools.ietf.org/html/rfc7518) specification in [section 3.1](https://tools.ietf.org/html/rfc7518#section-3.1). |
 | jku | JWK Set URL | URI | The "jku" header parameter is a URI that refers to a resource for a set of JSON-encoded public keys (as [JWK](https://tools.ietf.org/html/rfc7517) set), one of which corresponds to the key used to digitally sign the JWS. |
 | jwk | JSON Web Key | [JWK](https://tools.ietf.org/html/rfc7517) | The "jwk" header parameter is the public key that corresponds to the key used to digitally sign the JWS. |
@@ -136,7 +136,7 @@ The JOSE Header members are the union of the members of these values:
 JWE defines the following registered header parameter names:
 
 | Parameter | Definition | Type | Description |
-|: --- : |: --- : |: --- : | : --- |
+| --- | --- | --- | --- |
 | alg | Algorithm | String or URI | The "alg" header parameter identifies the cryptographic algorithm used to encrypt or determine the value of the Content Encryption Key (a symmetric key for the AEAD algorithm). You can find a list of possible values in the [JWA](https://tools.ietf.org/html/rfc7518) specification in [section 4.1](https://tools.ietf.org/html/rfc7518#section-4.1). |
 | enc | Encryption Algorithm | String or URI | The "enc" header parameter identifies the content encryption algorithm used to perform authenticated encryption on the plaintext to produce the ciphertext and the authentication tag. This algorithm must be an AEAD algorithm with a specified key length. You can find a list of possible values in the [JWA](https://tools.ietf.org/html/rfc7518) specification in [section 5.1](https://tools.ietf.org/html/rfc7518#section-5.1). |
 | zip | Compression Algorithm | String | The "zip" applied to the plaintext before encryption, if any. |
