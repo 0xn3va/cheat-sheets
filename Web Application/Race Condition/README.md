@@ -20,7 +20,9 @@ This technique can be used to minimize the time between requests.
 
 The key point to HTTP Pipelining is that the web server receives requests sequentially, and processes the responses in the same order. This peculiarity can be used to attack in several steps, when it is necessary to sequentially perform two actions in the minimum amount of time or, for example, to slow down the server in the first request in order to increase the success of the attack.
 
-> You can prevent the server from processing your request by loading its DBMS, especially if INSERT / UPDATE is used. Heavier requests can “slow down” your load, so most likely you will win this race.
+{% hint style="info" %}
+You can prevent the server from processing your request by loading its DBMS, especially if INSERT / UPDATE is used. Heavier requests can “slow down” your load, so most likely you will win this race.
+{% endhint %}
 
 ## Splitting an HTTP request into two parts
 
@@ -34,9 +36,11 @@ If you send the following request from the command line:
 $ echo -ne "GET / HTTP/1.1\r\nHost: website.com\r\n\r\n" | nc website.com 80
 ```
 
-then you will get a response since the HTTP request will be completed. But this will not happen if you remove the last ```\n``` character, in this case, the server will wait for the last character before the timeout expires.
+then you will get a response since the HTTP request will be completed. But this will not happen if you remove the last `\n` character, in this case, the server will wait for the last character before the timeout expires.
 
-> Many web servers use ```\n``` as the line feed character, so it’s important not to swap ```\r``` and ```\n```, otherwise further tricks may not work.
+{% hint style="info" %}
+Many web servers use `\n` as the line feed character, so it's important not to swap `\r` and ` \n`, otherwise further tricks may not work
+{% endhint %}
 
 Thus, you can simultaneously open many connections to the server, send 99% of your HTTP request and, as soon as it becomes clear that the main part of the data has been sent, send the last byte or several bytes.
 
@@ -44,7 +48,9 @@ Thus, you can simultaneously open many connections to the server, send 99% of yo
 
 This is especially important when it comes to a large POST request, for example, when you need to upload a file. However, this makes sense even with small requests, since the delivery of several bytes is much faster than sending kilobytes of data simultaneously.
 
-> You should not only split the request, but also make a delay of several seconds between sending the main and final part of the data. And all because web servers begin to parse requests even before they receive them completely.
+{% hint style="info" %}
+You should not only split the request, but also make a delay of several seconds between sending the main and final part of the data. And all because web servers begin to parse requests even before they receive them completely.
+{% endhint %}
 
 # Awesome tricks
 
