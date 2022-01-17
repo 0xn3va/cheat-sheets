@@ -42,6 +42,7 @@
 - Spring
     - [Overview](Framework/Spring/overview.md)
     - [Mass Assignment](Framework/Spring/mass-assignment.md)
+    - [Routing Abuse](Framework/Spring/routing-abuse.md)
     - [SpEL Injection](Framework/Spring/spel-injection.md)
     - [Spring Boot Actuators](Framework/Spring/spring-boot-actuators.md)
     - [Spring Data Redis Insecure Deserialization](Framework/Spring/spring-data-redis-insecure-deserialization.md)
@@ -109,6 +110,9 @@
     - [Parameters Injection](Web%20Application/Command%20Injection/parameters-injection.md)
 - [Content Security Policy](Web%20Application/Content%20Security%20Policy/README.md)
 - [Cookie Security](Web%20Application/Cookie%20Security/README.md)
+    - [Cookie Bomb](Web%20Application/Cookie%20Security/cookie-bomb.md)
+    - [Cookie Jar Overflow](Web%20Application/Cookie%20Security/cookie-jar-overflow.md)
+    - [Cookie Tossing](Web%20Application/Cookie%20Security/cookie-tossing.md)
 - [CORS Misconfiguration](Web%20Application/CORS%20Misconfiguration/README.md)
 - [File Upload Vulnerabilities](Web%20Application/File%20Upload%20Vulnerabilities/README.md)
 - [GraphQL Vulnerabilities](Web%20Application/GraphQL%20Vulnerabilities/README.md)

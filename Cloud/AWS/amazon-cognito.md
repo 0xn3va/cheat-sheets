@@ -24,6 +24,12 @@ Identity pool IDs can be stored client-side, for example within JavaScript, or r
 
 {% embed url="https://blog.appsecco.com/exploiting-weak-configurations-in-amazon-cognito-in-aws-471ce761963" %}
 
+## Misconfigured user pool access
+
+If an application allows to write user attributes of an internally used AWS user pool, it can be used to abuse the trust between the application and the pool. In other words, it is possible to change the attributes and issue the JWT token, that will be used by an application. For instance, if an application uses normalized emails (in lower case), you can change one letter in an email address to an upper-case equivalent and takeover an account.
+
+{% embed url="https://security.lauritz-holtmann.de/advisories/flickr-account-takeover/" %}
+
 # References
 
 - [Whitepaper: Internet-Scale analysis of AWS Cognito Security](https://andresriancho.com/wp-content/uploads/2019/06/whitepaper-internet-scale-analysis-of-aws-cognito-security.pdf)

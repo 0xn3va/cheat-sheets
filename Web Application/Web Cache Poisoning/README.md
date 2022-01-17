@@ -2,7 +2,7 @@
 
 Caching is a technique that stores a copy of a given resource and serves it back when requested. When a web cache has a requested resource in its store, it intercepts the request and returns its copy instead of re-downloading from the originating server. 
 
-![cache-concept](img/cache-concept.svg)
+![](img/cache-concept.svg)
 
 This achieves several goals: 
 - Server load reduction (the server doesn't have to serve all clients itself),
@@ -14,13 +14,13 @@ On the other side, it has to be configured properly as not all resources stay id
 
 A private cache is dedicated to a single user. A browser cache holds all documents downloaded via HTTP by the user. This cache is used to make visited documents available for back/forward navigation, saving, viewing-as-source, etc. without requiring an additional trip to the server. It likewise improves offline browsing of cached content.
 
-![private-cache](img/private-cache.png)
+![](img/private-cache.png)
 
 ## Shared proxy caches
 
 A shared cache is a cache that stores responses to be reused by more than one user. For example, an ISP or your company might have set up a web proxy as part of its local network infrastructure to serve many users so that popular resources are reused a number of times, reducing network traffic and latency.
 
-![shared-cache](img/shared-cache.png)
+![](img/shared-cache.png)
 
 ## Targets of caching operations
 
@@ -131,7 +131,7 @@ The freshness lifetime is calculated based on several headers:
 
 The objective of web cache poisoning is to send a request that causes a harmful response that gets saved in the cache and served to other users.
 
-![cache-poisoning](img/cache-poisoning.svg)
+![](img/cache-poisoning.svg)
 
 ## Basic cache poisoning
 
@@ -182,9 +182,11 @@ HTTP/1.1 200 OK
 <meta property="og:image" content="https://foo."><script>alert(1)</script>"/>
 ```
 
-{% hint style="info" %}
-More examples and techniques: [Web Cache Entanglement: Novel Pathways to Poisoning](https://portswigger.net/research/web-cache-entanglement) and [Practical Web Cache Poisoning](https://portswigger.net/research/practical-web-cache-poisoning)
-{% endhint %}
+{% embed url="https://github.com/Hackmanit/Web-Cache-Vulnerability-Scanner" %}
+
+References:
+- [PortSwigger Research: Web Cache Entanglement: Novel Pathways to Poisoning](https://portswigger.net/research/web-cache-entanglement)
+- [PortSwigger Research: Practical Web Cache Poisoning](https://portswigger.net/research/practical-web-cache-poisoning)
 
 ## Unauthenticated cache purge
 

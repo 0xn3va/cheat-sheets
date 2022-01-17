@@ -1,12 +1,12 @@
-Since HTTP/1.1 there's been widespread support for sending multiple HTTP requests over a single underlying TCP or SSL/TLS socket. The protocol is extremely simple - HTTP requests are simply placed back to back, and the server parses headers to work out where each one ends and the next one starts.
+Since HTTP/1.1 has been widespread support for sending multiple HTTP requests over a single underlying TCP or SSL/TLS socket. The protocol is extremely simple - HTTP requests are simply placed back to back, and the server parses headers to work out where each one ends and the next one starts.
 
 By itself, this is harmless. However, modern websites are composed of chains of systems, all talking over HTTP. This multi-tiered architecture takes HTTP requests from multiple different users and routes them over a single TCP/TLS connection.
 
-![article-revproxy](/Web%20Application/HTTP%20Request%20Smuggling/img/article-revproxy.svg)
+![](img/article-revproxy.svg)
 
-This means that suddenly, it's crucial that the back-end agrees with the front-end about where each message ends. Otherwise, an attacker might be able to send an ambiguous message which gets interpreted as two distinct HTTP requests by the back-end.
+This means that suddenly, it is crucial that the back-end agrees with the front-end about where each message ends. Otherwise, an attacker might be able to send an ambiguous message which gets interpreted as two distinct HTTP requests by the back-end.
 
-![article-revproxy-desynced](/Web%20Application/HTTP%20Request%20Smuggling/img/article-revproxy-desynced.svg)
+![](img/article-revproxy-desynced.svg)
 
 # Double content length
 
@@ -48,9 +48,9 @@ Host: vulnerable-website.com
 ...
 ```
 
-Generates 2 error `400 Bad Request`, because the second query is starting with `X-Foo: Bar` and that's an invalid first query line.
+Generates 2 error `400 Bad Request`, because the second query is starting with `X-Foo: Bar` and that is an invalid first query line.
 
-An invalid pipeline might look something like (as there'is no `\r\n` between the 2 queries):
+An invalid pipeline might look something like (as there is no `\r\\n` between the 2 queries):
 
 ```http
 GET / HTTP/1.1
@@ -120,7 +120,7 @@ Whenever we find a way to hide the `Transfer-Encoding` header from one server in
 
 ## Chunked messages
 
-A chunked message body consists of 0 or more chunks. Each chunk consists of the chunk size, followed by a newline (\r\n), followed by the chunk contents. The message is terminated with a chunk of size 0, followed by a newline (\r\n). Example:
+A chunked message body consists of 0 or more chunks. Each chunk consists of the chunk size, followed by a newline (\r\\n), followed by the chunk contents. The message is terminated with a chunk of size 0, followed by a newline (\r\\n). Example:
 
 ```http
 POST / HTTP/1.1

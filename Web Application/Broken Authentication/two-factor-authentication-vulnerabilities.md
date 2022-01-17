@@ -1,10 +1,10 @@
 # Abusing "remember me" function
 
-An application can provide users with the "remember me" function so that the next authentication from a device does not require to enter the second factor. To implement this functionality, an application can set cookies, save tokens in local storage and/or remember an IP address. In such situations, you need to find out how the "remember me" function is implemented and check if there is any way to spoof it. Try to check the following cases:
+An application can provide users with the "remember me" function so that the next authentication from a device does not require to enter the second factor. To implement this functionality, an application can set cookies, save tokens in local storage and/or remember an IP address. In such cases, you need to find out how the "remember me" function is implemented and check if there is any way to spoof it. Try to check the following cases:
 
-1. Whether the token stored in the cookie or local storage is random.
-2. How the token is stored and is it possible to access it from JavaScript.
-3. Is it possible to spoof an IP address using HTTP headers, see [Abusing IP whitelists](#abusing-ip-whitelists)
+1. Is the token stored in the cookie or local storage random?
+2. How the token is stored and is it possible to access the token from JavaScript?
+3. Is it possible to spoof an IP address using HTTP headers? (see [Abusing IP whitelists](#abusing-ip-whitelists))
 
 # Abusing IP whitelists
 
@@ -26,7 +26,20 @@ Enabling two-factor authentication should end previously created sessions. If th
 
 # Ignoring 2FA
 
-An application can ignore two-factor authentication when performing actions that lead to automatic login to an user account.
+An application can ignore two-factor authentication when performing actions that can lead to automatic login to an user account.
+
+## Abuse of half-authenticated sessions
+
+An application can issue a session token with limited access after providing credentials. Try to use this session token in a un-enrollment request to disable 2FA. You can check it with the next steps:
+
+1. Submit credentials to an application
+2. Catch a session token from the response
+3. Stop an authentication on the 2FA step
+4. Use the token in a un-enrollment request
+5. Login into account with out 2FA requirement
+
+References:
+- [Writeup: Bypassing Box's Time-based One-Time Password MFA](https://www.varonis.com/blog/box-mfa-bypass-totp/)
 
 ## Cross platform applications
 
@@ -89,7 +102,7 @@ Backup codes are generated immediately after a second factor is enabled and are 
 
 Try to find a vulnerability that could steal backup codes from a response to a request to backup code display endpoint.
 
-# Rate limits
+# Improper rate limits
 
 {% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/improper-rate-limits" %}
 

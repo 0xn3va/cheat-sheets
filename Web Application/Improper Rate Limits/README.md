@@ -42,6 +42,25 @@ You can use a proxy or VPN to change an IP address. To automate the change of IP
 If an application is behind a CloudFlare firewall, all requests sent from AWS IPs will be blocked. To avoid this, you need to discover an original IP of an application.
 {% endhint %}
 
+# Changing path
+
+Try to change an endpoint path to bypass rate limits. Use different case or add extra symbols, such as `%00`, `%09`, `%0a`, `%0c`, `%20`, etc. For instance, if a bare endpoint is `/api/v4/endpoint`, try the following endpoints:
+
+- `/api/v4/endpoint`
+- `/api/v4/Endpoint`
+- `/api/v4/EndPoint`
+- `/api/v4/endpoint%00`
+- `/api/v4/%0aendpoint`
+- `/api/v4/endpoint%09`
+- `/api/v4/%20endpoint`
+- ...
+
+Also, you can try to add extra parameters, for example, `/api/v4/endpoint?some_param=1`
+
+# Extra characters in parameters
+
+Try to add extra symbols, such as `%00`, `%09`, `%0a`, `%0c`, `%20`, etc. to params. For instance, if requesting a code to an email have only n tries, use `name@website.com%00` after exceeding n attempts, then `name@website.com%20`, and etc.
+
 # Multiple values in request
 
 When brute-force, try passing several values in one request at once, for instance:
@@ -75,9 +94,13 @@ An application can correctly process such requests and interpret this as one att
 
 An application can implement different rate limits for authenticated and unauthenticated users. For instance, after authentication, there may be no rate limits on attempts to change a password or disable two-factor authentication.
 
+# Reset a rate limit
+
+An application can let you reset rate limits. For instance, an application can reset limits on attempts to send OTP when you resend a new OTP. It allow you to reset rate limits before each OTP check attempt, so a rate limit is never reached.
+
 # Send requests to different instances of an application
 
-Often, an application backend is deployed on multiple instances that run in parallel. Accordingly, when a client sends a request to the backend, a balancer ties a user's session to a specific instance. This can be accomplished by setting a custom HTTP header or cookie with an instance ID. If rate limit values ​​are not synchronized between instances, you can increase the number of available attempts by sending requests to different instances. In order to find out existing IDs, try to send requests to the backend from different IPs and without the header or cookie. A balancer will assign a random instance and return it in the header or cookie for such requests.
+Often, an application backend is deployed on multiple instances that run in parallel. Accordingly, when a client sends a request to the backend, a balancer ties a user's session to a specific instance. This can be accomplished by setting a custom HTTP header or cookie with an instance ID. If rate limit values are not synchronized between instances, you can increase the number of available attempts by sending requests to different instances. In order to find out existing IDs, try to send requests to the backend from different IPs and without the header or cookie. A balancer will assign a random instance and return it in the header or cookie for such requests.
 
 # References
 
