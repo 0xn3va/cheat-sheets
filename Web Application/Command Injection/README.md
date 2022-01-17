@@ -147,7 +147,7 @@ Open3.pipeline("os command here")
 
 ## List of commands
 
-Combine the execution of multiple commands using the operators `;`, `&`, `&&`, or `||`, and optionally terminated by one of `;`, `&`, or `\n`.
+Combine the execution of multiple commands using the operators `;`, `&`, `&&`, or `||`, and optionally terminated by one of `;`, `&`, or `\\u006e`.
 
 ```bash
 $ command1; command2

@@ -36,10 +36,10 @@ If you send the following request from the command line:
 $ echo -ne "GET / HTTP/1.1\r\nHost: website.com\r\n\r\n" | nc website.com 80
 ```
 
-then you will get a response since the HTTP request will be completed. But this will not happen if you remove the last `\n` character, in this case, the server will wait for the last character before the timeout expires.
+then you will get a response since the HTTP request will be completed. But this will not happen if you remove the last `\\u006e` character, in this case, the server will wait for the last character before the timeout expires.
 
 {% hint style="info" %}
-Many web servers use `\n` as the line feed character, so it's important not to swap `\r` and ` \n`, otherwise further tricks may not work
+Many web servers use `\\u006e` as the line feed character, so it's important not to swap `\r` and ` \\u006e`, otherwise further tricks may not work
 {% endhint %}
 
 Thus, you can simultaneously open many connections to the server, send 99% of your HTTP request and, as soon as it becomes clear that the main part of the data has been sent, send the last byte or several bytes.

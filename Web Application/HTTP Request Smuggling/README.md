@@ -50,7 +50,7 @@ Host: vulnerable-website.com
 
 Generates 2 error `400 Bad Request`, because the second query is starting with `X-Foo: Bar` and that is an invalid first query line.
 
-An invalid pipeline might look something like (as there is no `\r\n` between the 2 queries):
+An invalid pipeline might look something like (as there is no `\r\\u006e` between the 2 queries):
 
 ```http
 GET / HTTP/1.1
@@ -120,7 +120,7 @@ Whenever we find a way to hide the `Transfer-Encoding` header from one server in
 
 ## Chunked messages
 
-A chunked message body consists of 0 or more chunks. Each chunk consists of the chunk size, followed by a newline `\r\n`, followed by the chunk contents. The message is terminated with a chunk of size 0, followed by a newline `\r\n`. Example:
+A chunked message body consists of 0 or more chunks. Each chunk consists of the chunk size, followed by a newline `\r\\u006e`, followed by the chunk contents. The message is terminated with a chunk of size 0, followed by a newline `\r\\u006e`. Example:
 
 ```http
 POST / HTTP/1.1
