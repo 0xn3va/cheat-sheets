@@ -190,6 +190,41 @@ References:
 - [Report: XXE at ecjobs.starbucks.com.cn/retail/hxpublic_v6/hxdynamicpage6.aspx](https://hackerone.com/reports/500515)
 - [Writeup: My first XML External Entity (XXE) attack with .gpx file](https://medium.com/@valeriyshevchenko/my-first-xml-external-entity-xxe-attack-with-gpx-file-5ca78da9ae98)
 
+# Race condition
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/race-condition" %}
+
+## File upload race condition
+
+If an application uploads a file directly to a target folder before the file passes validation, you can abuse this behavior by using race condition.
+
+Suppose file upload has the following flow:
+
+1. Upload file to a target folder
+2. Validate file
+3. If the validation fails, remove the file. Otherwise, send the link to a user
+
+You can use race condition to fetch the file between steps 1 and 3 while the validation is in progress.
+
+References:
+- [Web Security Academy: File upload vulnerabilities - Exploiting file upload race conditions](https://portswigger.net/web-security/file-upload#exploiting-file-upload-race-conditions)
+
+## URL-based file upload race condition
+
+If an application allows users to upload a file by providing a URL and fetches the file for validation to a user-accessible folder, you can abuse this behavior by using race condition.
+
+Suppose file upload has the following flow:
+
+1. Receive the URL from a user
+2. Create a local copy for validation within a user-accessible folder
+3. Validate file
+4. If the validation fails, reject the URL. Otherwise, send the link to a user
+
+You can use race condition to fetch the file between steps 2 and 4 while the validation is in progress.
+
+References:
+- [Web Security Academy: File upload vulnerabilities - Race conditions in URL-based file uploads](https://portswigger.net/web-security/file-upload#race-conditions-in-url-based-file-uploads)
+
 # SSRF via HTTP range requests
 
 If an application download a file from a user-provided link with [HTTP range requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests) you can try to redirect the request one of the chunks to an internal server.
