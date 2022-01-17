@@ -8,7 +8,7 @@ This is a fairly working way if the server allows the use of multiple threads to
 
 On the server side each thread establishes a TCP connection, sends data, waits for a response, closes the connection, opens it again, sends data, and so on. At first glance, all data is sent at the same time. But HTTP requests can arrive asynchronously due to many factors, such as delays in delivering packets over the network, the need to establish a secure connection, DNS resolving and many layers of abstraction that data pass through before being sent to a network device. 
 
-![doodle-train](img/doodle-train.gif)
+![](img/doodle-train.gif)
 
 # Advanced exploitation
 
@@ -16,7 +16,7 @@ The specification [RFC 7230 6.3.2](https://tools.ietf.org/html/rfc7230#section-6
 
 This technique can be used to minimize the time between requests.
 
-![http-pipelining](img/http-pipelining.png)
+![](img/http-pipelining.png)
 
 The key point to HTTP Pipelining is that the web server receives requests sequentially, and processes the responses in the same order. This peculiarity can be used to attack in several steps, when it is necessary to sequentially perform two actions in the minimum amount of time or, for example, to slow down the server in the first request in order to increase the success of the attack.
 
@@ -34,13 +34,13 @@ If you send the following request from the command line:
 $ echo -ne "GET / HTTP/1.1\r\nHost: website.com\r\n\r\n" | nc website.com 80
 ```
 
-then you will get a response since the HTTP request will be completed. But this will not happen if you remove the last `\n` character, in this case, the server will wait for the last character before the timeout expires.
+then you will get a response since the HTTP request will be completed. But this will not happen if you remove the last `\\n` character, in this case, the server will wait for the last character before the timeout expires.
 
-> Many web servers use `\n` as the line feed character, so it’s important not to swap `\r` and `\n`, otherwise further tricks may not work.
+> Many web servers use `\\n` as the line feed character, so it’s important not to swap `\\r` and `\\n`, otherwise further tricks may not work.
 
 Thus, you can simultaneously open many connections to the server, send 99% of your HTTP request and, as soon as it becomes clear that the main part of the data has been sent, send the last byte or several bytes.
 
-![doodle-train-splitting](img/doodle-train-splitting.gif)
+![](img/doodle-train-splitting.gif)
 
 This is especially important when it comes to a large POST request, for example, when you need to upload a file. However, this makes sense even with small requests, since the delivery of several bytes is much faster than sending kilobytes of data simultaneously.
 
