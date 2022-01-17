@@ -176,6 +176,8 @@ The [URL specification](https://tools.ietf.org/html/rfc3986) contains a number o
     ```
 
 References:
+- [Writeup: URL whitelist bypass in https://cxl-services.appspot.com](https://feed.bugs.xdavidhu.me/bugs/0008)
+- [Writeup: Fixing the Unfixable: Story of a Google Cloud SSRF](https://bugs.xdavidhu.me/google/2021/12/31/fixing-the-unfixable-story-of-a-google-cloud-ssrf/)
 - [A New Era of SSRF - Exploiting URL Parser in Trending Programming Languages!](https://github.com/0xn3va/cheat-sheets/blob/master/Web%20Application/Server%20Side%20Request%20Forgery/materials/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf)
 - [Tool: Tiny URL Fuzzer](https://github.com/orangetw/Tiny-URL-Fuzzer)
 
@@ -208,7 +210,11 @@ make-127-0-0-1-and-127-127-127-127-rr.1u.ms. 0 IN A 127.0.0.1
 make-127-0-0-1-and-127-127-127-127-rr.1u.ms. 0 IN A 127.127.127.127
 ```
 
-See more [1u.ms](http://1u.ms)
+{% embed url="https://github.com/neex/1u.ms" %}
+
+Also, check `sslip.io`:
+
+{% embed url="https://sslip.io/" %}
 
 ## DNS rebinding
 
@@ -224,7 +230,11 @@ $ dig A make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms
 make-1-1-1-1-rebind-127-0-0-1-rr.1u.ms. 0 IN A 127.0.0.1
 ```
 
-See more [1u.ms](http://1u.ms)
+{% embed url="https://github.com/neex/1u.ms" %}
+
+Also, check `lock.cmpxchg8b.com`:
+
+{% embed url="https://lock.cmpxchg8b.com/rebinder.html" %}
 
 # Adobe ColdFusion
 
@@ -244,16 +254,22 @@ See more [1u.ms](http://1u.ms)
 
 # Server-side processing of arbitrary HTML and JS 
 
-Server-side processing of arbitrary HTML and JS data from the user can often be found when generating various documents, for example, in PDF format. If this functionality is vulnerable to HTML injection and/or XSS, you can try using this to access internal resources:
+Server-side processing of arbitrary HTML and JS data from a user can often be found when generating various documents, for example, to PDFs. If this functionality is vulnerable to HTML injection and/or XSS, you can use this to access internal resources:
 
 ```html
 <iframe src="file:///etc/passwd" width="400" height="400">
 <img src onerror="document.write('<iframe src=//127.0.0.1></iframe>')">
 ```
 
+Use HTTPLeaks to determine if any of the allowed HTML tags could be used to abuse the processing.
+
+{% embed url="https://github.com/cure53/HTTPLeaks" %}
+
 References:
 - [Write up: Local File Read via XSS in Dynamically Generated PDF](https://www.noob.ninja/2017/11/local-file-read-via-xss-in-dynamically.html)
+- [Write up: Exploiting HTML-to-PDF Converters through HTML Imports](https://mhmdiaa.com/blog/exploiting-html-imports/)
 - [Report: Blind SSRF/XSPA on dashboard.lob.com + blind code injection](https://hackerone.com/reports/517461)
+- [Report: Bypassing HTML filter in "Packing Slip Template" Lead to SSRF to Internal Kubernetes Endpoints](https://hackerone.com/reports/1115139)
 
 # Request splitting
 
