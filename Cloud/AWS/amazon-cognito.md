@@ -26,7 +26,7 @@ Identity pool IDs can be stored client-side, for example within JavaScript, or r
 
 ## Misconfigured user pool access
 
-If an application allows to write user attributes of an internally used AWS user pool, it can be used to abuse the trust between the application and the pool. In other words, it is possible to change the attributes and issue the JWT token, that will be used by an application. For instance, if an application uses normalized emails (in lower case), you can change one letter in an email address to an upper-case equivalent and takeover an account.
+If an application allows writing user attributes of an internally used AWS user pool, it can be used to abuse the trust between the application and the pool. In other words, it is possible to change the attributes and issue the JWT token, that will be used by an application. For instance, if an application uses normalized emails (in lower case), you can change one letter in an email address to an upper-case equivalent and takeover an account.
 
 {% embed url="https://security.lauritz-holtmann.de/advisories/flickr-account-takeover/" %}
 
