@@ -195,11 +195,25 @@ References:
 
 If an application does not set rate limits on login attempts, try to craft a dictionary and bruteforce a password.
 
+One of the implementations of rate limits uses a username or email as an identifier to count attempts. Try to bypass the protection by using extra spaces or upper/lower case:
+
+```http
+email=" username@website.com"
+email="username@website.com  "
+email="Username@website.com"
+email="USERNAME@website.com"
+...
+```
+
 You can use the following links:
 - [WordList Compendium](https://github.com/Dormidera/WordList-Compendium) - personal compilation of wordlists & dictionaries for everything; users, passwords, directories, files, vulnerabilities, fuzzing, injections, wordlists of tools, etc.
 - [SecLists](https://github.com/danielmiessler/SecLists) - a collection of multiple types of lists used during security assessments.
 - [PWDB - New generation of Password Mass-Analysis](https://github.com/ignis-sec/Pwdb-Public) - a collection of all the data extracted from 1 billion credential leaks from the Internet.
 - [bopscrk](https://github.com/r3nt0n/bopscrk) - tool to generate smart and powerful wordlists.
+- [BruteLoops](https://github.com/arch4ngel/BruteLoops) - protocol agnostic online password guessing API.
+
+References:
+- [Report: Bypass a fix for report #708013](https://hackerone.com/reports/1363672)
 
 ## Credential stuffing
 
