@@ -30,13 +30,13 @@ An application can ignore two-factor authentication when performing actions that
 
 ## Abuse of half-authenticated sessions
 
-An application can issue a session token with limited access after providing credentials. Try to use this session token in a un-enrollment request to disable 2FA. You can check it with the next steps:
+An application can issue a session token with limited access after providing credentials. Try to use this session token in an un-enrollment request to disable 2FA. You can check it with the next steps:
 
 1. Submit credentials to an application
 2. Catch a session token from the response
 3. Stop an authentication on the 2FA step
 4. Use the token in a un-enrollment request
-5. Login into account with out 2FA requirement
+5. Login into account without 2FA requirement
 
 References:
 - [Writeup: Bypassing Box's Time-based One-Time Password MFA](https://www.varonis.com/blog/box-mfa-bypass-totp/)
@@ -105,6 +105,19 @@ Try to find a vulnerability that could steal backup codes from a response to a r
 # Improper rate limits
 
 {% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/improper-rate-limits" %}
+
+# Mixing 2FA modes
+
+An application can provide multiple 2FA modes, such as SMS- and TOTP-based 2FA processes. If an application uses a per-user unique parameter other than a half-authenticated session cookie to refer to the desired 2FA mode, you can try to complete an authentication process with your 2FA mode that is not used by a victim. An example of an attack flow might contains the next steps:
+
+1. Victim set up SMS-based 2FA
+2. Attacker enrolls in 2FA using an authenticator app (TOTP-based 2FA) and saves their unique parameter, for instance `factor_id`
+3. Attacker enters a victim's email address and password
+4. If the password is correct, an attacker's browser is sent a new authentication cookie and redirects to `/mfa/sms/verification`
+5. Attacker does not follow the redirect to the SMS verification form. Instead, attacker sends their `factor_id` and code from the authenticator app with victim's half-authenticated cookie to TOTP verification endpoint: `/mfa/totp/verification` endpoint.
+
+References:
+- [Writeup: Mixed Messages: Busting Box’s MFA Methods](https://www.varonis.com/blog/box-mfa-bypass-sms)
 
 # Session persistence to the 2FA flow
 

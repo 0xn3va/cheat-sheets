@@ -158,6 +158,21 @@ If an application does not set rate limits on resending OTP and resending OTP re
 References:
 - [Report: Authorization bypass using login by phone option+horizontal escalation possible on Grab Android App](https://hackerone.com/reports/205000)
 
+## Session fixation
+
+An application can implement the authentication flow as the following one:
+
+1. An application calls `/SessionCreate` endpoint with a mobile phone number of a user
+2. A backend creates a session for a user and returns a session token, but no operations with this session are possible until the verification is complete
+3. An SMS message is sent to a user with a verification code
+4. An application calls `/SessionVerify` endpoint with both the session token and the verification code received by SMS
+5. Once this request is successfully completed, the session token becomes valid and the user is now logged in
+
+If subsequent calls to `/SessionCreate` return the same session token as the first one until a call to `/SessionVerify`, you can use `/SessionCreate` endpoint to fecth a session token, that will valid after victim's authentication.
+
+References:
+- [Report: Account Takeover via SMS Authentication Flow](https://hackerone.com/reports/1245762)
+
 ## Spoofing part of an authentication request
 
 If during the OTP check an application additionally uses some parameters, try to use a value from a request for a different account. This parameter can be a cookie, a header, or a request parameter. If you use the parameter value for `victim` in the OTP check request for `attacker`, you can get into `victim` account or bypass two-factor authentication.
