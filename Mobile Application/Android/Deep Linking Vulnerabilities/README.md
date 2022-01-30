@@ -118,6 +118,22 @@ Apps can handle deeplinks before local authentication (passcode/biometrics) and 
 References:
 - [Report: Bypass of biometrics security functionality is possible in Android application (com.shopify.mobile)](https://hackerone.com/reports/637194)
 
+## Insecure parameter handling
+
+Deeplinks allows users to provide parameters to an application that can be used as parameters when performing local actions, requests to API, etc. Therefore, if these parameters are not properly validated, an attacker can use them for profit (up to RCE).
+
+For instance, suppose an application opens local files based on http/https URLs by the next flow:
+1. A user send the link `https://website.com/file.pdf`
+2. An application parses the URL and retrieves the URL path: `file.pdf`
+3. An application joins a hard-coded temp folder with `file.pdf`: `/data/data/com.vulnerable-app/temp-files/file.pdf`
+4. An application downloads the PDF file from `https://website.com/file.pdf` and save them to `/data/data/com.vulnerable-app/temp-files/file.pdf`
+5. An application opens downloaded file for a user
+
+In such case, an attacker is able to rewrite an arbitrary file within the package using path traversal: `https://website.com/x/..%2F..%2Fdatabases/secret.db`.
+
+References:
+- [Writeup: RCE IN ADOBE ACROBAT READER FOR ANDROID(CVE-2021-40724)](https://hulkvision.github.io/blog/post1/)
+
 ## Perform unsafe actions without confirmation
 
 Sometimes apps allow users to perform unsafe actions through deeplinks, such as modifying data, doing a call, buying a subscription and etc. If these actions do not require additional confirmation from a user, you can perform a CSRF-like attack.
