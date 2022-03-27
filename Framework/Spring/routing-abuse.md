@@ -1,3 +1,18 @@
+# Exposing routes
+
+Exposing the relevant interfaces and parameter information of a Spring application is not a vulnerability, but it can help to understand an application. Moreover, it can be used while checking for access control vulnerabilities and etc.
+
+Check the following routes to see if an application provides path and parameter information:
+
+{% embed url="https://gist.github.com/0xn3va/03de8cba2fed242feaa54806f9150f8f" %}
+
+Additionally, check the following Spring Boot Actuators related routes which can expose an interface address information (but not parameter-related information):
+
+{% embed url="https://gist.github.com/0xn3va/3fb3a6a389b822c8d78a2b751ba5b70f" %}
+
+References:
+- [Spring Boot Vulnerability Exploit Check List: Leakage of routing address and interface call details](https://github.com/LandGrey/SpringBootVulExploit#0x01%E8%B7%AF%E7%94%B1%E5%9C%B0%E5%9D%80%E5%8F%8A%E6%8E%A5%E5%8F%A3%E8%B0%83%E7%94%A8%E8%AF%A6%E6%83%85%E6%B3%84%E6%BC%8F)
+
 # Path traversal with /..;/
 
 Spring Boot > 2.2.6 treats `https://website.com/allowed/..;/internal` same as `https://website.com/allowed/../internal`.
