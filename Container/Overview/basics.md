@@ -83,6 +83,10 @@ Creation of new namespaces using [clone(2)](https://man7.org/linux/man-pages/man
 
 Each process has a `/proc/[pid]/ns/` subdirectory containing one entry for each namespace.
 
+References:
+- [Quarkslab's blog: Digging into Linux namespaces - part 1](https://blog.quarkslab.com/digging-into-linux-namespaces-part-1.html)
+- [Quarkslab's blog: Digging into Linux namespaces - part 2](https://blog.quarkslab.com/digging-into-linux-namespaces-part-2.html)
+
 ## Cgroups
 
 [Cgroups](https://man7.org/linux/man-pages/man7/cgroups.7.html) is a Linux control groups.

@@ -96,7 +96,9 @@ An application can implement different rate limits for authenticated and unauthe
 
 # Reset a rate limit
 
-An application can let you reset rate limits. For instance, an application can reset limits on attempts to send OTP when you resend a new OTP. It allow you to reset rate limits before each OTP check attempt, so a rate limit is never reached.
+An application may incorrectly implement rate limits or have a logical vulnerability that allows a user to reset the limits.
+
+For example, an application may reset limits on attempts to send OTP when you resend a new OTP, so you can reset rate limits before each OTP check attempt and a rate limit will be never reached. Or an application may store the remaining number of attempts in a cookie, and you can reset the limit by spoofing the cookie.
 
 # Send requests to different instances of an application
 

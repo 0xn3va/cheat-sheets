@@ -2,6 +2,10 @@
 
 If the operations of adding a new email address or changing an existing one do not require password confirmation, session hijacking, XSS or CSRF can lead to account takeover.
 
+# Amazon Cognito misusing
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/cloud/aws/amazon-cognito" %}
+
 # Information disclosure
 
 An application can return unknown data in response when performing an operation. These can be requested passwords, generated OTP, cookies with additional privileges, user data, detailed error messages, and etc. Check the response from the server for such data.
@@ -158,6 +162,10 @@ If an application does not set rate limits on resending OTP and resending OTP re
 References:
 - [Report: Authorization bypass using login by phone option+horizontal escalation possible on Grab Android App](https://hackerone.com/reports/205000)
 
+## OTP reusing
+
+If an application allows using of old OTPs that have been used or re-generated, any leakage of OTPs (for example, to logs or third-party services) will compromise the functionality that relies on OTPs.
+
 ## Session fixation
 
 An application can implement the authentication flow as the following one:
@@ -175,16 +183,13 @@ References:
 
 ## Spoofing part of an authentication request
 
-If during the OTP check an application additionally uses some parameters, try to use a value from a request for a different account. This parameter can be a cookie, a header, or a request parameter. If you use the parameter value for `victim` in the OTP check request for `attacker`, you can get into `victim` account or bypass two-factor authentication.
+If during the OTP check an application additionally uses some parameters, try to use a value from a request for a different account. This parameter can be a cookie, header, or request parameter. If you use the parameter value for a victim in the OTP check request for an attacker, you can get into a victim account or bypass two-factor authentication.
 
-Additionally, try to use the valid OTP value for `attacker` as the OTP value for `victim`. If an application does not verify that the OTP belongs to the `attacker`, you will be able to get into `victrim` account or bypass two-factor authentication.
+Additionally, try to re-use the valid OTP value for an attacker as the OTP value for a victim. If an application does not verify that the OTP belongs to an attacker, you will be able to get into a victrim account or bypass two-factor authentication.
 
 ## Short and long-lived OTP
 
-If an application use short (less 5 digits) and/or long-lived OTPs, such implementations leave many ways to bruteforce, especially if there are no rate limits, or they are weak or can be bypassed.
-
-References:
-- [Report: Insecure 2FA/authentication implementation creates a brute force vulnerability](https://hackerone.com/reports/149598)
+An application can use short (less 5 digits) and/or long-lived OTPs. Such implementation leaves many ways to bruteforce, especially if there are no rate limits, or they are weak or can be bypassed.
 
 # Rate limits
 
@@ -194,11 +199,11 @@ References:
 
 Applications that implement third party sign-in or sign-up often identify users based on the attached email address that the third party application sends. In such cases, you can try sign-in or sign-up with two different third-party applications that are linked to the same email address. Sometimes these two accounts can be joined and you will have access to the victim's account by sign-in or sign-up with your third-party application account.
 
-For example, suppose a victim sign-in or sign-up to `vulnerable-website.com` with `third-party-app1.com`, which is linked to `victim@website.com`. To exploit this, you can try the following:
+For example, suppose a victim sign-in or sign-up to `vulnerable-website.com` with `third-party-app1.com`, which is linked to `victim@website.com`. To exploit this, try the following chain:
 
-1. Create an account at `third-party-app2.com` and enter the `victim@website.com` email address (ideal if email confirmation is not required),
-2. Try sign-in or sign-up at `vulnerable-website.com` through `third-party-app2.com`,
-3. If the application is vulnerable, you will have access to the victim's account.
+1. Create an account at `third-party-app2.com` and enter the `victim@website.com` email address (ideal if email confirmation is not required)
+2. Try sign-in or sign-up at `vulnerable-website.com` through `third-party-app2.com`
+3. If the application is vulnerable, you will have access to the victim's account
 
 References:
 

