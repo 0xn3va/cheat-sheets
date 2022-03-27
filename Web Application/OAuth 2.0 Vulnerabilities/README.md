@@ -413,6 +413,7 @@ There are several weak configurations, depending on the logic handled by the ser
 
 References:
 - [Report: Stealing SSO Login Tokens (snappublisher.snapchat.com)](https://hackerone.com/reports/265943)
+- [Write up: OAuth and PostMessage](https://ninetyn1ne.github.io/2022-02-21-oauth-postmessage-misconfig/)
 
 # References
 
