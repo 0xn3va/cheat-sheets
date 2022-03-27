@@ -16,6 +16,9 @@ $ echo "|$overlay/shell.sh" > core_pattern
 $ sleep 5 && ./crash &
 ```
 
+References:
+- [Escaping privileged containers for fun](https://pwning.systems/posts/escaping-containers-for-fun/)
+
 ### /proc/sys/kernel/modprobe
 
 [/proc/sys/kernel/modprobe](https://man7.org/linux/man-pages/man5/proc.5.html) contains the path to the kernel module loader, which is called when loading a kernel module such as via the [modprobe](https://man7.org/linux/man-pages/man8/modprobe.8.html) command. Code execution can be gained by performing any action which will trigger the kernel to attempt to load a kernel module (such as using the crypto-API to load a currently unloaded crypto-module, or using ifconfig to load a networking module for a device not currently used). 
