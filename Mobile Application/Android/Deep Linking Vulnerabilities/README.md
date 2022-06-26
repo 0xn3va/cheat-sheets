@@ -110,6 +110,7 @@ References:
 - [WebView Vulnerabilities: Bypass URL validation](/Mobile%20Application/Android/WebView%20Vulnerabilities/README.md#bypass-url-validation)
 - [Report: [Grab Android/iOS] Insecure deeplink leads to sensitive information disclosure](https://hackerone.com/reports/401793)
 - [Writeup: Breaking The Facebook For Android Application](https://ash-king.co.uk/blog/facebook-bug-bounty-09-18)
+- [Writeup: When Equal is Not, Another WebView Takeover Story](https://valsamaras.medium.com/when-equal-is-not-another-webview-takeover-story-730be8d6e202)
 
 ## Bypass local authentication
 

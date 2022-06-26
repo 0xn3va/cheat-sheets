@@ -144,5 +144,6 @@ To execute commands on the host system, start the Docker container and mount the
 
 # References
 
+- [Writeup: Microsoft Dynamics Container Sandbox RCE via Unauthenticated Docker Remote API 20,000$ Bounty](https://hencohen10.medium.com/microsoft-dynamics-container-sandbox-rce-via-unauthenticated-docker-remote-api-20-000-bounty-7f726340a93b)
 - [Write up: Escaping the Cloud Shell container](https://offensi.com/2019/12/16/4-google-cloud-shell-bugs-explained-introduction/)
 - [Quarkslab's Blog: Why is Exposing the Docker Socket a Really Bad Idea?](https://blog.quarkslab.com/why-is-exposing-the-docker-socket-a-really-bad-idea.html)
