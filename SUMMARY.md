@@ -17,6 +17,19 @@
     - [WebResourceResponse Vulnerabilities](Mobile%20Application/Android/WebView%20Vulnerabilities/web-resource-response-vulnerabilities.md)
     - [WebSettings Vulnerabilities](Mobile%20Application/Android/WebView%20Vulnerabilities/web-settings.md)
 
+## CI/CD
+
+- Dependency
+    - [Dependency Confusion](CI%20CD/Dependency/dependency-confusion.md)
+    - [Dependency Hijaking](CI%20CD/Dependency/dependency-hijacking.md)
+    - [Typosquatting](CI%20CD/Dependency/typosquatting.md)
+- Github
+    - [Github Actions](CI%20CD/Github/actions.md)
+    - [Code owners](CI%20CD/Github/codeowners.md)
+    - [Dependabot](CI%20CD/Github/dependabot.md)
+    - [Redirect](CI%20CD/Github/redirect.md)
+    - [Releases](CI%20CD/Github/releases.md)
+
 ## Cloud
 
 - AWS
