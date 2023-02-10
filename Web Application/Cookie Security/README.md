@@ -70,6 +70,10 @@ The `SameSite` attribute prevents the browser from sending cookies along with cr
 The cookies without the `SameSite` in Chrome are still treated as `None` during the first 2 minutes and then as `Lax`, check out [Bypass SameSite Cookies Default to Lax and get CSRF](https://medium.com/@renwa/bypass-samesite-cookies-default-to-lax-and-get-csrf-343ba09b9f2b)
 {% endhint %}
 
+{% hint style="info" %}
+Keep in mind that same-site and cross-site requests are not the same thing. The SameSite cookie attribute is only concerned with cross-site requests. It does not affect cross-origin requests that refer to the same-site, check out [The great SameSite confusion](https://jub0bs.com/posts/2021-01-29-great-samesite-confusion/)
+{% endhint %}
+
 References:
 - [MDN Web Docs - Set-cookie: Browser compatibility](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#Browser_compatibility)
 
