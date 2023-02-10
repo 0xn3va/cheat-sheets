@@ -247,9 +247,9 @@ The application, when processing the request, redirects a victim to the attacker
 
 If the `access_token` allows making requests to the API, it is worth checking whether it is possible to abuse this. Sometimes the granted rights to `access_token` allows you to release new tokens with increased privileges or get access to additional functionality available only with session token.
 
-## Abusing accounts with non-confirmed email
+## Abusing accounts with unconfirmed email
 
-The authorization server can allow to use accounts with non-confirmed email for granting access to protected resources. As a result, a third-party application will trust the received data.
+The authorization server can allow to use accounts with unconfirmed email for granting access to protected resources. As a result, a third-party application will trust the received data.
 
 {% embed url="https://gitlab.com/gitlab-org/gitlab/-/issues/37038" %}
 

@@ -85,3 +85,4 @@ Remeber that `X-Forwarded-For` header is not the only header for transmitting a 
 
 - [Abusing HTTP hop-by-hop request headers](https://nathandavison.com/blog/abusing-http-hop-by-hop-request-headers)
 - [Python script to find hop-by-hop header abuse potential against the provided URL](https://gist.github.com/ndavison/298d11b3a77b97c908d63a345d3c624d)
+- [Writeup: Worldwide Server-side Cache Poisoning on All Akamai Edge Nodes ($50K+ Bounty Earned)](https://medium.com/@jacopotediosi/worldwide-server-side-cache-poisoning-on-all-akamai-edge-nodes-50k-bounty-earned-f97d80f3922b)

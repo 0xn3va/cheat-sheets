@@ -2,7 +2,7 @@
 
 # Bash multiprocessing
 
-{% embed url="https://fr1nge.xyz/posts/supercharge-your-bash-scripts-with-multiprocessing/" %}
+{% embed url="https://web.archive.org/web/20210625034833/https://fr1nge.xyz/posts/supercharge-your-bash-scripts-with-multiprocessing/" %}
 
 # Useful commands
 
@@ -185,6 +185,10 @@ $ pv -d PID
 $ pv file.txt -L 2 # 2 bytes per second
 $ pv file.txt -L -l 2 # 2 lines per second
 ```
+
+## ssh
+
+{% embed url="https://iximiuz.com/en/posts/ssh-tunnels/" %}
 
 ## tar
 

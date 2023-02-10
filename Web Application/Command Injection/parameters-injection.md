@@ -1,3 +1,275 @@
+# bundler
+
+## bundler install
+
+[bundler install](https://bundler.io/v2.2/man/bundle-install.1.html) uses `gem` under the hood, therefore, it is possible to reuse gem's features for giving a profit.
+
+### Gemfile
+
+[Gemfile](https://bundler.io/v2.2/man/gemfile.5.html) describes the gem dependencies required to execute associated Ruby code. Since it is a ruby file you can write arbitrary code that will be executed when running `bundle install`.
+
+```ruby
+# Gemfile
+
+# arbitrary code here
+system('echo "hola!"')
+```
+
+When `bundle install` is run the arbitrary ruby code will be executed.
+
+```bash
+$ bundle install
+hola!
+hola!
+The Gemfile specifies no dependencies
+Resolving dependencies...
+Bundle complete! 0 Gemfile dependencies, 1 gem now installed.
+```
+
+### gem dependency
+
+Since `bundler` uses `gem install` to install the specified dependencies in `Gemfile` you can use extensions to embed an arbitrary code.
+
+```ruby
+# hola.gemspec file
+
+Gem::Specification.new do |s|
+  s.name        = 'hola'
+  s.version     = '0.0.0'
+  s.summary     = "Hola!"
+  s.description = "A simple hello world gem"
+  s.authors     = ["Nick Quaranto"]
+  s.email       = 'nick@quaran.to'
+  s.files       = []
+  s.homepage    = 'https://rubygems.org/gems/hola'
+  s.license     = 'MIT'
+  s.extensions  = 'extconf.rb'
+end
+```
+
+```ruby
+# extconf.rb
+
+# arbitrary code here
+system('echo "hola!"')
+```
+
+```bash
+# build and push to rubygems.org
+$ gem build hola.gemspec
+$ gem push ./hola-0.0.0.gem
+```
+
+```ruby
+# Gemfile
+
+source 'https://rubygems.org'
+
+gem 'hola'
+```
+
+When `bundle install` is run the arbitrary ruby code will be executed.
+
+```bash
+$ gem install ./hola-0.0.0.gem
+Building native extensions. This could take a while...
+ERROR:  Error installing hola-0.0.0.gem:
+        ERROR: Failed to build gem native extension.
+...
+hola!
+...
+```
+
+References:
+- [RubyGames Guides: Make your own gem](https://guides.rubygems.org/make-your-own-gem/)
+- [RubyGames Guides: Gems with extensions](https://guides.rubygems.org/gems-with-extensions/)
+- [RubyGames Guides: Specification reference - Extensions](https://guides.rubygems.org/specification-reference/#extensions)
+- [Bundler Docs: gemfile - Gems](https://bundler.io/v1.16/gemfile_man.html#GEMS)
+
+### git dependency
+
+One of the sources of gems for `bundler` are git repositories with a gem's source code. Since a git repositories contains a source code `bundler` builds it before installing. Therefore, you can write an arbitrary code that will be executed when running `bundle install`.
+
+{% hint style="info" %}
+You can execute an arbitrary code using both [gemspec](#gem-build) file and [native extensions](#extensions)
+{% endhint %}
+
+Create a repository on `github.com` with the following `hola.gemspec` file:
+
+```ruby
+# arbitrary code here
+system('echo "hola!"')
+
+Gem::Specification.new do |s|
+  s.name        = 'hola'
+  s.version     = '0.0.0'
+  s.summary     = "Hola!"
+  s.description = "A simple hello world gem"
+  s.authors     = ["Nick Quaranto"]
+  s.email       = 'nick@quaran.to'
+  s.files       = []
+  s.homepage    = 'https://rubygems.org/gems/hola'
+  s.license     = 'MIT'
+end
+```
+
+Add the repository to `Gemfile` as a git dependency.
+
+```ruby
+# Gemfile
+gem 'hola', :git => 'https://github.com/username/hola'
+```
+
+When `bundle install` is run the arbitrary ruby code will be executed.
+
+```bash
+$ bundle install
+Fetching https://github.com/username/hola
+hola!
+Resolving dependencies...
+Using bundler 2.2.21
+Using hola 0.0.0 from https://github.com/username/hola (at main@4a4a4ee)
+Bundle complete! 1 Gemfile dependency, 2 gems now installed.
+```
+
+References:
+- [Bundler Docs: gemfile - Git](https://bundler.io/v1.16/gemfile_man.html#GIT)
+
+### path dependency
+
+You can specify that a gem is located in a particular location on the file system. Relative paths are resolved relative to the directory containing the `Gemfile`. Since a git repositories contains a source code `bundler` builds it before installing. Therefore, you can write an arbitrary code that will be executed when running `bundle install`.
+
+You can specify that a gem is located in a particular location on the file system. Relative paths are resolved relative to the directory containing the `Gemfile`.
+
+Similar to the semantics of the `:git` option, the `:path` option requires that the directory in question either contains a `.gemspec` for the gem, or that you specify an explicit version that bundler should use.
+
+{% hint style="info" %}
+Unlike `:git`, `bundler` does not compile native extensions for gems specified as paths
+{% endhint %}
+
+Therefore, you can gain code execution using the [.gemspec file with an arbitrary code](#gem-build) or [built gem with native extension](#extensions).
+
+```ruby
+# Gemfile
+# .gemspec file is located in vendor/hola 
+gem 'hola', :path => "vendor/hola"
+```
+
+```ruby
+# Gemfile
+# vendor/hola contains hola-0.0.0.gem file
+gem 'hola', '0.0.0', :path => "vendor/hola"
+```
+
+When `bundle install` is run the arbitrary ruby code will be executed.
+
+```bash
+$ bundle install
+hola!
+Resolving dependencies...
+Using hola 0.0.0 from source at `vendor/hola`
+Using bundler 2.2.21
+Bundle complete! 1 Gemfile dependency, 2 gems now installed.
+```
+
+References:
+- [Bundler Docs: gemfile - Path](https://bundler.io/v1.16/gemfile_man.html#PATH)
+
+# gem
+
+## gem build
+
+`gemspec` file is a ruby file that defines what is in the gem, who made it, and the version of the gem. Since it is a ruby file you can write arbitrary code that will be executed when running `gem build`.
+
+```ruby
+# hola.gemspec file
+
+# arbitrary code here
+system('echo "hola!"')
+
+Gem::Specification.new do |s|
+  s.name        = 'hola'
+  s.version     = '0.0.0'
+  s.summary     = "Hola!"
+  s.description = "A simple hello world gem"
+  s.authors     = ["Nick Quaranto"]
+  s.email       = 'nick@quaran.to'
+  s.files       = []
+  s.homepage    = 'https://rubygems.org/gems/hola'
+  s.license     = 'MIT'
+end
+```
+
+When `gem build` is run the arbitrary ruby code will be executed.
+
+```bash
+$ gem build hola.gemspec
+hola!
+  Successfully built RubyGem
+  Name: hola
+  Version: 0.0.0
+  File: hola-0.0.0.gem
+```
+
+References:
+- [RubyGames Guides: Make your own gem](https://guides.rubygems.org/make-your-own-gem/)
+- [RubyGames Guides: Command reference - gem build](https://guides.rubygems.org/command-reference/#gem-build)
+
+## gem install
+
+### Extensions
+
+`gemspec` allows you to define extensions to build when installing a gem. Many gems use extensions to wrap libraries that are written in C with a ruby wrapper. `gem` uses the `extconf.rb` to build an extension during installation. Since it is a ruby file you can write arbitrary code that will be executed when running `gem install`.
+
+```ruby
+# hola.gemspec file
+
+Gem::Specification.new do |s|
+  s.name        = 'hola'
+  s.version     = '0.0.0'
+  s.summary     = "Hola!"
+  s.description = "A simple hello world gem"
+  s.authors     = ["Nick Quaranto"]
+  s.email       = 'nick@quaran.to'
+  s.files       = []
+  s.homepage    = 'https://rubygems.org/gems/hola'
+  s.license     = 'MIT'
+  s.extensions  = 'extconf.rb'
+end
+```
+
+```ruby
+# extconf.rb
+
+# arbitrary code here
+system('echo "hola!"')
+```
+
+```bash
+$ gem build hola.gemspec
+  Successfully built RubyGem
+  Name: hola
+  Version: 0.0.0
+  File: hola-0.0.0.gem
+```
+
+When `gem install` is run the arbitrary ruby code will be executed.
+
+```bash
+$ gem install ./hola-0.0.0.gem
+Building native extensions. This could take a while...
+ERROR:  Error installing hola-0.0.0.gem:
+        ERROR: Failed to build gem native extension.
+...
+hola!
+...
+```
+
+References:
+- [RubyGames Guides: Gems with extensions](https://guides.rubygems.org/gems-with-extensions/)
+- [RubyGames Guides: Specification reference - Extensions](https://guides.rubygems.org/specification-reference/#extensions)
+- [RubyGames Guides: Command reference - gem install](https://guides.rubygems.org/command-reference/#gem-install)
+
 # git
 
 {% embed url="https://git-scm.com/docs/git" %}
@@ -5,6 +277,8 @@
 ## -c/--config-env
 
 [-c/--config-env](https://git-scm.com/docs/git#Documentation/git.txt--cltnamegtltvaluegt) passes a configuration parameter to the command. The value given will override values from configuration files. Check out the [Abuse via .git/config](#abuse-via-gitconfig) section to find parameters that can be abused.
+
+Remember that modern versions of Git support setting any config value via [GIT_CONFIG* environment variables](https://git-scm.com/docs/git-config#Documentation/git-config.txt-GITCONFIGCOUNT).
 
 ## Abusing a git directory
 
@@ -552,277 +826,16 @@ When `pip install` is run the `PostInstallCommand.run` method will be invoked.
 References:
 - [0wned - Code execution via Python package installation](https://github.com/mschwager/0wned)
 
-# gem
 
-## gem build
+# tar
 
-`gemspec` file is a ruby file that defines what is in the gem, who made it, and the version of the gem. Since it is a ruby file you can write arbitrary code that will be executed when running `gem build`.
+## Checkpoints
 
-```ruby
-# hola.gemspec file
-
-# arbitrary code here
-system('echo "hola!"')
-
-Gem::Specification.new do |s|
-  s.name        = 'hola'
-  s.version     = '0.0.0'
-  s.summary     = "Hola!"
-  s.description = "A simple hello world gem"
-  s.authors     = ["Nick Quaranto"]
-  s.email       = 'nick@quaran.to'
-  s.files       = []
-  s.homepage    = 'https://rubygems.org/gems/hola'
-  s.license     = 'MIT'
-end
-```
-
-When `gem build` is run the arbitrary ruby code will be executed.
+A [checkpoint](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) is a moment of time before writing nth record to the archive (a write checkpoint), or before reading nth record from the archive (a read checkpoint). [Checkpoints](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) allow to periodically execute arbitrary actions.
 
 ```bash
-$ gem build hola.gemspec
-hola!
-  Successfully built RubyGem
-  Name: hola
-  Version: 0.0.0
-  File: hola-0.0.0.gem
+$ tar cf archieve.tar --checkpoint=1 --checkpoint-action="exec=echo 'arbitrary payload here'" foo 
 ```
-
-References:
-- [RubyGames Guides: Make your own gem](https://guides.rubygems.org/make-your-own-gem/)
-- [RubyGames Guides: Command reference - gem build](https://guides.rubygems.org/command-reference/#gem-build)
-
-## gem install
-
-### Extensions
-
-`gemspec` allows you to define extensions to build when installing a gem. Many gems use extensions to wrap libraries that are written in C with a ruby wrapper. `gem` uses the `extconf.rb` to build an extension during installation. Since it is a ruby file you can write arbitrary code that will be executed when running `gem install`.
-
-```ruby
-# hola.gemspec file
-
-Gem::Specification.new do |s|
-  s.name        = 'hola'
-  s.version     = '0.0.0'
-  s.summary     = "Hola!"
-  s.description = "A simple hello world gem"
-  s.authors     = ["Nick Quaranto"]
-  s.email       = 'nick@quaran.to'
-  s.files       = []
-  s.homepage    = 'https://rubygems.org/gems/hola'
-  s.license     = 'MIT'
-  s.extensions  = 'extconf.rb'
-end
-```
-
-```ruby
-# extconf.rb
-
-# arbitrary code here
-system('echo "hola!"')
-```
-
-```bash
-$ gem build hola.gemspec
-  Successfully built RubyGem
-  Name: hola
-  Version: 0.0.0
-  File: hola-0.0.0.gem
-```
-
-When `gem install` is run the arbitrary ruby code will be executed.
-
-```bash
-$ gem install ./hola-0.0.0.gem
-Building native extensions. This could take a while...
-ERROR:  Error installing hola-0.0.0.gem:
-        ERROR: Failed to build gem native extension.
-...
-hola!
-...
-```
-
-References:
-- [RubyGames Guides: Gems with extensions](https://guides.rubygems.org/gems-with-extensions/)
-- [RubyGames Guides: Specification reference - Extensions](https://guides.rubygems.org/specification-reference/#extensions)
-- [RubyGames Guides: Command reference - gem install](https://guides.rubygems.org/command-reference/#gem-install)
-
-# bundler
-
-## bundler install
-
-[bundler install](https://bundler.io/v2.2/man/bundle-install.1.html) uses `gem` under the hood, therefore, it is possible to reuse gem's features for giving a profit.
-
-### Gemfile
-
-[Gemfile](https://bundler.io/v2.2/man/gemfile.5.html) describes the gem dependencies required to execute associated Ruby code. Since it is a ruby file you can write arbitrary code that will be executed when running `bundle install`.
-
-```ruby
-# Gemfile
-
-# arbitrary code here
-system('echo "hola!"')
-```
-
-When `bundle install` is run the arbitrary ruby code will be executed.
-
-```bash
-$ bundle install
-hola!
-hola!
-The Gemfile specifies no dependencies
-Resolving dependencies...
-Bundle complete! 0 Gemfile dependencies, 1 gem now installed.
-```
-
-### gem dependency
-
-Since `bundler` uses `gem install` to install the specified dependencies in `Gemfile` you can use extensions to embed an arbitrary code.
-
-```ruby
-# hola.gemspec file
-
-Gem::Specification.new do |s|
-  s.name        = 'hola'
-  s.version     = '0.0.0'
-  s.summary     = "Hola!"
-  s.description = "A simple hello world gem"
-  s.authors     = ["Nick Quaranto"]
-  s.email       = 'nick@quaran.to'
-  s.files       = []
-  s.homepage    = 'https://rubygems.org/gems/hola'
-  s.license     = 'MIT'
-  s.extensions  = 'extconf.rb'
-end
-```
-
-```ruby
-# extconf.rb
-
-# arbitrary code here
-system('echo "hola!"')
-```
-
-```bash
-# build and push to rubygems.org
-$ gem build hola.gemspec
-$ gem push ./hola-0.0.0.gem
-```
-
-```ruby
-# Gemfile
-
-source 'https://rubygems.org'
-
-gem 'hola'
-```
-
-When `bundle install` is run the arbitrary ruby code will be executed.
-
-```bash
-$ gem install ./hola-0.0.0.gem
-Building native extensions. This could take a while...
-ERROR:  Error installing hola-0.0.0.gem:
-        ERROR: Failed to build gem native extension.
-...
-hola!
-...
-```
-
-References:
-- [RubyGames Guides: Make your own gem](https://guides.rubygems.org/make-your-own-gem/)
-- [RubyGames Guides: Gems with extensions](https://guides.rubygems.org/gems-with-extensions/)
-- [RubyGames Guides: Specification reference - Extensions](https://guides.rubygems.org/specification-reference/#extensions)
-- [Bundler Docs: gemfile - Gems](https://bundler.io/v1.16/gemfile_man.html#GEMS)
-
-### git dependency
-
-One of the sources of gems for `bundler` are git repositories with a gem's source code. Since a git repositories contains a source code `bundler` builds it before installing. Therefore, you can write an arbitrary code that will be executed when running `bundle install`.
-
-{% hint style="info" %}
-You can execute an arbitrary code using both [gemspec](#gem-build) file and [native extensions](#extensions)
-{% endhint %}
-
-Create a repository on `github.com` with the following `hola.gemspec` file:
-
-```ruby
-# arbitrary code here
-system('echo "hola!"')
-
-Gem::Specification.new do |s|
-  s.name        = 'hola'
-  s.version     = '0.0.0'
-  s.summary     = "Hola!"
-  s.description = "A simple hello world gem"
-  s.authors     = ["Nick Quaranto"]
-  s.email       = 'nick@quaran.to'
-  s.files       = []
-  s.homepage    = 'https://rubygems.org/gems/hola'
-  s.license     = 'MIT'
-end
-```
-
-Add the repository to `Gemfile` as a git dependency.
-
-```ruby
-# Gemfile
-gem 'hola', :git => 'https://github.com/username/hola'
-```
-
-When `bundle install` is run the arbitrary ruby code will be executed.
-
-```bash
-$ bundle install
-Fetching https://github.com/username/hola
-hola!
-Resolving dependencies...
-Using bundler 2.2.21
-Using hola 0.0.0 from https://github.com/username/hola (at main@4a4a4ee)
-Bundle complete! 1 Gemfile dependency, 2 gems now installed.
-```
-
-References:
-- [Bundler Docs: gemfile - Git](https://bundler.io/v1.16/gemfile_man.html#GIT)
-
-### path dependency
-
-You can specify that a gem is located in a particular location on the file system. Relative paths are resolved relative to the directory containing the `Gemfile`. Since a git repositories contains a source code `bundler` builds it before installing. Therefore, you can write an arbitrary code that will be executed when running `bundle install`.
-
-You can specify that a gem is located in a particular location on the file system. Relative paths are resolved relative to the directory containing the `Gemfile`.
-
-Similar to the semantics of the `:git` option, the `:path` option requires that the directory in question either contains a `.gemspec` for the gem, or that you specify an explicit version that bundler should use.
-
-{% hint style="info" %}
-Unlike `:git`, `bundler` does not compile native extensions for gems specified as paths
-{% endhint %}
-
-Therefore, you can gain code execution using the [.gemspec file with an arbitrary code](#gem-build) or [built gem with native extension](#extensions).
-
-```ruby
-# Gemfile
-# .gemspec file is located in vendor/hola 
-gem 'hola', :path => "vendor/hola"
-```
-
-```ruby
-# Gemfile
-# vendor/hola contains hola-0.0.0.gem file
-gem 'hola', '0.0.0', :path => "vendor/hola"
-```
-
-When `bundle install` is run the arbitrary ruby code will be executed.
-
-```bash
-$ bundle install
-hola!
-Resolving dependencies...
-Using hola 0.0.0 from source at `vendor/hola`
-Using bundler 2.2.21
-Bundle complete! 1 Gemfile dependency, 2 gems now installed.
-```
-
-References:
-- [Bundler Docs: gemfile - Path](https://bundler.io/v1.16/gemfile_man.html#PATH)
 
 # terraform
 
@@ -868,6 +881,7 @@ data "external" "example" {
 
 References:
 - [Terraform Plan "RCE"](https://alex.kaskaso.li/post/terraform-plan-rce)
+- [Terraform as part of the software supply chain, Part 1 - Modules and Providers](https://about.gitlab.com/blog/2022/06/01/terraform-as-part-of-software-supply-chain-part1-modules-and-providers/)
 - [Terraform Docs: Command: plan](https://www.terraform.io/docs/cli/commands/plan.html)
 - [Terraform Docs: Provider Configuration](https://www.terraform.io/docs/language/providers/configuration.html)
 - [Terraform Docs: The Module providers Meta-Argument](https://www.terraform.io/docs/language/meta-arguments/module-providers.html)

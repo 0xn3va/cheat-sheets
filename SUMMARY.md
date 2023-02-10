@@ -144,4 +144,6 @@
 - [Race Condition](Web%20Application/Race%20Condition/README.md)
 - [Server Side Request Forgery](Web%20Application/Server%20Side%20Request%20Forgery/README.md)
     - [Post Exploitation](Web%20Application/Server%20Side%20Request%20Forgery/post-exploitation.md)
+- [SVG Abuse](Web%20Application/SVG%20Abuse/README.md)
+- [Weak Random Generation](Web%20Application/Weak%20Random%20Generation/README.md)
 - [Web Cache Poisoning](Web%20Application/Web%20Cache%20Poisoning/README.md)

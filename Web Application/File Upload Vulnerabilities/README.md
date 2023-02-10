@@ -179,7 +179,7 @@ Try to upload perl files with the `pl`, `pm`, `cgi`, or `lib` extensions to get 
 
 ## SVG
 
-{% embed url="https://github.com/allanlw/svg-cheatsheet" %}
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/svg-abuse" %}
 
 ## XML
 
