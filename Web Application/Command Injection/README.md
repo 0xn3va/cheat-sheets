@@ -70,8 +70,9 @@ The following `GIT_*` parameters can be used to abuse a git directory:
 - [GIT_PROXY_COMMAND](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coregitProxy) is used for overridding `core.gitProxy`
 - [GIT_SSH_COMMAND](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coresshCommand) is used for overridding `core.sshCommand`
 - [GIT_EXTERNAL_DIFF](https://git-scm.com/docs/git-config#Documentation/git-config.txt-diffexternal) is used for overridding `diff.external`
+- [GIT_CONFIG*](https://git-scm.com/docs/git-config#Documentation/git-config.txt-GITCONFIGCOUNT). Modern versions of Git support setting any config value via `GIT_CONFIG*` environment variables
 
-{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/command-injection/parameters-injection@abusing-a-git-directory" %}
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/command-injection/parameters-injection#abusing-a-git-directory" %}
 
 ## LD_PRELOAD
 
@@ -343,6 +344,15 @@ Open3.capture2e("os command here")
 # Open3.pipeline(_r/_w/_rw/_start)
 Open3.pipeline("os command here")
 ```
+
+# Linux files
+
+## /etc/environment
+
+[/etc/environment](https://man7.org/linux/man-pages/man7/environ.7.html) contains environment variables specifying the basic environment variables for new shells. However, it can be used by other programs. Every executed job in the Linux task scheduler (cron) imports this file, and if there is a job that is executed by a user (e.g. root), you can abuse `/etc/environment` to execute arbitrary code on behalf of that user. For example, you can use [LD_PRELOAD](#ld_preload) to gain code execution.
+
+References:
+- [FabricScape: Escaping Service Fabric and Taking Over the Cluster](https://unit42.paloaltonetworks.com/fabricscape-cve-2022-30137/)
 
 # Tips
 
