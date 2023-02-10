@@ -6,6 +6,81 @@ If the operations of adding a new email address or changing an existing one do n
 
 {% embed url="https://0xn3va.gitbook.io/cheat-sheets/cloud/aws/amazon-cognito" %}
 
+# Email confirmation
+
+## Binding an email using a confirmation link
+
+Try to follow a confirmation link for account `A` within the session of account `B` within an email confirmation flow. If an application is vulnerable, it will link the verified email to account `B`. In this case, the attack flow may look like:
+
+1. An attacker links `attacker@website.com` to their account.
+1. An attacker sends a confirmation link to a victim.
+1. A victim follows the link from an email while logged into an application.
+1. An application links `attacker@website.com` to a victim.
+
+References:
+- [Writeup: Watch out the links : Account takeover!](https://akashhamal0x01.medium.com/watch-out-the-links-account-takeover-32b9315390a7)
+
+## Confirmation of multiple emails
+
+A method for adding new emails can accept several email address in a single request. However, the method can create a one-time token based on only one email, but send an email with a recovery link to all passed emails at once. For instance, if an application is vulnerable to such an attack, on the following request:
+
+```http
+PUT /user/profile HTTP/1.1
+Host: vulnerable-website.com
+Content-Type: application/json
+Content-Length: 57
+
+{"email": ["victim@website.com", "attacker@website.com"]}
+```
+
+an application sends the same confirmation link to two email addresses.
+
+You can also try the following payloads:
+
+```http
+victim@website.com&attacker@website.com
+victim@website.com,attacker@website.com
+victim@website.com|attacker@website.com
+victim@website.com%20attacker@website.com
+victim@website.com%09attacker@website.com
+victim@website.com%0a%0dcc:attacker@website.com
+...
+```
+
+Another similar case is if there is a business logic vulnerability when confirmation link is sent to a wrong email. For example, if an application sends a confirmation link to an already added, main email, instead of an unconfirmed one.
+
+References:
+- [Report: Email Confirmation Bypass in myshop.myshopify.com that Leads to Full Privilege Escalation to Any Shop Owner by Taking Advantage of the Shopify SSO](https://hackerone.com/reports/791775)
+
+## Skipping the confirmation process
+
+If an application allows you to create users without an email confirmation process, you can try to abuse that to get a new user with a pre-confirmed email. This is possible at least in the following cases:
+
+- An application allows creation of bot users that have pre-defined confirmed emails.
+- SCIM provisioning functions.
+- OAuth authentication via a vulnerable service that allows using unconfirmed accounts for authentication.
+
+References:
+- [Report: Bypass Email Verification -- Able to Access Internal Gitlab Services that use Login with Gitlab and Perform Check on email domain](https://gitlab.com/gitlab-org/gitlab/-/issues/11643)
+
+## Using unconfirmed emails
+
+If an application allows using unconfirmed emails, try to abuse this behavior in flows where an application or other applications/systems rely on an email address. For example:
+
+- If there are applications/systems that blindly trust the data of a vulnerable application, you can try to abuse this trust. For example, if an application can be used as an OAuth authorization server, try using an account with an unconfirmed email to authenticate to a third-party application using OAuth, you can find more details at [OAuth 2.0 Vulnerabilities: Abusing accounts with unconfirmed email](/Web%20Application/OAuth%202.0%20Vulnerabilities/README.md#abusing-accounts-with-unconfirmed-email).
+- Try using unconfirmed emails to preoccupy emails that may be used by other users or used internally by an application. In this case, you can block some application functions for all or specific users.
+- If some functions must not be available for users who have not confirmed their email, check that these functions are really not available for them. Additionally, make sure the REST and GraphQL APIs also abide by the same policy.
+
+## Using OTP for email confirmation
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/broken-authentication#phone-and-otp-authentication" %}
+
+## Weak confirmation token
+
+Confirmation token may be generated using a vulnerable generation algorithm, which may lead to the possibility of predicting the generated values. If you manage to predict tokens you will be able to generate valid confirmation tokens for any emails.
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/weak-random-generation" %}
+
 # Information disclosure
 
 An application can return unknown data in response when performing an operation. These can be requested passwords, generated OTP, cookies with additional privileges, user data, detailed error messages, and etc. Check the response from the server for such data.
@@ -134,10 +209,6 @@ Content-Length: 72
 
 ## Password recovery does not end previously created sessions
 
-{% hint style="info" %}
-This is the best practice to follow
-{% endhint %}
-
 Successful password recovery should end previously created sessions. If this does not happen, an victim will not have mechanisms for managing the security of their account. As a result, an attacker will be able to maintain an active session for an extended period of time.
 
 ## Token leakage via Referer header
@@ -152,6 +223,12 @@ References:
 - [Report: Cross Domain leakage of sensitive information - Leading to Account Takeover at Instagram Brand](https://hackerone.com/reports/209352)
 - [Report: [Cross Domain Referrer Leakage] Password Reset Token Leaking to Third party Sites.](https://hackerone.com/reports/265740)
 - [Report: Referer Referer Header Leakage in language changer may lead to FB token theft](https://hackerone.com/reports/870062)
+
+## Weak recovery token
+
+Recovery token may be generated using a vulnerable generation algorithm, which may lead to the possibility of predicting the generated values. If you manage to predict tokens you will be able to generate valid recovery tokens for any accounts.
+
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/weak-random-generation" %}
 
 # Phone and OTP authentication
 
