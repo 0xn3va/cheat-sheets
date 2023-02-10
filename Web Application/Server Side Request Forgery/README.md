@@ -276,7 +276,7 @@ Also, check `lock.cmpxchg8b.com`:
 
 # SVG
 
-{% embed url="https://github.com/allanlw/svg-cheatsheet" %}
+{% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/svg-abuse" %}
 
 # Server-side processing of arbitrary HTML and JS 
 
