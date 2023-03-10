@@ -145,204 +145,411 @@ References:
 ## Go
 
 ```golang
-// os/exec Write
+// https://pkg.go.dev/os#StartProcess
+// os.StartProcess
+var procAttr = os.ProcAttr
+os.StartProcess(
+    "cmdname",
+    []string{"arg1", "arg2"},
+    &procAttr,
+)
+
+// https://pkg.go.dev/os/exec#Command
+// os/exec.Command
+exec.Command("cmdname", "arg1", "arg2").Run()
+
+// command line execution
 cmd := exec.Command("bash")
 cmdWriter, _ := cmd.StdinPipe()
 cmd.Start()
-cmdWriter.Write([]byte("os command here\n"))
+cmdWriter.Write([]byte("cmdname arg1 arg2\n"))
 cmd.Wait()
 
-// os/exec CommandContext
-exec.CommandContext(ctx, "os command here", "arguments here").Run()
+// https://pkg.go.dev/os/exec#CommandContext
+// os/exec.CommandContext
+exec.CommandContext(ctx, "cmdname", "arg1", "arg2").Run()
 
-// os/exec Cmd
+// https://pkg.go.dev/os/exec#Cmd
+// os/exec.Cmd
 cmd := &exec.Cmd {
-    Path: "os command here",
-    Args: []string{ "arguments here" },
+    Path: "cmdname",
+    Args: []string{ "arg1", "arg2" },
 }
-cmd.Start();
+cmd.Run();
 
-// os/exec Command
-cmd := exec.Command(
-    "os command here", 
-    "arguments here",
+// https://pkg.go.dev/syscall#Exec
+// syscall.Exec
+syscall.Exec(
+    "cmdname",
+    []string{ "arg1", "arg2" },
+    os.Environ(),
 )
-cmd.Run()
 
-// syscall Exec
-execErr := syscall.Exec(
-    "os command here", 
-    "arguments here",
-    os.Environ()
+// https://pkg.go.dev/syscall#ForkExec
+// syscall.ForkExec (unix only)
+var procAttr = os.ProcAttr
+syscall.ForkExec(
+    "cmdname",
+    []string{ "arg1", "arg2" },
+    &procAttr,
 )
+
+// https://pkg.go.dev/syscall#StartProcess
+// syscall.StartProcess
+var procAttr = os.ProcAttr
+syscall.StartProcess(
+    "cmdname",
+    []string{ "arg1", "arg2" },
+    &procAttr,
+)
+
+// https://pkg.go.dev/syscall?GOOS=windows#CreateProcess
+// https://pkg.go.dev/syscall?GOOS=windows#CreateProcessAsUser
+// syscall.CreateProcess and syscall.CreateProcessAsUser (windows only)
+var sI syscall.StartupInfo
+var pI syscall.ProcessInformation
+cmdline := syscall.UTF16PtrFromString("cmdname arg1 arg2")
+syscall.CreateProcess(nil, cmdline, nil, nil, true, 0, nil, nil, &sI, &pI)
 ```
 
 ## Java
 
 ```java
-// java.lang.Runtime exec
-Runtime.getRuntime().exec("os command here");
-java.lang.Runtime.getRuntime().exec("os command here");
+// https://docs.oracle.com/javase/8/docs/api/java/lang/Runtime.html
+// java.lang.Runtime.exec
+Runtime.getRuntime().exec("cmdname arg1 arg2");
+Runtime.getRuntime().exec(new String[] {"cmdname", "arg1", "arg2"})
+// or full path
+java.lang.Runtime.getRuntime().exec("cmdname arg1 arg2");
 
-// java.lang.Runtime loadLibrary
-Runtime.getRuntime().loadLibrary("path to library here");
-java.lang.Runtime.getRuntime().loadLibrary("path to library here");
-
+// https://docs.oracle.com/javase/8/docs/api/java/lang/ProcessBuilder.html
 // java.lang.ProcessBuilder
-new ProcessBuilder(
-    "os command here", 
-    "arguments here"
-).start();
-new java.lang.ProcessBuilder(
-    "os command here", 
-    "arguments here"
-).start();
+new ProcessBuilder("cmdname", "arg1", "arg2").start();
+new ProcessBuilder(new String[]{"cmdname", "arg1", "arg2"}).start();
+// or using command
+ProcessBuilder pb = new ProcessBuilder();
+pb.command("cmdname", "arg1", "arg2").start();
+pb.command(new String[]{"cmdname", "arg1", "arg2"}).start();
+// or full path
+new java.lang.ProcessBuilder("cmdname", "arg1", "arg2").start();
 
-// groovy.lang.GroovyShell
-// see https://docs.groovy-lang.org/latest/html/api/groovy/lang/GroovyShell.html
-GroovyShell shell = new GroovyShell();
-shell.evaluate(...);
-shell.parse(...);
-shell.parseClass(...);
+// https://commons.apache.org/proper/commons-exec/apidocs/org/apache/commons/exec/Executor.html
+// org.apache.commons.exec.Executor
+Executor exec = new DefaultExecutor();
+exec.execute(new CommandLine("cmdname arg1 arg2"););
 
 // javax.script.ScriptEngine eval
 new ScriptEngineManager()
     .getEngineByExtension("js")
     .eval("js code here");
+
+// java.lang.Runtime loadLibrary
+Runtime.getRuntime().loadLibrary("path to library here");
+java.lang.Runtime.getRuntime().loadLibrary("path to library here");
+
+// https://docs.groovy-lang.org/latest/html/api/groovy/lang/GroovyShell.html
+// groovy.lang.GroovyShell
+GroovyShell shell = new GroovyShell();
+shell.evaluate(...);
+shell.parse(...);
+shell.parseClass(...);
 ```
 
 ## Node.js
 
 ```javascript
-// child_process, check https://nodejs.org/api/child_process.html
+// child_process or mz/child_process
 
-// exec
 // https://nodejs.org/api/child_process.html#child_processexeccommand-options-callback
+// child_process.exec
 const { exec } = require('child_process');
-exec('os command here');
+exec('cmdname arg1 arg2');
+exec('...', { 'shell': '/path/to/controlled/executable/file' });
 
-// execSync
 // https://nodejs.org/api/child_process.html#child_processexecsynccommand-options
+// child_process.execSync
 const { execSync } = require('child_process');
-execSync('os command here');
+execSync('cmdname arg1 arg2');
+execSync('...', { 'shell': '/path/to/controlled/executable/file' });
 
-// execFile
 // https://nodejs.org/api/child_process.html#child_processexecfilefile-args-options-callback
+// child_process.execFile
 const { execFile } = require('child_process');
-execFile('path to executable file', ['args here'], (error, stdout, stderr) => { /* ... */ });
+execFile('cmdname', ['arg1', 'arg2'], (error, stdout, stderr) => { /* ... */ });
 
-// execFileSync
 // https://nodejs.org/api/child_process.html#child_processexecfilesyncfile-args-options
+// child_process.execFileSync
 const { execFileSync } = require('child_process');
-execFileSync('path to executable fileere'], (error, stdout, stderr) => { /* ... */ });
+execFileSync('cmdname', ['arg1', 'arg2'], (error, stdout, stderr) => { /* ... */ });
 
-// spawn
 // https://nodejs.org/api/child_process.html#child_processspawncommand-args-options
+// child_process.spawn
 const { spawn } = require('child_process');
-spawn('command to run here', ['args here']);
-spawn('os command here', { shell: true });
+spawn('cmdname', ['arg1', 'arg2']);
+spawn('cmdname arg1 arg2', { shell: true });
 
-// spawnSync
 // https://nodejs.org/api/child_process.html#child_processspawnsynccommand-args-options
+// child_process.spawnSync
 const { spawnSync } = require('child_process');
-spawnSync('command to run here', ['args here']);
-spawnSync('os command here', { shell: true });
+spawnSync('cmdname', ['arg1', 'arg2']);
+spawnSync('cmdname arg1 arg2', { shell: true });
+
+// https://www.npmjs.com/package/shelljs
+// shelljs.exec
+var shell = require('shelljs');
+shell.exec('cmdname arg1 arg2');
+
+// https://www.npmjs.com/package/cross-spawn
+// cross-spawn.spawn
+const spawn = require('cross-spawn');
+spawn('cmdname', ['arg1', 'arg2']);
+spawn.sync('cmdname', ['arg1', 'arg2']);
+
+// https://www.npmjs.com/package/execa
+// execa
+
+// https://github.com/sindresorhus/execa#execafile-arguments-options
+// execa.execa
+import { execa } from 'execa';
+execa.execa('cmdname', ['arg1', 'arg2']);
+
+// https://github.com/sindresorhus/execa#execasyncfile-arguments-options
+// execa.execaSync
+import { execaSync } from 'execa';
+execa.execaSync('cmdname', ['arg1', 'arg2']);
+
+// https://github.com/sindresorhus/execa#command
+// execa.$`command`
+import { $ } from 'execa';
+$`cmdname arg1 arg2`;
+
+// https://github.com/sindresorhus/execa#synccommand
+// execa.$.sync`command`
+import { $ } from 'execa';
+$.sync`cmdname arg1 arg2`
+
+// https://github.com/sindresorhus/execa#execacommandcommand-options
+// execa.execaCommand
+execa.execaCommand('cmdname arg1 arg2')
+
+// https://github.com/sindresorhus/execa#execacommandsynccommand-options
+// execa.execaCommandSync
+execa.execaCommandSync('cmdname arg1 arg2')
 ```
 
 ## Python
 
 ```python
-# eval
-eval("python expression here")
-eval(compile("python expression here", "", "eval"))
-
-# exec
-exec("python code here")
-exec(compile("python code here", "", "exec"))
-
+# https://docs.python.org/3/library/os.html#os.system
 # os.system
-os.system("os command here")
-# os.spawnlpe
-os.spawnlpe(os.P_WAIT, "os command here")
-# os.popen
-os.popen("os command here")
-# os.popen2
-os.popen("os command here")
+os.system("cmdname arg1 arg2")
 
+# https://docs.python.org/3/library/os.html#os.popen
+# os.popen
+os.popen("cmdname arg1 arg2")
+
+# https://docs.python.org/2.7/library/os.html#os.popen2
+# Deprecated, available in Python <= 2.7
+# os.popen2, os.popen3, os.popen4
+os.popen2("cmdname arg1 arg2")
+
+# https://docs.python.org/3/library/os.html#os.spawnl
+# os.spawn*
+os.spawnl(mode, "path", "arg1", "arg2")
+os.spawnle(mode, "path", "arg1", "arg2", os.environ)
+os.spawnlp(mode, "file", "arg1", "arg2")
+os.spawnlpe(mode, "file", "arg1", "arg2", os.environ)
+os.spawnv(mode, "path", ["arg1", "arg2"])
+os.spawnve(mode, "path", ["arg1", "arg2"], os.environ)
+os.spawnvp(mode, "file", ["arg1", "arg2"])
+os.spawnvpe(mode, "file", ["arg1", "arg2"], os.environ)
+
+# https://docs.python.org/3/library/os.html#os.execl
+# os.exec*
+os.execl("path", "arg1", "arg2")
+os.execle("path", "arg1", "arg2", os.environ)
+os.execlp("file", "arg1", "arg2")
+os.execlpe("file", "arg1", "arg2", os.environ)
+os.execv("path", ["arg1", "arg2"])
+os.execve("path", ["arg1", "arg2"], os.environ)
+os.execvp("file", ["arg1", "arg2"])
+os.execvpe("file", ["arg1", "arg2"], os.environ)
+
+# https://docs.python.org/3/library/os.html#os.posix_spawn
+# os.posix_spawn
+os.posix_spawn("path", ["arg1", "arg2"], os.environ)
+
+# https://docs.python.org/3/library/os.html#os.posix_spawnp
+# os.posix_spawnp
+os.posix_spawn("path", ["arg1", "arg2"], os.environ)
+
+# https://docs.python.org/3/library/subprocess.html#subprocess.call
 # subprocess.call
-subprocess.call("os commnad here")
-subprocess.call(["os commnad here", "arguments here"])
+subprocess.call("cmdname arg1 arg2", shell=True)
+subprocess.call(["cmdname", "arg1", "arg2"])
+
+# https://docs.python.org/3/library/subprocess.html#subprocess.run
 # subprocess.run
-subprocess.run("os commnad here", shell=True)
-subprocess.run(["os commnad here", "arguments here"], shell=True)
+subprocess.run("cmdname arg1 arg2", shell=True)
+subprocess.run(["cmdname", "arg1", "arg2"])
+
+# https://docs.python.org/3/library/subprocess.html#subprocess.Popen
 # subprocess.Popen
-subprocess.Popen(["os commnad here", "arguments here"])
+subprocess.Popen("cmdname arg1 arg2", shell=True)
+subprocess.Popen(["cmdname", "arg1", "arg2"])
+
+# https://docs.python.org/3/library/subprocess.html#subprocess.check_call
+# subprocess.check_call
+subprocess.check_call("cmdname arg1 arg2", shell=True)
+subprocess.check_call(["cmdname", "arg1", "arg2"])
+
+# https://docs.python.org/3/library/subprocess.html#subprocess.check_output
+# subprocess.check_output
+subprocess.check_output("cmdname arg1 arg2", shell=True)
+subprocess.check_output(["cmdname", "arg1", "arg2"])
+
+# https://docs.python.org/3/library/subprocess.html#subprocess.getoutput
+# subprocess.getoutput
+subprocess.getoutput("cmdname arg1 arg2")
+
+# https://docs.python.org/3/library/subprocess.html#subprocess.getstatusoutput
+# subprocess.getstatusoutput
+subprocess.getstatusoutput("cmdname arg1 arg2")
+
+# https://docs.python.org/2.7/library/popen2.html#module-popen2
+# Deprecated, available in Python <= 2.7
+# popen2.popen2, popen2.popen3, popen2.popen4, popen2.Popen3, popen2.Popen4
+popen2.popen2("cmdname arg1 arg2")
+popen2.Popen3("cmdname arg1 arg2")
+
+# https://docs.python.org/2.7/library/platform.html#platform.popen
+# Deprecated, available in Python <= 2.7
+platform.popen("cmdname arg1 arg2")
 ```
 
 ## Ruby
 
 ```ruby
-# exec
-exec("os command here")
-exec(["os command here", "arguments here"])
-
-# eval
-eval("ruby expression here")
-
-# Process.spawn
-spawn("os command here")
-Process.spawn("os command here")
-# Process.exec
-Process.exec("os command here")
-Process.exec("os command here", "arguments here")
-
-# system
-system("os command here")
-
 # backticks
-`os command here`
-
-# Kernel.open
-# https://ruby-doc.org//core-2.2.0/Kernel.html#method-i-open
-open("| os command here")
-
-# Kernel.exec
-Kernel.exec("os command here")
-
-# open-uri.open
-# https://sakurity.com/blog/2015/02/28/openuri.html
-open("| os command here")
-
-# Object.send
-# https://bishopfox.com/blog/ruby-vulnerabilities-exploits
-# additionally, check out Object.public_send
-# https://apidock.com/ruby/Object/public_send
-1.send("eval","`os command here`")
-"".send("eval","`os command here`")
+`cmdname arg1 arg2`
 
 # %x command
-%x os-command-here<SPACE>
-%x os-command-here ;
-%x(os-command-here)
-%x|os-command-here|
-%x{os-command-here}
+%x cmdname ;
+# %x<CHAR>command<CHAR>
+%x(cmdname arg1 arg2)
+%x[cmdname arg1 arg2]
+%x|cmdname arg1 arg2|
+%x{cmdname arg1 arg2}
+%x/cmdname arg1 arg2/
+%x"cmdname arg1 arg2"
+# ...
 
-# https://docs.ruby-lang.org/en/2.0.0/Open3.html
-# Open3.popen3
-Open3.popen3("os command here")
-Open3.popen3(["os command here", "arguments here"])
-# Open3.popen2(e)
-Open3.popen2("os command here")
-Open3.popen2(["os command here", "arguments here"])
-Open3.popen2e("os command here")
-Open3.popen2e(["os command here", "arguments here"])
+# shell heredoc
+<<`EOF`
+cmdname arg1 arg2
+EOF
+
+# https://ruby-doc.org/3.2.1/Kernel.html#method-i-exec
+# Kernel.exec
+exec("cmdname arg1 arg2")
+exec(["cmdname", "argv0"], "arg1", "arg2")
+exec("cmdname", "arg1", "arg2")
+# or
+Kernel.exec("cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/Kernel.html#method-i-system
+# Kernel.system
+system("cmdname arg1 arg2")
+system(["cmdname", "argv0"], "arg1", "arg2")
+system("cmdname", "arg1", "arg2")
+# or
+Kernel.system("cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/Kernel.html#method-i-spawn
+# Kernel.spawn
+spawn("cmdname arg1 arg2")
+spawn(["cmdname", "argv0"], "arg1", "arg2")
+spawn("cmdname", "arg1", "arg2")
+# or
+Kernel.system("cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/Kernel.html#method-i-open
+# Kernel.open
+open("| cmdname arg1 arg2")
+# or
+Kernel.open("| cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/Process.html#method-c-spawn
+# Process.spawn
+Process.spawn("cmdname arg1 arg2")
+Process.spawn(["cmdname", "argv0"], "arg1", "arg2")
+Process.spawn("cmdname", "arg1", "arg2")
+
+# https://ruby-doc.org/3.2.1/Process.html#method-c-exec
+# Process.exec
+Process.exec("cmdname arg1 arg2")
+Process.exec(["cmdname", "argv0"], "arg1", "arg2")
+Process.exec("cmdname", "arg1", "arg2")
+
+# https://ruby-doc.org/3.2.1/IO.html#method-c-popen
+# IO.popen
+IO.popen("cmdname arg1 arg2")
+IO.popen(["cmdname", "arg1", "arg2"])
+IO.popen([["cmdname", "argv0"], "arg1", "arg2"])
+
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-capture2
+# Open3.capture2
+Open3.capture2("cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-capture2e
+# Open3.capture2e
+Open3.capture2e("cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-capture3
 # Open3.capture3
-Open3.capture3("os command here")
-# Open3.capture2(e)
-Open3.capture2("os command here")
-Open3.capture2e("os command here")
+Open3.capture3("cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-popen2
+# Open3.popen2
+Open3.popen2("cmdname arg1 arg2")
+Open3.popen2(["cmdname", "arg1", "arg2"])
+Open3.popen2([["cmdname", "argv0"], "arg1", "arg2"])
+
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-popen2e
+# Open3.popen2e
+Open3.popen2e("cmdname arg1 arg2")
+Open3.popen2e(["cmdname", "arg1", "arg2"])
+Open3.popen2e([["cmdname", "argv0"], "arg1", "arg2"])
+
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-popen3
+# Open3.popen3
+Open3.popen3("cmdname arg1 arg2")
+Open3.popen3(["cmdname", "arg1", "arg2"])
+Open3.popen3([["cmdname", "argv0"], "arg1", "arg2"])
+
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-pipeline
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-pipeline_r
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-pipeline_rw
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-pipeline_start
+# https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-pipeline_w
 # Open3.pipeline(_r/_w/_rw/_start)
-Open3.pipeline("os command here")
+Open3.pipeline("cmdname arg1 arg2", "cmdname arg1 arg2")
+Open3.pipeline(["cmdname", "arg1", "arg2"], "cmdname arg1 arg2")
+Open3.pipeline([["cmdname", "argv0"], "arg1", "arg2"], "cmdname arg1 arg2")
+
+# https://ruby-doc.org/stdlib-2.5.1/libdoc/open-uri/rdoc/OpenURI.html
+# URI.open
+# Reference: https://sakurity.com/blog/2015/02/28/openuri.html
+require "open-uri"
+URI.open("| os command here")
+
+# https://ruby-doc.org/3.2.1/Object.html#method-i-send
+# https://ruby-doc.org/3.2.1/Object.html#method-i-public_send
+# Reference: https://bishopfox.com/blog/ruby-vulnerabilities-exploits
+# Object.send, Object.public_send
+1.send("eval", "`cmdname arg1 arg2`")
+"".send("eval", "`cmdname arg1 arg2`")
+o.send("method", "args")
 ```
 
 # Linux files

@@ -31,6 +31,7 @@ Crypto-strong generation:
 Weak generation:
 
 - [java.util.Random](https://docs.oracle.com/javase/8/docs/api/java/util/Random.html)
+- [org.apache.commons.lang3.RandomStringUtils](https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/RandomStringUtils.html)
 
 Crypto-strong generation:
 
@@ -40,6 +41,8 @@ Crypto-strong generation:
 
 References:
 - [Everything about Java's SecureRandom](https://metebalci.com/blog/everything-about-javas-securerandom/)
+- [CRACKING THE ODD CASE OF RANDOMNESS IN JAVA](https://www.elttam.com/blog/cracking-randomness-in-java/)
+- [elttam/rsu-cracker - RandomStringUtils/nextInt Cracker](https://github.com/elttam/rsu-cracker)
 
 ## Node.js
 
