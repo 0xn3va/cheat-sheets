@@ -22,7 +22,7 @@ $ env $'BASH_FUNC_myfunc%%=() { id; }' bash -c 'myfunc'
 uid=0(root) gid=0(root) groups=0(root)
 ```
 
-Moreover, you can override an existing functions:
+Moreover, you can override existing functions:
 
 ```bash
 $ env $'BASH_FUNC_echo%%=() { id; }' bash -c 'echo hello'
@@ -67,9 +67,9 @@ References:
 The following `GIT_*` parameters can be used to abuse a git directory:
 
 - [GIT_DIR](https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables) is the location of the `.git` folder
-- [GIT_PROXY_COMMAND](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coregitProxy) is used for overridding `core.gitProxy`
-- [GIT_SSH_COMMAND](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coresshCommand) is used for overridding `core.sshCommand`
-- [GIT_EXTERNAL_DIFF](https://git-scm.com/docs/git-config#Documentation/git-config.txt-diffexternal) is used for overridding `diff.external`
+- [GIT_PROXY_COMMAND](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coregitProxy) is used for overriding `core.gitProxy`
+- [GIT_SSH_COMMAND](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coresshCommand) is used for overriding `core.sshCommand`
+- [GIT_EXTERNAL_DIFF](https://git-scm.com/docs/git-config#Documentation/git-config.txt-diffexternal) is used for overriding `diff.external`
 - [GIT_CONFIG*](https://git-scm.com/docs/git-config#Documentation/git-config.txt-GITCONFIGCOUNT). Modern versions of Git support setting any config value via `GIT_CONFIG*` environment variables
 
 {% embed url="https://0xn3va.gitbook.io/cheat-sheets/web-application/command-injection/parameters-injection#abusing-a-git-directory" %}
@@ -497,6 +497,30 @@ IO.popen("cmdname arg1 arg2")
 IO.popen(["cmdname", "arg1", "arg2"])
 IO.popen([["cmdname", "argv0"], "arg1", "arg2"])
 
+# https://ruby-doc.org/3.2.1/IO.html#method-c-read
+# IO.read
+IO.read("| cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/IO.html#method-c-write
+# IO.write
+IO.write("| cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/IO.html#method-c-binread
+# IO.binread
+IO.binread("| cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/IO.html#method-c-binwrite
+# IO.binwrite
+IO.binwrite("| cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/IO.html#method-c-foreach
+# IO.foreach
+IO.foreach("| cmdname arg1 arg2")
+
+# https://ruby-doc.org/3.2.1/IO.html#method-c-readlines
+# IO.readlines
+IO.readlines("| cmdname arg1 arg2")
+
 # https://ruby-doc.org/3.2.1/stdlibs/open3/Open3.html#method-c-capture2
 # Open3.capture2
 Open3.capture2("cmdname arg1 arg2")
@@ -541,7 +565,7 @@ Open3.pipeline([["cmdname", "argv0"], "arg1", "arg2"], "cmdname arg1 arg2")
 # URI.open
 # Reference: https://sakurity.com/blog/2015/02/28/openuri.html
 require "open-uri"
-URI.open("| os command here")
+URI.open("| cmdname arg1 arg2")
 
 # https://ruby-doc.org/3.2.1/Object.html#method-i-send
 # https://ruby-doc.org/3.2.1/Object.html#method-i-public_send
@@ -590,7 +614,7 @@ $(command)
 `command`
 ```
 
-Bash performs the expansion by executing command in a subshell environment and replacing the command substitution with the standard output of the command.
+Bash performs the expansion by executing the command in a subshell environment and replacing the command substitution with the standard output of the command.
 
 References:
 - [Bash Reference Manual: 3.5.4 Command Substitution](https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution)
@@ -612,7 +636,7 @@ There are several ways to work with encoded strings:
 
 2. `echo` command:
 
-    `echo` provides `-e` option to interpret of backslash escapes. Note the recognized sequences depend on a version of `echo`, as well as the `-e` option may not be present at all.
+    `echo` provides `-e` option to interpret backslash escapes. Note the recognized sequences depend on a version of `echo`, as well as the `-e` option may not be present at all.
 
     ```bash
     echo -e "\x74\x65\x73\x74"
@@ -650,7 +674,7 @@ $ command --user username --token SECRET_TOKEN & ps x -w
 
 This can be useful if the cli logs hide sensitive settings or sensitive data is not stored in the environment. 
 
-This can be useful if the cli logs hide sensitive data or sensitive data is not stored in the environment (for instance, Github Actions provide variable interpolation `${{...}}` for injecting secrets, and you can't give access to secrets during execution). Another case is when you have blind injection and can redirect output of `ps x -w` to a file that you have access to.
+This can be useful if the cli logs hide sensitive data or sensitive data is not stored in the environment (for instance, GitHub Actions provide variable interpolation `${{...}}` for injecting secrets, and you can't give access to secrets during execution). Another case is when you have blind injection and can redirect the output of `ps x -w` to a file that you have access to.
 
 ## List of commands
 
@@ -703,7 +727,7 @@ References:
 
 ## Shell parameter expansion
 
-The basic form of parameter expansion is `${parameter}`; the value of parameter is substituted:
+The basic form of parameter expansion is `${parameter}`; the value of the parameter is substituted:
 
 ```bash
 $ a="es"; echo "t${a}t"
@@ -728,7 +752,7 @@ References:
 
 ## Special shell parameters
 
-There are several parameters which the shell treats specially. Some of these parameters you can use to create payloads:
+There are several parameters that the shell treats specially. Some of these parameters you can use to create payloads:
 
 ```bash
 $ i$@d
@@ -741,7 +765,7 @@ References:
 
 ## Shell variables
 
-Bash automatically assigns default values to a number of variables, such as `HOME` or `PATH`. Some of these variables can be used to create payloads. For instance, you can use `IFS` variable as a separator (this is possible since `IFS` contains a list of characters that separate fields):
+Bash automatically assigns default values to many variables, such as `HOME` or `PATH`. Some of these variables can be used to create payloads. For instance, you can use `IFS` variable as a separator (this is possible since `IFS` contains a list of characters that separate fields):
 
 ```bash
 $ cat$IFS/etc/passwd
