@@ -23,8 +23,8 @@
     - [Dependency Confusion](CI%20CD/Dependency/dependency-confusion.md)
     - [Dependency Hijaking](CI%20CD/Dependency/dependency-hijacking.md)
     - [Typosquatting](CI%20CD/Dependency/typosquatting.md)
-- Github
-    - [Github Actions](CI%20CD/Github/actions.md)
+- GitHub
+    - [GitHub Actions](CI%20CD/Github/actions.md)
     - [Code owners](CI%20CD/Github/codeowners.md)
     - [Dependabot](CI%20CD/Github/dependabot.md)
     - [Redirect](CI%20CD/Github/redirect.md)

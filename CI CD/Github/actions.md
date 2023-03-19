@@ -303,8 +303,6 @@ The payload may look like this:
 
 ## Output parameters and debug mode
 
-All outputs not marked as private will be logged if debug mode is enabled.
-
 All [output parameters](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter) not marked as sensitive will be logged if the [debug mode](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled.
 
 The following example will leak the tokens into the workflow logs if the `debug` mode is enabled:
@@ -384,7 +382,7 @@ jobs:
 
 As can be seen, the `dispatch.yml` workflow invokes the `reusable.yml` reusable workflow and passes `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` using the `creds` secrets. The `reusable.yml` workflow parses the `creds` secrets and extracts the `AWS_SECRET_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY`. Even though `${{ secrets.creds }}` is masked in the logs, and `AWS_SECRET_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` are stored in encrypted secrets, `reusable.yml` will reveal the ID and key in plain text.
 
-Is happens because [by default reusable workflows do not have access to the encrypted secrets](https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idsecretsinherit) and secrets must be defined via the `jobs.<job_id>.secrets`. As a result, if some sensitive data is extracted from the passed secrets, as in the example above, it can lead to their leakage into the workflow log.
+It happens because [by default reusable workflows do not have access to the encrypted secrets](https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idsecretsinherit) and secrets must be defined via the `jobs.<job_id>.secrets`. As a result, if some sensitive data is extracted from the passed secrets, as in the example above, it can lead to their leakage into the workflow log.
 
 Below you can find one of the in-wild examples where the `docker/build-push-action` parses the npm credentials from the `build_args` and leaks them into the logs:
 
