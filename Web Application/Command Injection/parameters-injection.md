@@ -276,7 +276,7 @@ References:
 
 ## -c/--config-env
 
-[-c/--config-env](https://git-scm.com/docs/git#Documentation/git.txt--cltnamegtltvaluegt) passes a configuration parameter to the command. The value given will override values from configuration files. Check out the [Abuse via .git/config](#abuse-via-gitconfig) section to find parameters that can be abused.
+[-c/--config-env](https://git-scm.com/docs/git#Documentation/git.txt--cltnamegtltvaluegt) passes a configuration parameter to the command. The value given will override values from configuration files. Check out the [Abuse via .git/config](#abuse-via-.git-config) section to find parameters that can be abused.
 
 Remember that modern versions of Git support setting any config value via [GIT_CONFIG* environment variables](https://git-scm.com/docs/git-config#Documentation/git-config.txt-GITCONFIGCOUNT).
 
@@ -610,7 +610,7 @@ $ ls -la foo
 -rw-r--r--    1 0xn3va  staff     0 Mar 18 20:18 foo
 ```
 
-Although the command failed, an empty file named `foo` was created. If a file with the same name already exists, the destination file is truncated. This option provides attackers with an arbitrary file truncation primitive. For example, an attacker can use it to corrupt a critical file in the `.git` folder like `.git/HEAD` and trick Git into loading a configuration from an unintended location, check out the [Abuse via .git/HEAD](#abuse-via-githead) section.
+Although the command failed, an empty file named `foo` was created. If a file with the same name already exists, the destination file is truncated. This option provides attackers with an arbitrary file truncation primitive. For example, an attacker can use it to corrupt a critical file in the `.git` folder like `.git/HEAD` and trick Git into loading a configuration from an unintended location, check out the [Abuse via .git/HEAD](#abuse-via-.git-head) section.
 
 References:
 
@@ -622,7 +622,7 @@ References:
 
 ### -c/--config
 
-[-c/--config](https://git-scm.com/docs/git-clone#Documentation/git-clone.txt--cltkeygtltvaluegt) sets a configuration variable in the newly-created repository; this takes effect immediately after the repository is initialized, but before the remote history is fetched or any files checked out. Check the [Abuse via .git/config](#abuse-via-gitconfig) section to find variables that can be abused.
+[-c/--config](https://git-scm.com/docs/git-clone#Documentation/git-clone.txt--cltkeygtltvaluegt) sets a configuration variable in the newly-created repository; this takes effect immediately after the repository is initialized, but before the remote history is fetched or any files checked out. Check the [Abuse via .git/config](#abuse-via-.git-config) section to find variables that can be abused.
 
 ### ext URLs
 
