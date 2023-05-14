@@ -166,6 +166,9 @@ It should be noted several privilege escalation vulnerabilities and other histor
 
 [CAP_SYS_PTRACE](https://man7.org/linux/man-pages/man7/capabilities.7.html) allows to use `ptrace(2)` and recently introduced cross memory attach system calls such as `process_vm_readv(2)` and `process_vm_writev(2)`. If this capability is granted and the `ptrace(2)` system call itself is not blocked by a seccomp filter, this will allow an attacker to bypass other seccomp restrictions, see [PoC for bypassing seccomp if ptrace is allowed](https://gist.github.com/thejh/8346f47e359adecd1d53). 
 
+References:
+- [tbhaxor: Container Breakout – Part 1 (LAB: Process Injection)](https://tbhaxor.com/container-breakout-part-1/)
+
 # CAP_NET_RAW
 
 [CAP_NET_RAW](https://man7.org/linux/man-pages/man7/capabilities.7.html) allows a process to be able to create RAW and PACKET socket types for the available network namespaces. This allows arbitrary packet generation and transmission through the exposed network interfaces. In many cases this interface will be a virtual Ethernet device which may allow for a malicious or compromised container to spoof packets at various network layers. A malicious process or compromised container with this capability may inject into upstream bridge, exploit routing between containers, bypass network access controls, and otherwise tamper with host networking if a firewall is not in place to limit the packet types and contents. Finally, this capability allows the process to bind to any address within the available namespaces. This capability is often retained by privileged containers to allow ping to function by using RAW sockets to create ICMP requests from a container.
