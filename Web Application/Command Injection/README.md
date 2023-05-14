@@ -139,6 +139,7 @@ In other words, you can compile a shared library to be invoked at load time and/
 
 References:
 - [LD_PRELOAD: How to Run Code at Load Time](https://www.secureideas.com/blog/2021/02/ld_preload-how-to-run-code-at-load-time.html)
+- [elttam Blog: Remote LD_PRELOAD Exploitation](https://www.elttam.com/blog/goahead/)
 
 # Languages
 

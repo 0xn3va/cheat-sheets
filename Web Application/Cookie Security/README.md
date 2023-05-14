@@ -82,7 +82,7 @@ References:
 The cookie prefix allows you to pass metadata about a cookie and notify a client that certain attributes have been set. The following prefixes are supported:
 
 - `__Secure-` tells the browser that the `Secure` attribute is required.
-- `__Host-` tells the browser that the `Path=/` and `Secure` attributes are required, and at the same time that the `Domain` attribute should not be present.
+- `__Host-` tells the browser that the `Path=/` and `Secure` attributes are required, and at the same time that the `Domain` attribute should not be present (and therefore, can not be sent to subdomains).
 
 References:
 - [MDN Web Docs - Set-cookie: Browser compatibility](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#Browser_compatibility)
@@ -99,7 +99,7 @@ The [RFC6265](https://tools.ietf.org/html/rfc6265#section-5.4) standard defines 
     *  Among cookies that have equal-length path fields, cookies with earlier creation-times are listed before cookies with later creation-times.
 ```
 
-Therefore, if a vulnerable application uses the first cookie, you can force it to use your cookie by adding the `Path` attribute with longer path. 
+Therefore, if a vulnerable application uses the first cookie, you can force it to use your cookie by adding the `Path` attribute with a longer path. 
 
 # References
 

@@ -47,6 +47,7 @@
     - [Exposed Docker Socket](Container/Escaping/exposed-docker-socket.md)
     - [Excessive Capabilities](Container/Escaping/excessive-capabilities.md)
     - [Host Networking Driver](Container/Escaping/host-networking-driver.md)
+    - [PID Namespace Sharing](Container/Escaping/pid-namespace-sharing.md)
     - [Sensitive Mounts](Container/Escaping/sensitive-mounts.md)
 - [Container Analysis Tools](Container/container-analysis-tools.md)
 
@@ -120,7 +121,7 @@
 - [Broken Authentication](Web%20Application/Broken%20Authentication/README.md)
     - [Two-Factor Authentication Vulnerabilities](Web%20Application/Broken%20Authentication/two-factor-authentication-vulnerabilities.md)
 - [Command Injection](Web%20Application/Command%20Injection/README.md)
-    - [Parameters Injection](Web%20Application/Command%20Injection/parameters-injection.md)
+    - [Argument Injection](Web%20Application/Command%20Injection/argument-injection.md)
 - [Content Security Policy](Web%20Application/Content%20Security%20Policy/README.md)
 - [Cookie Security](Web%20Application/Cookie%20Security/README.md)
     - [Cookie Bomb](Web%20Application/Cookie%20Security/cookie-bomb.md)

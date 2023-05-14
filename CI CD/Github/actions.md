@@ -584,6 +584,7 @@ However, if a cloud provider is misconfigured, untrusted repositories can reques
 
 References:
 - [GitHub Docs: About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
+- [Identifying vulnerabilities in GitHub Actions & AWS OIDC Configurations](https://medium.com/tinder/identifying-vulnerabilities-in-github-actions-aws-oidc-configurations-8067c400d5b8)
 
 # Misuse of the events related to incoming pull requests
 
@@ -847,6 +848,7 @@ References:
 - [actions/runner docs: Runner Authentication and Authorization](https://github.com/actions/runner/blob/main/docs/design/auth.md)
 - [GitHub Docs: Security hardening - Hardening for self-hosted runners](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#hardening-for-self-hosted-runners)
 - [Writeup: Zuckerpunch - Abusing Self Hosted Github Runners at Facebook](https://marcyoung.us/post/zuckerpunch/)
+- [Writeup: RyotaK's Blog - Stealing GitHub staff's access token via GitHub Actions](https://blog.ryotak.net/post/github-actions-staff-access-token-en/)
 
 ## Using the pull_request event with self-hosted runners
 
@@ -1213,6 +1215,9 @@ Here it is worth paying attention to at least the following things:
 
 Third-party actions may be available for claiming because the namespace (username or organization name) has been changed or removed. If the namespace has been changed GitHub will redirect the old namespace to the new one and thus workflows that use the actions with the old namespace will continue to execute successfully. In this case, an attacker can try to claim the old namespace by registering a user or creating an organization. If it is possible, an attacker can create a malicious action which will later be executed by workflows that use actions with the claimed namespace.
 
+References:
+- [Report: Github base action takeover which is used in `github.com/Shopify/unity-buy-sdk`](https://hackerone.com/reports/1439355)
+
 # Reusing vulnerable workflows
 
 GitHub Actions allows making workflows [reusable](https://docs.github.com/en/actions/using-workflows/reusing-workflows) using the [workflow_call](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_call) event. It allows calling a reusable workflow from another workflow by anyone who has access to this workflow:
@@ -1446,7 +1451,7 @@ Make sure all these users exist as they may have already been deleted or misspel
 Workflows triggered using the `pull_request` event have read-only permissions and have no access to secrets. However, these permissions differ for various event triggers such as `issue_comment`, `issues` or `push`, where you could attempt to steal repository secrets or use the write permission of the job's [GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret).
 
 {% hint style="info" %}
-`GITHUB_TOKEN` is the same token that GitHub Apps use. For information about the API endpoints GitHub Apps can access with each permission, check out the "[GitHub App Permissions](https://docs.github.com/en/rest/reference/permissions-required-for-github-apps)" page. You can find the permissions for `GITHUB_TOKEN` in a workflow log on the `Set up job` step:
+`GITHUB_TOKEN` is the same token that GitHub Apps use. For information about the API endpoints, GitHub Apps can access with each permission, check out the "[GitHub App Permissions](https://docs.github.com/en/rest/reference/permissions-required-for-github-apps)" page. You can find the permissions for `GITHUB_TOKEN` in a workflow log on the `Set up job` step:
 
 ![](img/github-token-permissions.png)
 {% endhint %}
@@ -1521,7 +1526,7 @@ runs:
       shell: bash
 ```
 
-### Third-party actions leak secrets
+### Abusing third-party actions
 
 Third-party actions may use secrets obtained from the arguments inappropriately and leak them into the workflow log or save them to disk.
 
@@ -1538,9 +1543,14 @@ Third-party actions may use secrets obtained from the arguments inappropriately 
 
 Check out the "[Exfiltrating data from a runner](#exfiltrating-data-from-a-runner)" section.
 
-### Leaking all secrets by adding a malicious workflow
+### Leaking repository and organization secrets by adding a malicious workflow
 
-Usually, non-default branches have no branch protection rules. If you have access to `GITHUB_TOKEN` with the `pull_requests:write` scope, you can add an arbitrary workflow to a non-default branch. Since the `pull_request_target` workflow in non-default branches can be triggered by a user, you can leak all repository and organisation secrets using the following steps:
+{% hint style="warning" %}
+GitHub no longer allows modifying files in the `.github/workflows` folder or merging a branch from **forks** with changes in the `.github/workflows` folder using `GITHUB_TOKEN`.
+You need a personal access token with `repo` and `workflow` scopes to be able to add a malicious workflow.
+{% endhint %}
+
+Usually, non-default branches have no branch protection rules. If you have access to `GITHUB_TOKEN` with the `pull_requests:write` scope, you can add an arbitrary workflow to a non-default branch. Since the `pull_request_target` workflow in non-default branches can be triggered by a user, you can leak all repository and organization secrets using the following steps:
 
 1. Fork the target repo.
 1. Add a malicious `pull_request_target` workflow:
@@ -1568,7 +1578,7 @@ Usually, non-default branches have no branch protection rules. If you have acces
 1. Wait for the malicious workflow to complete.
 1. It will leak all secrets to the logs.
 
-If `GITHUB_TOKEN` has the `contents:write` scope, you can create new non-default branch using the following API request:
+If `GITHUB_TOKEN` has the `contents:write` scope, you can create a new non-default branch using the following API request:
 
 ```bash
 curl -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer <GITHUB_TOKEN>" https://api.github.com/repos/OWNER/REPO/git/refs -d '{"ref":"refs/heads/featureA","sha":"aa218f56b14c9653891f9e74264a383fa43fefbd"}'
@@ -1577,7 +1587,6 @@ curl -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer 
 ## Approving pull requests
 
 {% hint style="info" %}
-
 [As of May 2022](https://github.blog/changelog/2022-05-03-github-actions-prevent-github-actions-from-creating-and-approving-pull-requests/), creating and approving pull requests by GitHub Actions is disabled for all new repositories and organizations by default. Please, check out [GitHub Docs: Preventing GitHub Actions from creating or approving pull requests](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#preventing-github-actions-from-creating-or-approving-pull-requests)
 {% endhint %}
 
@@ -1596,10 +1605,6 @@ For instance, if you can write to non-main branches of a repository, you can byp
 1. Once the action is complete, `github-actions` bot will approve the changes.
 1. You can merge the changes to the main branch.
 
-{% hint style="info" %}
-Note that if an attacker has access to `GITHUB_TOKEN` with [pull_request:write](https://docs.github.com/en/rest/overview/permissions-required-for-github-apps#permission-on-pull-requests) scope they can approve and merge a pull request using GitHub API without having write permissions for a target repository.
-{% endhint %}
-
 - [Writeup: Bypassing required reviews using GitHub Actions](https://medium.com/cider-sec/bypassing-required-reviews-using-github-actions-6e1b29135cc7)
 
 ## Exfiltrating data from a runner
@@ -1617,7 +1622,7 @@ An attacker can exfiltrate any stored secrets or other data from a runner. Actio
 | [google-github-actions/auth](https://github.com/google-github-actions/auth) | `$GITHUB_WORKSPACE/gha-creds-<RANDOM_FILENAME>.json` | [google-github-actions/auth](https://github.com/google-github-actions/auth) action by default [stores](https://github.com/google-github-actions/auth/blob/b258a9f230b36c9fa86dfaa43d1906bd76399edb/src/client/credentials_json_client.ts#127) the credentials in a `$GITHUB_WORKSPACE/gha-creds-<RANDOM_FILENAME>.json` file unless the `create_credentials_file: false` argument is set |
 | [hashicorp/setup-terraform](https://github.com/hashicorp/setup-terraform) | `$HOME/.terraformrc` | `hashicorp/setup-terraform` action by default [stores](https://github.com/hashicorp/setup-terraform/blob/8b4c280fc8c755f3640ce104b5ba443608256909/lib/setup-terraform.js#L104) credentials in a `.terraformrc` file |
 
-Any secrets that are used by a workflow are passed to the GitHub Runner at startup; therefore secrets are placed in the process's memory. Although GitHub Actions scrub secrets from memory that are not referenced in the workflow or an included action, `GITHUB_TOKEN` is always passed to the Runner. You can try to exfiltrate secrets from the memory dump. For example, the following script dumps the memory and grep the `GITHUB_TOKEN`:
+Any secrets that are used by a workflow are passed to the GitHub Runner at startup; therefore secrets are placed in the process's memory. Although GitHub Actions scrub secrets from memory that are not referenced in the workflow or an included action, `GITHUB_TOKEN` is always passed to the Runner. You can try to exfiltrate secrets from the memory dump. For example, the following script dumps the memory and finds `GITHUB_TOKEN`:
 
 {% embed url="https://gist.github.com/nikitastupin/30e525b776c409e03c2d6f328f254965" %}
 
@@ -1626,7 +1631,7 @@ References:
 
 ## Modifying the contents of a repository
 
-An attacker can use the GitHub API to [modify repository content](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token), including releases, if the assigned permissions of `GITHUB_TOKEN` [are not restricted](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token).
+An attacker can use the GitHub API to [modify repository content](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token), including releases if the assigned permissions of `GITHUB_TOKEN` [are not restricted](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token).
 
 References:
 - [GitHub Docs: Security hardening - Potential impact of a compromised runner](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#modifying-the-contents-of-a-repository)
