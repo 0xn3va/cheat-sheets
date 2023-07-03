@@ -133,6 +133,7 @@
 - HTML Injection
     - [base](Web%20Application/HTML%20Injection/base.md)
     - [iframe](Web%20Application/HTML%20Injection/iframe.md)
+    - [link](Web%20Application/HTML%20Injection/link.md)
     - [meta](Web%20Application/HTML%20Injection/meta.md)
     - [target attribute](Web%20Application/HTML%20Injection/target.md)
 - [HTTP Header Security](Web%20Application/HTTP%20Headers%20Security/README.md)
