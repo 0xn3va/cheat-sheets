@@ -1,40 +1,43 @@
-The [&lt;meta&gt;](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta) tag represents metadata that cannot be represented by other HTML meta-related elements.
+# Overview
 
-Some `<meta>` tags are informational, for example:
+The [&lt;meta&gt;](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta) tag represents metadata that can not be represented by other HTML meta-related elements. Some `<meta>` tags are informational, like:
 
 ```html
 <meta name="name" content="content">
 ```
 
-And some affect the page in some way, for example:
+However, part of them affect the page in some way, like:
 
 ```html
 <meta http-equiv="content-security-policy" content="default-src 'none'; base-uri 'self'">
 ```
 
-Moreover, CSP does not regulate such `<meta>` elements. `<meta http-equiv=...>` is a tag on the page that may emulate a subset of functions normally reserved for page headers. Similarly, some of these functions appear in Javascript, which is already heavily regulated by CSP. Dangerous functions that can be performed by `<meta http-equiv=...>` include:
-- set-cookie,
-- refresh:
-    - redirect to any regular URL,
-    - redirect to any data: URL.
+{% hint style="info" %}
+Content Security Policy does not regulate `<meta>` elements.
+{% endhint %}
 
-> set-cookie instruction was removed from the standard, and is no longer supported at all in Firefox 68 and Chrome 65.
+`<meta http-equiv=...>` is a tag on the page that may emulate a subset of functions normally reserved for page headers. The dangerous functions that can be performed by `<meta http-equiv=...>` include:
+- `set-cookie`:
+    - `set-cookie` instruction was removed from the standard and is no longer supported at all in Firefox 68 and Chrome 65.
+- `refresh`:
+    - redirect to any regular URL.
+    - redirect to any `data:` URL.
 
-# XSS
+# Using the data: scheme to execute arbitrary JavaScript
 
-We can use the `<meta>` tag with `content = "0; data: "` URI to execute arbitrary Javascript code (works only on safari), for example:
+The `<meta>` tag with the `content = "0; data: "` URI can be used to execute arbitrary JavaScript code, for example:
 
 ```html
 <meta name="language" content="0;data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==" http-equiv="refresh"/>
 ```
 
-Firefox and Chrome will block this:
-- Not allowed to navigate top frame to data URL (Firefox)
-- Navigation to toplevel data: URI not allowed (Chrome)
+It works only on Safari. Firefox and Chrome will block this:
+- Firefox does not allow navigation of the top frame to a data URL.
+- Chrome does not allow navigation to the top level `data:` URI.
 
 # Open redirect
 
-Using a similar payload, you can redirect the victim to an malicious page:
+It is possible to redirect a user to an arbitrary page using the following payload:
 
 ```html
 <meta name="language" content="5;http://malicious-website.com" http-equiv="refresh"/>

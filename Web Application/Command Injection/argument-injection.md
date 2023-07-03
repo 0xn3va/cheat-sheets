@@ -1194,6 +1194,17 @@ References:
 
 # ssh
 
+## authorized_keys and id_*.pub
+
+OpenSSH supports the [command](https://man.openbsd.org/OpenBSD-current/man8/sshd.8#AUTHORIZED_KEYS_FILE_FORMAT) option, which specifies the command to be executed whenever a key is used for authentication.
+
+```
+command="cmdname arg1 arg2" ssh-ed25519 AAAAC3Nzblah....
+```
+
+References:
+- [The Hacker's Choice Blog: Infecting SSH Public Keys with backdoors](https://blog.thc.org/infecting-ssh-public-keys-with-backdoors)
+
 ## ssh_config
 
 `ssh` obtains configuration data from the following sources in the following order:
